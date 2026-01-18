@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Menu, X, Database } from "lucide-react";
+import { Menu, X, Sparkles } from "lucide-react";
 
 const navItems = [
   { label: "Home", href: "/" },
@@ -23,15 +23,16 @@ export const Navbar = () => {
   };
 
   return (
-    <nav className="fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-lg border-b border-border">
+    <nav className="fixed top-0 left-0 right-0 z-50 glass border-b border-border/50">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
-          <Link to="/" className="flex items-center gap-2 group">
-            <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-primary to-accent-purple flex items-center justify-center shadow-soft group-hover:shadow-glow transition-shadow duration-300">
-              <Database className="w-5 h-5 text-primary-foreground" />
+          <Link to="/" className="flex items-center gap-3 group">
+            <div className="relative w-10 h-10 rounded-xl bg-gradient-to-br from-primary via-accent to-primary flex items-center justify-center shadow-glow group-hover:animate-pulse-glow transition-all duration-300">
+              <Sparkles className="w-5 h-5 text-primary-foreground" />
+              <div className="absolute inset-0 rounded-xl bg-gradient-to-br from-primary/20 to-accent/20 blur-xl opacity-50" />
             </div>
-            <span className="font-bold text-lg text-foreground">
+            <span className="font-bold text-xl gradient-text">
               DataBuks Studio
             </span>
           </Link>
@@ -42,9 +43,10 @@ export const Navbar = () => {
               <Link
                 key={item.label}
                 to={item.href}
-                className="text-muted-foreground hover:text-foreground transition-colors duration-200 text-sm font-medium"
+                className="text-muted-foreground hover:text-foreground transition-all duration-300 text-sm font-medium relative group"
               >
                 {item.label}
+                <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-gradient-to-r from-primary to-accent group-hover:w-full transition-all duration-300" />
               </Link>
             ))}
           </div>
@@ -55,14 +57,14 @@ export const Navbar = () => {
               variant="ghost"
               size="sm"
               onClick={handleLogin}
-              className="text-muted-foreground hover:text-foreground"
+              className="text-muted-foreground hover:text-foreground hover:bg-secondary/50"
             >
               Login
             </Button>
             <Button
               size="sm"
               onClick={handleSignUp}
-              className="bg-primary hover:bg-primary/90 text-primary-foreground shadow-soft hover:shadow-medium transition-all duration-200"
+              className="bg-gradient-to-r from-primary to-accent hover:opacity-90 text-primary-foreground shadow-glow transition-all duration-300 hover:shadow-neon"
             >
               Sign Up
             </Button>
@@ -79,19 +81,19 @@ export const Navbar = () => {
 
         {/* Mobile Menu */}
         {isMobileMenuOpen && (
-          <div className="md:hidden py-4 border-t border-border animate-fade-in">
-            <div className="flex flex-col gap-4">
+          <div className="md:hidden py-4 border-t border-border/50 animate-fade-in glass-card rounded-b-2xl">
+            <div className="flex flex-col gap-4 px-2">
               {navItems.map((item) => (
                 <Link
                   key={item.label}
                   to={item.href}
-                  className="text-muted-foreground hover:text-foreground transition-colors duration-200 text-sm font-medium px-2 py-1"
+                  className="text-muted-foreground hover:text-foreground transition-colors duration-200 text-sm font-medium px-3 py-2 rounded-lg hover:bg-secondary/50"
                   onClick={() => setIsMobileMenuOpen(false)}
                 >
                   {item.label}
                 </Link>
               ))}
-              <div className="flex flex-col gap-2 pt-4 border-t border-border">
+              <div className="flex flex-col gap-2 pt-4 border-t border-border/50">
                 <Button
                   variant="ghost"
                   size="sm"
@@ -103,7 +105,7 @@ export const Navbar = () => {
                 <Button
                   size="sm"
                   onClick={handleSignUp}
-                  className="bg-primary text-primary-foreground"
+                  className="bg-gradient-to-r from-primary to-accent text-primary-foreground"
                 >
                   Sign Up
                 </Button>

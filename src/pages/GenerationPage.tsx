@@ -1,5 +1,5 @@
 import { useLocation, useNavigate, Link } from "react-router-dom";
-import { ArrowLeft, Database } from "lucide-react";
+import { ArrowLeft, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import ChatPanel from "@/components/ChatPanel";
 import PreviewPanel from "@/components/PreviewPanel";
@@ -21,19 +21,19 @@ const GenerationPage = () => {
   return (
     <div className="h-screen flex flex-col bg-background">
       {/* Header */}
-      <header className="h-14 border-b border-border bg-card flex items-center px-4 gap-4">
+      <header className="h-14 border-b border-border/50 glass flex items-center px-4 gap-4">
         <Button
           variant="ghost"
           size="icon"
           onClick={() => navigate("/")}
-          className="rounded-lg"
+          className="rounded-lg text-muted-foreground hover:text-foreground"
         >
           <ArrowLeft className="w-5 h-5" />
         </Button>
         
         <Link to="/" className="flex items-center gap-3">
-          <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-primary to-accent-purple flex items-center justify-center">
-            <Database className="w-4 h-4 text-primary-foreground" />
+          <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-primary to-accent flex items-center justify-center shadow-glow">
+            <Sparkles className="w-4 h-4 text-primary-foreground" />
           </div>
           <div>
             <h1 className="font-semibold text-foreground text-sm">DataBuks Studio</h1>
@@ -42,7 +42,7 @@ const GenerationPage = () => {
         </Link>
         
         <div className="ml-auto flex items-center gap-2">
-          <span className="text-xs text-muted-foreground px-3 py-1 rounded-full bg-accent">
+          <span className="text-xs text-muted-foreground px-3 py-1.5 rounded-full glass-card border border-border/50">
             {languageDisplay}
           </span>
         </div>

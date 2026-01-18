@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { Database } from "lucide-react";
+import { Sparkles } from "lucide-react";
 
 const footerLinks = {
   product: [
@@ -23,16 +23,16 @@ const footerLinks = {
 
 export const Footer = () => {
   return (
-    <footer className="bg-foreground/[0.02] border-t border-border">
+    <footer className="relative border-t border-border/50 glass">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mb-12">
           {/* Brand */}
           <div className="lg:col-span-1">
-            <Link to="/" className="flex items-center gap-2 mb-4">
-              <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-primary to-accent-purple flex items-center justify-center">
-                <Database className="w-5 h-5 text-primary-foreground" />
+            <Link to="/" className="flex items-center gap-3 mb-4 group">
+              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary to-accent flex items-center justify-center shadow-glow group-hover:animate-pulse-glow transition-all">
+                <Sparkles className="w-5 h-5 text-primary-foreground" />
               </div>
-              <span className="font-bold text-lg text-foreground">
+              <span className="font-bold text-lg gradient-text">
                 DataBuks Studio
               </span>
             </Link>
@@ -49,7 +49,7 @@ export const Footer = () => {
                 <li key={link.label}>
                   <a
                     href={link.href}
-                    className="text-sm text-muted-foreground hover:text-foreground transition-colors"
+                    className="text-sm text-muted-foreground hover:text-primary transition-colors"
                   >
                     {link.label}
                   </a>
@@ -67,14 +67,14 @@ export const Footer = () => {
                   {link.href.startsWith("/") ? (
                     <Link
                       to={link.href}
-                      className="text-sm text-muted-foreground hover:text-foreground transition-colors"
+                      className="text-sm text-muted-foreground hover:text-primary transition-colors"
                     >
                       {link.label}
                     </Link>
                   ) : (
                     <a
                       href={link.href}
-                      className="text-sm text-muted-foreground hover:text-foreground transition-colors"
+                      className="text-sm text-muted-foreground hover:text-primary transition-colors"
                     >
                       {link.label}
                     </a>
@@ -92,7 +92,7 @@ export const Footer = () => {
                 <li key={link.label}>
                   <a
                     href={link.href}
-                    className="text-sm text-muted-foreground hover:text-foreground transition-colors"
+                    className="text-sm text-muted-foreground hover:text-primary transition-colors"
                   >
                     {link.label}
                   </a>
@@ -103,14 +103,14 @@ export const Footer = () => {
         </div>
 
         {/* Bottom */}
-        <div className="pt-8 border-t border-border flex flex-col sm:flex-row items-center justify-between gap-4">
+        <div className="pt-8 border-t border-border/50 flex flex-col sm:flex-row items-center justify-between gap-4">
           <p className="text-sm text-muted-foreground">
             © 2026 DataBuks Studio. All rights reserved.
           </p>
           <div className="flex items-center gap-6">
             <a
               href="#"
-              className="text-muted-foreground hover:text-foreground transition-colors"
+              className="text-muted-foreground hover:text-primary transition-colors"
               aria-label="Twitter"
             >
               <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
@@ -119,7 +119,7 @@ export const Footer = () => {
             </a>
             <a
               href="#"
-              className="text-muted-foreground hover:text-foreground transition-colors"
+              className="text-muted-foreground hover:text-primary transition-colors"
               aria-label="GitHub"
             >
               <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
@@ -128,7 +128,7 @@ export const Footer = () => {
             </a>
             <a
               href="#"
-              className="text-muted-foreground hover:text-foreground transition-colors"
+              className="text-muted-foreground hover:text-primary transition-colors"
               aria-label="LinkedIn"
             >
               <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">

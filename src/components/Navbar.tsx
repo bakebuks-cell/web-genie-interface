@@ -1,12 +1,12 @@
 import { useState } from "react";
+import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Menu, X, Sparkles } from "lucide-react";
+import { Menu, X, Database } from "lucide-react";
 
 const navItems = [
-  { label: "Home", href: "#home" },
-  { label: "How It Works", href: "#how-it-works" },
-  { label: "Supported Tech", href: "#tech-stack" },
-  { label: "About", href: "#about" },
+  { label: "Home", href: "/" },
+  { label: "Technologies", href: "/technologies" },
+  { label: "About", href: "/about" },
 ];
 
 export const Navbar = () => {
@@ -27,25 +27,25 @@ export const Navbar = () => {
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
-          <a href="#home" className="flex items-center gap-2 group">
-            <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center shadow-soft group-hover:shadow-glow transition-shadow duration-300">
-              <Sparkles className="w-5 h-5 text-primary-foreground" />
+          <Link to="/" className="flex items-center gap-2 group">
+            <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-primary to-accent-purple flex items-center justify-center shadow-soft group-hover:shadow-glow transition-shadow duration-300">
+              <Database className="w-5 h-5 text-primary-foreground" />
             </div>
             <span className="font-bold text-lg text-foreground">
-              AI Web App Builder
+              DataBuks Studio
             </span>
-          </a>
+          </Link>
 
           {/* Desktop Navigation */}
           <div className="hidden md:flex items-center gap-8">
             {navItems.map((item) => (
-              <a
+              <Link
                 key={item.label}
-                href={item.href}
+                to={item.href}
                 className="text-muted-foreground hover:text-foreground transition-colors duration-200 text-sm font-medium"
               >
                 {item.label}
-              </a>
+              </Link>
             ))}
           </div>
 
@@ -82,14 +82,14 @@ export const Navbar = () => {
           <div className="md:hidden py-4 border-t border-border animate-fade-in">
             <div className="flex flex-col gap-4">
               {navItems.map((item) => (
-                <a
+                <Link
                   key={item.label}
-                  href={item.href}
+                  to={item.href}
                   className="text-muted-foreground hover:text-foreground transition-colors duration-200 text-sm font-medium px-2 py-1"
                   onClick={() => setIsMobileMenuOpen(false)}
                 >
                   {item.label}
-                </a>
+                </Link>
               ))}
               <div className="flex flex-col gap-2 pt-4 border-t border-border">
                 <Button

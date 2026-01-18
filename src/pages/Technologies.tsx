@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { ArrowLeft, Code2, Server, Database, Globe, Layers } from "lucide-react";
+import { ArrowLeft, Code2, Layers, Globe } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 const technologies = [
@@ -114,7 +114,7 @@ const Technologies = () => {
 
           {/* Technologies Grid */}
           <div className="space-y-8">
-            {technologies.map((tech, index) => (
+            {technologies.map((tech) => (
               <div
                 key={tech.id}
                 className="p-8 rounded-3xl bg-card border border-border hover:border-primary/30 transition-all duration-300"

@@ -1,13 +1,22 @@
-import { useLocation, useNavigate } from "react-router-dom";
-import { ArrowLeft } from "lucide-react";
+import { useLocation, useNavigate, Link } from "react-router-dom";
+import { ArrowLeft, Database } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import ChatPanel from "@/components/ChatPanel";
 import PreviewPanel from "@/components/PreviewPanel";
 
+const languageNames: Record<string, string> = {
+  php: "PHP",
+  java: "Java Spring Boot",
+  python: "Python Django",
+  dotnet: "ASP.NET",
+  "node-react": "Node.js + React",
+};
+
 const GenerationPage = () => {
   const location = useLocation();
   const navigate = useNavigate();
-  const { language, idea } = location.state || { language: "Node.js + React", idea: "Sample application" };
+  const { language, idea } = location.state || { language: "node-react", idea: "Sample application" };
+  const languageDisplay = languageNames[language] || language;
 
   return (
     <div className="h-screen flex flex-col bg-background">
@@ -22,19 +31,19 @@ const GenerationPage = () => {
           <ArrowLeft className="w-5 h-5" />
         </Button>
         
-        <div className="flex items-center gap-3">
+        <Link to="/" className="flex items-center gap-3">
           <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-primary to-accent-purple flex items-center justify-center">
-            <span className="text-white font-bold text-sm">AI</span>
+            <Database className="w-4 h-4 text-primary-foreground" />
           </div>
           <div>
-            <h1 className="font-semibold text-foreground text-sm">AI Web App Builder</h1>
+            <h1 className="font-semibold text-foreground text-sm">DataBuks Studio</h1>
             <p className="text-xs text-muted-foreground truncate max-w-md">{idea}</p>
           </div>
-        </div>
+        </Link>
         
         <div className="ml-auto flex items-center gap-2">
           <span className="text-xs text-muted-foreground px-3 py-1 rounded-full bg-accent">
-            {language}
+            {languageDisplay}
           </span>
         </div>
       </header>
@@ -48,7 +57,7 @@ const GenerationPage = () => {
         
         {/* Right Panel - Preview */}
         <div className="flex-1">
-          <PreviewPanel language={language} idea={idea} />
+          <PreviewPanel language={languageDisplay} idea={idea} />
         </div>
       </div>
     </div>

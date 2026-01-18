@@ -1,43 +1,93 @@
-import { Sparkles, ArrowDown } from "lucide-react";
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import LanguageSelector from "./LanguageSelector";
+import IdeaInput from "./IdeaInput";
+import TemplateCards from "./TemplateCards";
+import { useToast } from "@/hooks/use-toast";
 
 export const HeroSection = () => {
+  const [selectedLanguage, setSelectedLanguage] = useState<string | null>(null);
+  const [idea, setIdea] = useState("");
+  const navigate = useNavigate();
+  const { toast } = useToast();
+
+  const handleLanguageSelect = (language: string) => {
+    setSelectedLanguage(language);
+    toast({
+      title: "Language Selected",
+      description: `You selected ${language}`,
+    });
+  };
+
+  const handleGenerate = () => {
+    if (!selectedLanguage) {
+      toast({
+        title: "Select a Language",
+        description: "Please select a programming language first",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    if (!idea.trim()) {
+      toast({
+        title: "Describe Your Application",
+        description: "Please describe the application you want to build",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // API integration point
+    // Navigate to generation page with state
+    navigate("/generate", { state: { language: selectedLanguage, idea } });
+  };
+
+  const handleTemplateSelect = (template: string) => {
+    setIdea(template);
+    toast({
+      title: "Template Selected",
+      description: "Template description added to your idea",
+    });
+  };
+
   return (
-    <section id="home" className="relative pt-32 pb-16 md:pt-40 md:pb-24 overflow-hidden">
+    <section className="relative pt-28 pb-16 md:pt-36 md:pb-24 overflow-hidden">
       {/* Background decoration */}
       <div className="absolute inset-0 -z-10">
         <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-primary/5 rounded-full blur-3xl animate-float" />
         <div className="absolute bottom-1/4 right-1/4 w-80 h-80 bg-accent/5 rounded-full blur-3xl animate-float" style={{ animationDelay: "2s" }} />
       </div>
 
-      <div className="container mx-auto px-4 sm:px-6 lg:px-8 text-center">
-        {/* Badge */}
-        <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 text-primary text-sm font-medium mb-8 animate-fade-in">
-          <Sparkles className="w-4 h-4" />
-          <span>AI-Powered Code Generation</span>
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+        {/* Quote */}
+        <div className="text-center mb-12 animate-fade-in">
+          <p className="text-xl md:text-2xl text-muted-foreground font-light italic max-w-xl mx-auto">
+            "Build powerful web applications from simple ideas."
+          </p>
         </div>
 
-        {/* Main Heading */}
-        <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold tracking-tight mb-6 animate-fade-in-up" style={{ animationDelay: "0.1s" }}>
-          Generate Full Web Applications
-          <br />
-          <span className="gradient-text">Using AI</span>
-        </h1>
+        {/* Language Selection */}
+        <div className="mb-10 animate-fade-in-up" style={{ animationDelay: "0.1s" }}>
+          <LanguageSelector 
+            selectedLanguage={selectedLanguage} 
+            onSelect={handleLanguageSelect} 
+          />
+        </div>
 
-        {/* Subheading */}
-        <p className="text-lg sm:text-xl text-muted-foreground max-w-2xl mx-auto mb-12 animate-fade-in-up" style={{ animationDelay: "0.2s" }}>
-          Describe your idea, choose your tech stack, and get ready-to-use code instantly. 
-          Transform your vision into reality with the power of artificial intelligence.
-        </p>
+        {/* Idea Input */}
+        <div className="mb-16 animate-fade-in-up" style={{ animationDelay: "0.2s" }}>
+          <IdeaInput
+            value={idea}
+            onChange={setIdea}
+            onGenerate={handleGenerate}
+            disabled={!selectedLanguage}
+          />
+        </div>
 
-        {/* Scroll indicator */}
-        <div className="animate-fade-in-up" style={{ animationDelay: "0.4s" }}>
-          <a
-            href="#generator"
-            className="inline-flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors group"
-          >
-            <span className="text-sm font-medium">Start Generating</span>
-            <ArrowDown className="w-4 h-4 animate-bounce" />
-          </a>
+        {/* Templates Section */}
+        <div className="animate-fade-in-up" style={{ animationDelay: "0.3s" }}>
+          <TemplateCards onSelectTemplate={handleTemplateSelect} />
         </div>
       </div>
     </section>

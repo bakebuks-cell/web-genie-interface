@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { ArrowLeft, Sparkles, Target, Lightbulb, Rocket } from "lucide-react";
+import { ArrowLeft, Database, Target, Lightbulb, Rocket } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 const About = () => {
@@ -22,7 +22,7 @@ const About = () => {
           {/* Hero */}
           <div className="text-center mb-16">
             <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 text-primary mb-6">
-              <Sparkles className="w-4 h-4" />
+              <Database className="w-4 h-4" />
               <span className="text-sm font-medium">AI-Powered Development</span>
             </div>
             <h1 className="text-4xl md:text-5xl font-bold text-foreground mb-6">
@@ -72,7 +72,7 @@ const About = () => {
             <h2 className="text-3xl font-bold text-foreground mb-6">Our Story</h2>
             <div className="space-y-4 text-muted-foreground">
               <p>
-                AI Web App Builder was born from a simple observation: building web applications shouldn't require years of learning or expensive development teams. With advances in artificial intelligence, we saw an opportunity to bridge the gap between ideas and implementation.
+                DataBuks Studio was born from a simple observation: building web applications shouldn't require years of learning or expensive development teams. With advances in artificial intelligence, we saw an opportunity to bridge the gap between ideas and implementation.
               </p>
               <p>
                 Our platform leverages cutting-edge AI models to understand your requirements in plain language and generate complete, functional web applications. Whether you need a simple landing page or a complex e-commerce platform, our AI can help you build it.

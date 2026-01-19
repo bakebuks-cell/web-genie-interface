@@ -52,20 +52,20 @@ export const HeroSection = () => {
   };
 
   return (
-    <section className="relative pt-28 pb-20 md:pt-40 md:pb-32 overflow-hidden min-h-[80vh] flex items-center">
+    <section className="relative pt-20 pb-8 md:pt-24 md:pb-12 overflow-hidden min-h-screen flex flex-col justify-center">
       {/* Premium background effects */}
       <HeroBackground />
 
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-        {/* Centered Quote - Two separate lines with supporting text */}
+        {/* Centered Quote - Moved upward with reduced spacing */}
         <motion.div 
-          className="text-center mb-16"
+          className="text-center mb-8 md:mb-10"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, ease: "easeOut" }}
         >
           <motion.h1 
-            className="text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight text-foreground leading-tight"
+            className="text-3xl md:text-4xl lg:text-5xl font-bold tracking-tight text-foreground leading-tight"
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.2, duration: 0.8 }}
@@ -73,7 +73,7 @@ export const HeroSection = () => {
             Build fast.
           </motion.h1>
           <motion.h1 
-            className="text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight text-foreground/60 leading-tight mt-2"
+            className="text-3xl md:text-4xl lg:text-5xl font-bold tracking-tight text-foreground/60 leading-tight mt-1"
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.4, duration: 0.8 }}
@@ -81,9 +81,9 @@ export const HeroSection = () => {
             Ship lean.
           </motion.h1>
           
-          {/* Supporting Quote */}
+          {/* Supporting Quote - Reduced margin */}
           <motion.p 
-            className="mt-6 text-muted-foreground text-base md:text-lg font-light tracking-wide max-w-xl mx-auto"
+            className="mt-4 text-muted-foreground text-sm md:text-base font-light tracking-wide max-w-lg mx-auto"
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.6, duration: 0.8 }}
@@ -92,9 +92,9 @@ export const HeroSection = () => {
           </motion.p>
         </motion.div>
 
-        {/* Unified Input Container */}
+        {/* Unified Input Container - Moved upward */}
         <motion.div 
-          initial={{ opacity: 0, y: 30 }}
+          initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.3, duration: 0.6, ease: "easeOut" }}
         >

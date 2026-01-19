@@ -138,14 +138,14 @@ const UnifiedInput = ({
           className="hidden"
         />
 
-        {/* Textarea - Text starts top-left */}
+        {/* Textarea - Text starts top-left, reduced height */}
         <textarea
           value={idea}
           onChange={(e) => onIdeaChange(e.target.value)}
           onFocus={() => setIsFocused(true)}
           onBlur={() => setIsFocused(false)}
           placeholder="Describe your application idea..."
-          rows={4}
+          rows={3}
           className="
             w-full px-1 py-1
             bg-transparent text-foreground 

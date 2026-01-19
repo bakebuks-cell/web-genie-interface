@@ -4,6 +4,7 @@ import LanguageSelector from "./LanguageSelector";
 import IdeaInput from "./IdeaInput";
 import TemplateCards from "./TemplateCards";
 import { useToast } from "@/hooks/use-toast";
+import { VideoText } from "./magicui/video-text";
 
 export const HeroSection = () => {
   const [selectedLanguage, setSelectedLanguage] = useState<string | null>(null);
@@ -68,10 +69,21 @@ export const HeroSection = () => {
       </div>
 
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-        {/* Quote */}
-        <div className="text-center mb-16 animate-fade-in">
-          <p className="text-xl md:text-2xl text-muted-foreground font-light italic max-w-xl mx-auto">
-            "From ideas to production-ready applications."
+        {/* Video Text Header */}
+        <div className="text-center mb-12 animate-fade-in">
+          <div className="h-32 md:h-48 lg:h-56 w-full max-w-4xl mx-auto">
+            <VideoText
+              src="https://cdn.pixabay.com/video/2020/08/12/46964-449623750_large.mp4"
+              className="h-full w-full"
+              fontSize={12}
+              fontWeight="900"
+              fontFamily="system-ui, -apple-system, sans-serif"
+            >
+              DATABUKS
+            </VideoText>
+          </div>
+          <p className="mt-6 text-lg md:text-xl text-muted-foreground font-light max-w-xl mx-auto">
+            From ideas to production-ready applications.
           </p>
         </div>
 

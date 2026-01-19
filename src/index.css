@@ -220,4 +220,11 @@
   .animate-spin-slow {
     animation: spin-slow 3s linear infinite;
   }
+
+  .lab-bg::before {
+    overflow: hidden;
+    max-width: 100vw;
+    max-height: 100vh;
+    box-sizing: border-box;
+  }
 }

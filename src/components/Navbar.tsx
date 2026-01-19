@@ -22,45 +22,59 @@ export const Navbar = () => {
   };
 
   return (
-    <nav className="fixed top-0 left-0 right-0 z-50 bg-background/60 backdrop-blur-2xl border-b border-primary/10 shadow-[0_4px_30px_rgba(59,130,246,0.08)]">
-      <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-16">
-          {/* Brand Name Only - No Logo */}
-          <Link to="/" className="group relative">
-            <span className="font-bold text-xl bg-gradient-to-r from-foreground via-foreground to-primary/80 bg-clip-text text-transparent transition-all duration-300 group-hover:from-primary group-hover:to-foreground">
+    <nav className="fixed top-4 left-0 right-0 z-50 px-4 sm:px-6 lg:px-8">
+      <div className="flex justify-end">
+        {/* Pill-style header container - positioned right */}
+        <div className="
+          flex items-center gap-1 sm:gap-2
+          px-3 sm:px-5 py-2.5
+          bg-background/40 backdrop-blur-2xl 
+          border border-white/10 rounded-full
+          shadow-[0_8px_32px_rgba(0,0,0,0.4),inset_0_1px_0_rgba(255,255,255,0.05)]
+        ">
+          {/* Brand Name */}
+          <Link to="/" className="group relative mr-2 sm:mr-4">
+            <span className="font-semibold text-sm sm:text-base text-foreground/90 transition-all duration-300 group-hover:text-primary">
               DataBuks Studio
             </span>
-            <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-gradient-to-r from-primary to-primary/50 transition-all duration-300 group-hover:w-full" />
           </Link>
 
           {/* Desktop Navigation */}
-          <div className="hidden md:flex items-center gap-8">
+          <div className="hidden md:flex items-center gap-1">
             {navItems.map((item) => (
               <Link
                 key={item.label}
                 to={item.href}
-                className="relative text-muted-foreground hover:text-foreground transition-all duration-300 text-sm font-medium group"
+                className="
+                  px-3 py-1.5 rounded-full
+                  text-muted-foreground hover:text-foreground 
+                  hover:bg-white/5
+                  transition-all duration-200 
+                  text-sm font-medium
+                "
               >
                 {item.label}
-                <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-primary/60 transition-all duration-300 group-hover:w-full" />
               </Link>
             ))}
           </div>
 
+          {/* Divider */}
+          <div className="hidden md:block w-px h-5 bg-white/10 mx-2" />
+
           {/* Auth Buttons - Desktop */}
-          <div className="hidden md:flex items-center gap-3">
+          <div className="hidden md:flex items-center gap-2">
             <Button
               variant="ghost"
               size="sm"
               onClick={handleLogin}
-              className="text-muted-foreground hover:text-foreground"
+              className="text-muted-foreground hover:text-foreground hover:bg-white/5 rounded-full px-4 h-8 text-sm"
             >
               Login
             </Button>
             <Button
               size="sm"
               onClick={handleSignUp}
-              className="bg-primary hover:bg-primary/90 text-primary-foreground shadow-soft hover:shadow-medium transition-all duration-200"
+              className="bg-primary hover:bg-primary/90 text-primary-foreground rounded-full px-4 h-8 text-sm shadow-lg shadow-primary/20"
             >
               Sign Up
             </Button>
@@ -68,48 +82,56 @@ export const Navbar = () => {
 
           {/* Mobile Menu Button */}
           <button
-            className="md:hidden p-2 text-muted-foreground hover:text-foreground transition-colors"
+            className="md:hidden p-1.5 text-muted-foreground hover:text-foreground transition-colors rounded-full hover:bg-white/5"
             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
           >
-            {isMobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+            {isMobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
           </button>
         </div>
+      </div>
 
-        {/* Mobile Menu */}
-        {isMobileMenuOpen && (
-          <div className="md:hidden py-4 border-t border-border animate-fade-in">
-            <div className="flex flex-col gap-4">
+      {/* Mobile Menu */}
+      {isMobileMenuOpen && (
+        <div className="md:hidden mt-2 flex justify-end">
+          <div className="
+            bg-background/60 backdrop-blur-2xl 
+            border border-white/10 rounded-2xl
+            p-4 w-64
+            shadow-[0_8px_32px_rgba(0,0,0,0.4)]
+            animate-fade-in
+          ">
+            <div className="flex flex-col gap-2">
               {navItems.map((item) => (
                 <Link
                   key={item.label}
                   to={item.href}
-                  className="text-muted-foreground hover:text-foreground transition-colors duration-200 text-sm font-medium px-2 py-1"
+                  className="text-muted-foreground hover:text-foreground transition-colors duration-200 text-sm font-medium px-3 py-2 rounded-lg hover:bg-white/5"
                   onClick={() => setIsMobileMenuOpen(false)}
                 >
                   {item.label}
                 </Link>
               ))}
-              <div className="flex flex-col gap-2 pt-4 border-t border-border">
+              <div className="flex flex-col gap-2 pt-3 border-t border-white/10 mt-2">
                 <Button
                   variant="ghost"
                   size="sm"
                   onClick={handleLogin}
-                  className="justify-start text-muted-foreground"
+                  className="justify-start text-muted-foreground hover:bg-white/5 rounded-lg"
                 >
                   Login
                 </Button>
                 <Button
                   size="sm"
                   onClick={handleSignUp}
-                  className="bg-primary text-primary-foreground"
+                  className="bg-primary text-primary-foreground rounded-lg"
                 >
                   Sign Up
                 </Button>
               </div>
             </div>
           </div>
-        )}
-      </div>
+        </div>
+      )}
     </nav>
   );
 };

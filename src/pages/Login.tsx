@@ -6,7 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 import { useToast } from "@/hooks/use-toast";
-import { Eye, EyeOff, Database } from "lucide-react";
+import { Eye, EyeOff } from "lucide-react";
 
 const Login = () => {
   const [email, setEmail] = useState("");
@@ -48,11 +48,8 @@ const Login = () => {
       <Navbar />
       <main className="flex-1 flex items-center justify-center pt-16 pb-8 px-4">
         <div className="w-full max-w-md animate-fade-in-up">
-          {/* Logo */}
-          <div className="flex items-center justify-center gap-3 mb-8">
-            <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-primary to-accent-purple flex items-center justify-center shadow-glow">
-              <Database className="w-7 h-7 text-primary-foreground" />
-            </div>
+          {/* Brand Name */}
+          <div className="flex items-center justify-center mb-8">
             <span className="font-bold text-2xl text-foreground">DataBuks Studio</span>
           </div>
 

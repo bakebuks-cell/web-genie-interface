@@ -1,5 +1,5 @@
 import { useState, useRef } from "react";
-import { Plus, Mic, Zap, ChevronDown, Check, MicOff } from "lucide-react";
+import { Paperclip, Mic, Zap, ChevronDown, Check, MicOff } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -51,10 +51,8 @@ const UnifiedInput = ({
         title: "Files Attached",
         description: `Selected: ${fileNames}`,
       });
-      // API integration will be added here to upload files
       console.log("Files selected:", files);
     }
-    // Reset input so the same file can be selected again
     e.target.value = "";
   };
 
@@ -118,52 +116,80 @@ const UnifiedInput = ({
 
   return (
     <div className="w-full max-w-3xl mx-auto">
-      {/* Main unified container */}
+      {/* Main unified container - Larger size with refined layout */}
       <div
         className={`
-          relative flex flex-col sm:flex-row items-stretch gap-3 p-3 
-          bg-card/80 backdrop-blur-xl 
+          relative flex flex-col p-5
+          bg-card/60 backdrop-blur-2xl 
           border-2 rounded-2xl
           transition-all duration-300 ease-out
-          shadow-medium min-h-[120px]
+          shadow-large min-h-[200px]
           ${isFocused 
-            ? "border-primary shadow-glow" 
-            : "border-border hover:border-primary/50"
+            ? "border-primary/60 shadow-glow" 
+            : "border-border/60 hover:border-primary/40"
           }
         `}
       >
-        {/* Top row with language dropdown */}
-        <div className="flex items-center gap-3 shrink-0">
-          {/* Language Dropdown - Left */}
+        {/* Hidden file input */}
+        <input
+          ref={fileInputRef}
+          type="file"
+          multiple
+          accept="image/*,.pdf,.doc,.docx,.txt"
+          onChange={handleFileChange}
+          className="hidden"
+        />
+
+        {/* Textarea - Takes up main space, text starts top-left */}
+        <textarea
+          value={idea}
+          onChange={(e) => onIdeaChange(e.target.value)}
+          onFocus={() => setIsFocused(true)}
+          onBlur={() => setIsFocused(false)}
+          placeholder="Describe your application idea..."
+          rows={5}
+          className="
+            flex-1 w-full px-1 py-1
+            bg-transparent text-foreground 
+            placeholder:text-muted-foreground/60
+            focus:outline-none
+            text-base leading-relaxed resize-none
+            scrollbar-hide
+          "
+        />
+
+        {/* Bottom bar - Language left, Icons right */}
+        <div className="flex items-center justify-between mt-4 pt-4 border-t border-border/30">
+          {/* Language Dropdown - Bottom Left (subtle & compact) */}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <button
                 className={`
-                  flex items-center gap-2 px-3 py-2.5
-                  rounded-xl border transition-all duration-200
-                  min-w-[150px] justify-between
+                  flex items-center gap-2 px-3 py-2
+                  rounded-lg border transition-all duration-200
+                  text-sm
                   ${selectedLanguage 
                     ? "bg-primary/10 border-primary/30 text-foreground" 
-                    : "bg-secondary/50 border-border text-muted-foreground hover:border-primary/50"
+                    : "bg-secondary/30 border-border/50 text-muted-foreground hover:border-primary/40 hover:bg-secondary/50"
                   }
                 `}
               >
-                <span className="flex items-center gap-2 text-sm font-medium truncate">
+                <span className="flex items-center gap-2 font-medium">
                   {selectedLang ? (
                     <>
-                      <span>{selectedLang.icon}</span>
+                      <span className="text-base">{selectedLang.icon}</span>
                       <span>{selectedLang.name}</span>
                     </>
                   ) : (
                     "Select Language"
                   )}
                 </span>
-                <ChevronDown className="w-4 h-4 shrink-0 opacity-60" />
+                <ChevronDown className="w-4 h-4 opacity-50" />
               </button>
             </DropdownMenuTrigger>
             <DropdownMenuContent 
               align="start" 
-              className="w-56 bg-popover/95 backdrop-blur-xl border-border"
+              className="w-56 bg-popover/95 backdrop-blur-xl border-border z-50"
             >
               {languages.map((lang) => (
                 <DropdownMenuItem
@@ -188,96 +214,68 @@ const UnifiedInput = ({
             </DropdownMenuContent>
           </DropdownMenu>
 
-          {/* Divider - visible only on larger screens */}
-          <div className="w-px h-6 bg-border/50 hidden sm:block" />
-        </div>
+          {/* Action Icons - Right side, grouped & center-aligned */}
+          <div className="flex items-center gap-2">
+            {/* Attach Button */}
+            <button
+              onClick={handleAttach}
+              className="
+                p-2.5 rounded-xl 
+                text-muted-foreground hover:text-foreground 
+                hover:bg-secondary/60 active:scale-95
+                transition-all duration-200
+              "
+              title="Attach file"
+            >
+              <Paperclip className="w-5 h-5" />
+            </button>
 
-        {/* Hidden file input */}
-        <input
-          ref={fileInputRef}
-          type="file"
-          multiple
-          accept="image/*,.pdf,.doc,.docx,.txt"
-          onChange={handleFileChange}
-          className="hidden"
-        />
+            {/* Voice Button */}
+            <button
+              onClick={handleVoice}
+              className={`
+                p-2.5 rounded-xl 
+                transition-all duration-200 active:scale-95
+                ${isRecording 
+                  ? "bg-destructive/20 text-destructive animate-pulse" 
+                  : "text-muted-foreground hover:text-foreground hover:bg-secondary/60"
+                }
+              `}
+              title={isRecording ? "Stop recording" : "Voice input"}
+            >
+              {isRecording ? <MicOff className="w-5 h-5" /> : <Mic className="w-5 h-5" />}
+            </button>
 
-        {/* Idea Input - Center */}
-        <textarea
-          value={idea}
-          onChange={(e) => onIdeaChange(e.target.value)}
-          onFocus={() => setIsFocused(true)}
-          onBlur={() => setIsFocused(false)}
-          placeholder="Describe your application idea..."
-          rows={3}
-          className="
-            flex-1 min-w-0 px-3 py-4 
-            bg-transparent text-foreground 
-            placeholder:text-muted-foreground 
-            focus:outline-none
-            text-base resize-none
-            scrollbar-hide
-          "
-        />
-
-        {/* Action Icons - Right */}
-        <div className="flex items-center gap-1 pr-1 self-end pb-2">
-          {/* Attach Button */}
-          <button
-            onClick={handleAttach}
-            className="
-              p-2.5 rounded-xl 
-              text-muted-foreground hover:text-foreground 
-              hover:bg-secondary/80
-              transition-all duration-200
-            "
-            title="Attach file"
-          >
-            <Plus className="w-5 h-5" />
-          </button>
-
-          {/* Voice Button */}
-          <button
-            onClick={handleVoice}
-            className={`
-              p-2.5 rounded-xl 
-              transition-all duration-200
-              ${isRecording 
-                ? "bg-red-500/20 text-red-500 animate-pulse" 
-                : "text-muted-foreground hover:text-foreground hover:bg-secondary/80"
-              }
-            `}
-            title={isRecording ? "Stop recording" : "Voice input"}
-          >
-            {isRecording ? <MicOff className="w-5 h-5" /> : <Mic className="w-5 h-5" />}
-          </button>
-
-          {/* Generate Button - Primary */}
-          <button
-            onClick={onGenerate}
-            disabled={!isGenerateEnabled}
-            className={`
-              p-3 rounded-xl transition-all duration-300
-              ${isGenerateEnabled
-                ? "bg-primary text-primary-foreground hover:opacity-90 shadow-lg shadow-primary/30 animate-pulse-glow"
-                : "bg-muted text-muted-foreground cursor-not-allowed opacity-50"
-              }
-            `}
-            title={isGenerateEnabled ? "Generate Application" : "Select language and describe your idea first"}
-          >
-            <Zap className="w-5 h-5" />
-          </button>
+            {/* Generate Button - Primary action */}
+            <button
+              onClick={onGenerate}
+              disabled={!isGenerateEnabled}
+              className={`
+                flex items-center gap-2 px-4 py-2.5 rounded-xl 
+                font-medium text-sm
+                transition-all duration-300 active:scale-95
+                ${isGenerateEnabled
+                  ? "bg-primary text-primary-foreground hover:opacity-90 shadow-lg shadow-primary/25"
+                  : "bg-muted text-muted-foreground cursor-not-allowed opacity-50"
+                }
+              `}
+              title={isGenerateEnabled ? "Generate Application" : "Select language and describe your idea first"}
+            >
+              <Zap className="w-4 h-4" />
+              <span>Generate</span>
+            </button>
+          </div>
         </div>
       </div>
 
       {/* Helper text */}
       {!selectedLanguage && (
-        <p className="text-center text-muted-foreground text-sm mt-4 animate-fade-in">
+        <p className="text-center text-muted-foreground/80 text-sm mt-4 animate-fade-in">
           Select a language to get started
         </p>
       )}
       {selectedLanguage && !idea.trim() && (
-        <p className="text-center text-muted-foreground text-sm mt-4 animate-fade-in">
+        <p className="text-center text-muted-foreground/80 text-sm mt-4 animate-fade-in">
           Describe your application idea
         </p>
       )}

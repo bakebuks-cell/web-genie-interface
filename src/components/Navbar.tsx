@@ -27,16 +27,11 @@ export const Navbar = () => {
   return (
     <nav className="fixed top-4 left-0 right-0 z-50 px-4 sm:px-6 lg:px-8">
       <div className="flex items-center justify-between">
-        {/* Brand Name - Left side with subtle glow effect */}
+        {/* Brand Name - Left side with subtle effect */}
         <Link to="/" className="group relative">
-          <motion.span
-            className="font-bold text-lg sm:text-xl text-foreground transition-all duration-300 group-hover:text-primary group-hover:drop-shadow-[0_0_8px_hsl(var(--primary)/0.6)]"
-            initial={{ opacity: 0, x: -20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.5, ease: "easeOut" }}
-          >
+          <span className="font-bold text-lg sm:text-xl text-foreground transition-all duration-300 group-hover:text-primary">
             {brandText}
-          </motion.span>
+          </span>
           
           {/* Subtle underline on hover */}
           <span className="absolute -bottom-0.5 left-0 w-0 h-px bg-primary transition-all duration-300 group-hover:w-full" />

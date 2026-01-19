@@ -57,12 +57,25 @@ export const HeroSection = () => {
       <HeroBackground />
 
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-        {/* Centered Quote with enhanced animations */}
+        {/* Centered Quote with animations */}
         <div className="text-center mb-8 md:mb-10">
-          {/* Main headline - simple white text */}
-          <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold tracking-tight leading-tight text-foreground mb-2">
-            Build fast. <span className="text-muted-foreground">Ship lean.</span>
-          </h1>
+          {/* Main headline - stacked with animation */}
+          <motion.h1 
+            className="text-3xl md:text-4xl lg:text-5xl font-bold tracking-tight leading-tight text-foreground"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, ease: "easeOut" }}
+          >
+            Build fast.
+          </motion.h1>
+          <motion.h1 
+            className="text-3xl md:text-4xl lg:text-5xl font-bold tracking-tight leading-tight text-muted-foreground"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.15, ease: "easeOut" }}
+          >
+            Ship lean.
+          </motion.h1>
 
           {/* Animated decorative line */}
           <motion.div 

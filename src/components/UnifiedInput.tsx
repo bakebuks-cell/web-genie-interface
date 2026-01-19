@@ -115,18 +115,17 @@ const UnifiedInput = ({
   };
 
   return (
-    <div className="w-full max-w-3xl mx-auto">
-      {/* Main unified container - Larger size with refined layout */}
+    <div className="w-full max-w-2xl mx-auto">
+      {/* Main unified container - Medium size */}
       <div
         className={`
-          relative flex flex-col p-5
-          bg-card/60 backdrop-blur-2xl 
-          border-2 rounded-2xl
+          relative flex flex-col p-4
+          bg-card/80 backdrop-blur-xl 
+          border rounded-xl
           transition-all duration-300 ease-out
-          shadow-large min-h-[200px]
           ${isFocused 
-            ? "border-primary/60 shadow-glow" 
-            : "border-border/60 hover:border-primary/40"
+            ? "border-primary/50 shadow-glow" 
+            : "border-border hover:border-border/80"
           }
         `}
       >
@@ -140,20 +139,20 @@ const UnifiedInput = ({
           className="hidden"
         />
 
-        {/* Textarea - Takes up main space, text starts top-left */}
+        {/* Textarea - Text starts top-left */}
         <textarea
           value={idea}
           onChange={(e) => onIdeaChange(e.target.value)}
           onFocus={() => setIsFocused(true)}
           onBlur={() => setIsFocused(false)}
           placeholder="Describe your application idea..."
-          rows={5}
+          rows={4}
           className="
-            flex-1 w-full px-1 py-1
+            w-full px-1 py-1
             bg-transparent text-foreground 
-            placeholder:text-muted-foreground/60
+            placeholder:text-muted-foreground/50
             focus:outline-none
-            text-base leading-relaxed resize-none
+            text-sm leading-relaxed resize-none
             scrollbar-hide
           "
         />
@@ -268,17 +267,6 @@ const UnifiedInput = ({
         </div>
       </div>
 
-      {/* Helper text */}
-      {!selectedLanguage && (
-        <p className="text-center text-muted-foreground/80 text-sm mt-4 animate-fade-in">
-          Select a language to get started
-        </p>
-      )}
-      {selectedLanguage && !idea.trim() && (
-        <p className="text-center text-muted-foreground/80 text-sm mt-4 animate-fade-in">
-          Describe your application idea
-        </p>
-      )}
     </div>
   );
 };

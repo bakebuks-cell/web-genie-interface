@@ -1,11 +1,12 @@
-import { useState } from "react";
-import { Plus, Mic, Zap, ChevronDown, Check } from "lucide-react";
+import { useState, useRef } from "react";
+import { Plus, Mic, Zap, ChevronDown, Check, MicOff } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { useToast } from "@/hooks/use-toast";
 
 interface UnifiedInputProps {
   selectedLanguage: string | null;
@@ -31,18 +32,88 @@ const UnifiedInput = ({
   onGenerate,
 }: UnifiedInputProps) => {
   const [isFocused, setIsFocused] = useState(false);
+  const [isRecording, setIsRecording] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const { toast } = useToast();
   
   const selectedLang = languages.find((l) => l.id === selectedLanguage);
   const isGenerateEnabled = selectedLanguage && idea.trim().length > 0;
 
   const handleAttach = () => {
-    // API integration will be added here
-    console.log("Attach file clicked");
+    fileInputRef.current?.click();
   };
 
-  const handleVoice = () => {
-    // API integration will be added here
-    console.log("Voice input clicked");
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (files && files.length > 0) {
+      const fileNames = Array.from(files).map(f => f.name).join(", ");
+      toast({
+        title: "Files Attached",
+        description: `Selected: ${fileNames}`,
+      });
+      // API integration will be added here to upload files
+      console.log("Files selected:", files);
+    }
+    // Reset input so the same file can be selected again
+    e.target.value = "";
+  };
+
+  const handleVoice = async () => {
+    if (!("webkitSpeechRecognition" in window) && !("SpeechRecognition" in window)) {
+      toast({
+        title: "Voice Not Supported",
+        description: "Your browser doesn't support voice input. Try Chrome or Edge.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (isRecording) {
+      setIsRecording(false);
+      toast({
+        title: "Recording Stopped",
+        description: "Voice input cancelled",
+      });
+      return;
+    }
+
+    setIsRecording(true);
+    toast({
+      title: "Listening...",
+      description: "Speak now to describe your application",
+    });
+
+    const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+    const recognition = new SpeechRecognition();
+    recognition.lang = "en-US";
+    recognition.interimResults = false;
+    recognition.maxAlternatives = 1;
+
+    recognition.onresult = (event: any) => {
+      const transcript = event.results[0][0].transcript;
+      onIdeaChange(idea ? `${idea} ${transcript}` : transcript);
+      toast({
+        title: "Voice Captured",
+        description: "Your speech has been added to the input",
+      });
+      setIsRecording(false);
+    };
+
+    recognition.onerror = (event: any) => {
+      console.error("Speech recognition error:", event.error);
+      toast({
+        title: "Voice Error",
+        description: "Couldn't capture your voice. Please try again.",
+        variant: "destructive",
+      });
+      setIsRecording(false);
+    };
+
+    recognition.onend = () => {
+      setIsRecording(false);
+    };
+
+    recognition.start();
   };
 
   return (
@@ -50,11 +121,11 @@ const UnifiedInput = ({
       {/* Main unified container */}
       <div
         className={`
-          relative flex items-center gap-2 p-2 
+          relative flex items-start gap-2 p-3 
           bg-card/80 backdrop-blur-xl 
           border-2 rounded-2xl
           transition-all duration-300 ease-out
-          shadow-medium
+          shadow-medium min-h-[100px]
           ${isFocused 
             ? "border-primary shadow-glow" 
             : "border-border hover:border-primary/50"
@@ -119,25 +190,36 @@ const UnifiedInput = ({
         {/* Divider */}
         <div className="w-px h-8 bg-border/50 hidden sm:block" />
 
-        {/* Idea Input - Center */}
+        {/* Hidden file input */}
         <input
-          type="text"
+          ref={fileInputRef}
+          type="file"
+          multiple
+          accept="image/*,.pdf,.doc,.docx,.txt"
+          onChange={handleFileChange}
+          className="hidden"
+        />
+
+        {/* Idea Input - Center */}
+        <textarea
           value={idea}
           onChange={(e) => onIdeaChange(e.target.value)}
           onFocus={() => setIsFocused(true)}
           onBlur={() => setIsFocused(false)}
           placeholder="Describe your application idea..."
+          rows={3}
           className="
-            flex-1 min-w-0 px-3 py-3 
+            flex-1 min-w-0 px-3 py-4 
             bg-transparent text-foreground 
             placeholder:text-muted-foreground 
             focus:outline-none
-            text-base
+            text-base resize-none
+            scrollbar-hide
           "
         />
 
         {/* Action Icons - Right */}
-        <div className="flex items-center gap-1 pr-1">
+        <div className="flex items-center gap-1 pr-1 self-end pb-2">
           {/* Attach Button */}
           <button
             onClick={handleAttach}
@@ -155,15 +237,17 @@ const UnifiedInput = ({
           {/* Voice Button */}
           <button
             onClick={handleVoice}
-            className="
+            className={`
               p-2.5 rounded-xl 
-              text-muted-foreground hover:text-foreground 
-              hover:bg-secondary/80
               transition-all duration-200
-            "
-            title="Voice input"
+              ${isRecording 
+                ? "bg-red-500/20 text-red-500 animate-pulse" 
+                : "text-muted-foreground hover:text-foreground hover:bg-secondary/80"
+              }
+            `}
+            title={isRecording ? "Stop recording" : "Voice input"}
           >
-            <Mic className="w-5 h-5" />
+            {isRecording ? <MicOff className="w-5 h-5" /> : <Mic className="w-5 h-5" />}
           </button>
 
           {/* Generate Button - Primary */}

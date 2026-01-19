@@ -1,7 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import UnifiedInput from "./UnifiedInput";
-import TemplateCards from "./TemplateCards";
 import { useToast } from "@/hooks/use-toast";
 
 // Language mapping for display names
@@ -51,16 +50,6 @@ export const HeroSection = () => {
     navigate("/generate", { state: { language: selectedLanguage, idea } });
   };
 
-  const handleTemplateSelect = (template: { description: string; language?: string }) => {
-    setIdea(template.description);
-    if (template.language) {
-      setSelectedLanguage(template.language);
-    }
-    toast({
-      title: "Template Selected",
-      description: "Template applied to your idea",
-    });
-  };
 
   return (
     <section className="relative pt-28 pb-16 md:pt-36 md:pb-24 overflow-hidden">
@@ -79,7 +68,7 @@ export const HeroSection = () => {
         </div>
 
         {/* Unified Input Container */}
-        <div className="mb-20 animate-fade-in-up" style={{ animationDelay: "0.15s" }}>
+        <div className="animate-fade-in-up" style={{ animationDelay: "0.15s" }}>
           <UnifiedInput
             selectedLanguage={selectedLanguage}
             onLanguageSelect={handleLanguageSelect}
@@ -87,11 +76,6 @@ export const HeroSection = () => {
             onIdeaChange={setIdea}
             onGenerate={handleGenerate}
           />
-        </div>
-
-        {/* Templates Section */}
-        <div className="animate-fade-in-up" style={{ animationDelay: "0.25s" }}>
-          <TemplateCards onSelectTemplate={handleTemplateSelect} />
         </div>
       </div>
     </section>

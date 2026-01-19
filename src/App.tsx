@@ -7,6 +7,8 @@ import Index from "./pages/Index";
 import GenerationPage from "./pages/GenerationPage";
 import About from "./pages/About";
 import Technologies from "./pages/Technologies";
+import Login from "./pages/Login";
+import SignUp from "./pages/SignUp";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -22,6 +24,8 @@ const App = () => (
           <Route path="/generate" element={<GenerationPage />} />
           <Route path="/about" element={<About />} />
           <Route path="/technologies" element={<Technologies />} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/signup" element={<SignUp />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>

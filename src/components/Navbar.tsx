@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Menu, X, Database } from "lucide-react";
 
@@ -11,15 +11,14 @@ const navItems = [
 
 export const Navbar = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const navigate = useNavigate();
 
   const handleLogin = () => {
-    // API will be connected here later
-    console.log("Login clicked");
+    navigate("/login");
   };
 
   const handleSignUp = () => {
-    // API will be connected here later
-    console.log("Sign up clicked");
+    navigate("/signup");
   };
 
   return (

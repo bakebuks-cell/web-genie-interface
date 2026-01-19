@@ -27,46 +27,31 @@ export const Navbar = () => {
   return (
     <nav className="fixed top-4 left-0 right-0 z-50 px-4 sm:px-6 lg:px-8">
       <div className="flex items-center justify-between">
-        {/* Brand Name - Left side, plain text */}
-        <Link to="/" className="font-bold text-lg sm:text-xl text-foreground">
-          {brandText}
+        {/* Brand Name - Left side with subtle effect */}
+        <Link to="/" className="group relative">
+          <span className="font-bold text-lg sm:text-xl text-foreground transition-all duration-300 group-hover:text-primary">
+            {brandText}
+          </span>
+          
+          {/* Subtle underline on hover */}
+          <span className="absolute -bottom-0.5 left-0 w-0 h-px bg-primary transition-all duration-300 group-hover:w-full" />
         </Link>
 
-        {/* Pill-style navigation container with animated border */}
+        {/* Pill-style navigation container - Right side */}
         <motion.div 
           className="
-            relative flex items-center gap-1 sm:gap-2
+            flex items-center gap-1 sm:gap-2
             px-3 sm:px-5 py-2.5
             bg-background/40 backdrop-blur-2xl 
-            rounded-full
+            border border-white/10 rounded-full
             shadow-[0_8px_32px_rgba(0,0,0,0.4),inset_0_1px_0_rgba(255,255,255,0.05)]
-            overflow-hidden
           "
           initial={{ opacity: 0, x: 20 }}
           animate={{ opacity: 1, x: 0 }}
           transition={{ duration: 0.5, delay: 0.1, ease: "easeOut" }}
         >
-          {/* Animated gradient border */}
-          <motion.div
-            className="absolute inset-0 rounded-full"
-            style={{
-              background: "linear-gradient(90deg, transparent, hsl(var(--primary)), hsl(var(--primary)/0.5), transparent)",
-              padding: "1px",
-            }}
-            animate={{
-              backgroundPosition: ["0% 50%", "200% 50%"],
-            }}
-            transition={{
-              duration: 3,
-              repeat: Infinity,
-              ease: "linear",
-            }}
-          />
-          <motion.div
-            className="absolute inset-[1px] rounded-full bg-background/40 backdrop-blur-2xl"
-          />
           {/* Desktop Navigation */}
-          <div className="relative z-10 hidden md:flex items-center gap-1">
+          <div className="hidden md:flex items-center gap-1">
             {navItems.map((item) => (
               <Link
                 key={item.label}
@@ -85,10 +70,10 @@ export const Navbar = () => {
           </div>
 
           {/* Divider */}
-          <div className="relative z-10 hidden md:block w-px h-5 bg-white/10 mx-2" />
+          <div className="hidden md:block w-px h-5 bg-white/10 mx-2" />
 
           {/* Auth Buttons - Desktop */}
-          <div className="relative z-10 hidden md:flex items-center gap-2">
+          <div className="hidden md:flex items-center gap-2">
             <Button
               variant="ghost"
               size="sm"
@@ -108,7 +93,7 @@ export const Navbar = () => {
 
           {/* Mobile Menu Button */}
           <button
-            className="relative z-10 md:hidden p-1.5 text-muted-foreground hover:text-foreground transition-colors rounded-full hover:bg-white/5"
+            className="md:hidden p-1.5 text-muted-foreground hover:text-foreground transition-colors rounded-full hover:bg-white/5"
             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
           >
             {isMobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}

@@ -116,18 +116,17 @@ const UnifiedInput = ({
 
   return (
     <div className="w-full max-w-2xl mx-auto">
-      {/* Main unified container - Medium size */}
+      {/* Main unified container - Medium size with constant blue glow */}
       <div
-        className={`
+        className="
           relative flex flex-col p-4
           bg-card/80 backdrop-blur-xl 
-          border rounded-xl
+          border border-primary/40 rounded-xl
+          shadow-[0_0_25px_rgba(59,130,246,0.15),0_0_50px_rgba(59,130,246,0.08)]
           transition-all duration-300 ease-out
-          ${isFocused 
-            ? "border-primary/50 shadow-glow" 
-            : "border-border hover:border-border/80"
-          }
-        `}
+          hover:shadow-[0_0_30px_rgba(59,130,246,0.2),0_0_60px_rgba(59,130,246,0.12)]
+          hover:border-primary/50
+        "
       >
         {/* Hidden file input */}
         <input

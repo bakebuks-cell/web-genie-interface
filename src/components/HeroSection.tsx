@@ -1,6 +1,8 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { motion } from "framer-motion";
 import UnifiedInput from "./UnifiedInput";
+import { HeroBackground } from "./HeroBackground";
 import { useToast } from "@/hooks/use-toast";
 
 // Language mapping for display names
@@ -45,30 +47,45 @@ export const HeroSection = () => {
       return;
     }
 
-    // API integration point
     // Navigate to generation page with state
     navigate("/generate", { state: { language: selectedLanguage, idea } });
   };
 
-
   return (
-    <section className="relative pt-28 pb-16 md:pt-36 md:pb-24 overflow-hidden">
-      {/* Background decoration */}
-      <div className="absolute inset-0 -z-10">
-        <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-primary/5 rounded-full blur-3xl animate-float" />
-        <div className="absolute bottom-1/4 right-1/4 w-80 h-80 bg-accent/5 rounded-full blur-3xl animate-float" style={{ animationDelay: "2s" }} />
-      </div>
+    <section className="relative pt-28 pb-20 md:pt-40 md:pb-32 overflow-hidden min-h-[80vh] flex items-center">
+      {/* Premium background effects */}
+      <HeroBackground />
 
-      <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-        {/* Quote */}
-        <div className="text-center mb-12 animate-fade-in">
-          <p className="text-xl md:text-2xl text-muted-foreground font-light italic max-w-xl mx-auto">
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+        {/* Quote with animation */}
+        <motion.div 
+          className="text-center mb-14"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, ease: "easeOut" }}
+        >
+          <motion.p 
+            className="text-xl md:text-2xl lg:text-3xl text-muted-foreground font-light italic max-w-2xl mx-auto leading-relaxed"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.2, duration: 0.8 }}
+          >
             "Build powerful web applications from simple ideas."
-          </p>
-        </div>
+          </motion.p>
+          <motion.div 
+            className="h-px w-32 mx-auto mt-6 bg-gradient-to-r from-transparent via-primary/30 to-transparent"
+            initial={{ width: 0, opacity: 0 }}
+            animate={{ width: 128, opacity: 1 }}
+            transition={{ delay: 0.5, duration: 0.8 }}
+          />
+        </motion.div>
 
         {/* Unified Input Container */}
-        <div className="animate-fade-in-up" style={{ animationDelay: "0.15s" }}>
+        <motion.div 
+          initial={{ opacity: 0, y: 30 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.3, duration: 0.6, ease: "easeOut" }}
+        >
           <UnifiedInput
             selectedLanguage={selectedLanguage}
             onLanguageSelect={handleLanguageSelect}
@@ -76,7 +93,7 @@ export const HeroSection = () => {
             onIdeaChange={setIdea}
             onGenerate={handleGenerate}
           />
-        </div>
+        </motion.div>
       </div>
     </section>
   );

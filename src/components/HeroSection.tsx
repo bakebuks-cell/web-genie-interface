@@ -61,10 +61,7 @@ export const HeroSection = () => {
         <div className="text-center mb-8 md:mb-10">
           {/* Main headline - simple white text */}
           <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold tracking-tight leading-tight text-foreground mb-2">
-            Build fast.
-          </h1>
-          <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold tracking-tight leading-tight text-foreground">
-            Ship lean.
+            Build fast. <span className="text-muted-foreground">Ship lean.</span>
           </h1>
 
           {/* Animated decorative line */}

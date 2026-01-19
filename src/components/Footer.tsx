@@ -1,5 +1,4 @@
 import { Link } from "react-router-dom";
-import { Database } from "lucide-react";
 const footerLinks = {
   product: [{
     label: "Features",
@@ -44,11 +43,8 @@ export const Footer = () => {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mb-12">
           {/* Brand */}
           <div className="lg:col-span-1">
-            <Link to="/" className="flex items-center gap-2 mb-4">
-              <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-primary to-accent-purple flex items-center justify-center">
-                <Database className="w-5 h-5 text-primary-foreground" />
-              </div>
-              
+            <Link to="/" className="inline-block mb-4 font-bold text-lg text-foreground hover:text-primary transition-colors">
+              DataBuks Studio
             </Link>
             <p className="text-sm text-muted-foreground leading-relaxed">
               Transform your ideas into production-ready web applications using the power of artificial intelligence.

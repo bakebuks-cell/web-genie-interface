@@ -14,21 +14,6 @@ const languageNames: Record<string, string> = {
   "nodejs-react": "Node.js + React",
 };
 
-// Word animation variants
-const wordVariants = {
-  hidden: { opacity: 0, y: 20, rotateX: -90 },
-  visible: (i: number) => ({
-    opacity: 1,
-    y: 0,
-    rotateX: 0,
-    transition: {
-      delay: i * 0.15,
-      duration: 0.6,
-      ease: [0.6, -0.05, 0.01, 0.99] as [number, number, number, number],
-    },
-  }),
-};
-
 export const HeroSection = () => {
   const [selectedLanguage, setSelectedLanguage] = useState<string | null>(null);
   const [idea, setIdea] = useState("");
@@ -74,60 +59,13 @@ export const HeroSection = () => {
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
         {/* Centered Quote with enhanced animations */}
         <div className="text-center mb-8 md:mb-10">
-          {/* Main headline with staggered word reveal */}
-          <div className="overflow-hidden mb-2">
-            <motion.h1 
-              className="text-3xl md:text-4xl lg:text-5xl font-bold tracking-tight leading-tight inline-flex gap-3 justify-center"
-              initial="hidden"
-              animate="visible"
-            >
-              <motion.span 
-                custom={0} 
-                variants={wordVariants}
-                className="text-foreground inline-block"
-                whileHover={{ scale: 1.05, color: "hsl(var(--primary))" }}
-                transition={{ duration: 0.2 }}
-              >
-                Build
-              </motion.span>
-              <motion.span 
-                custom={1} 
-                variants={wordVariants}
-                className="bg-gradient-to-r from-primary to-accent-purple bg-clip-text text-transparent inline-block"
-                whileHover={{ scale: 1.1 }}
-                transition={{ duration: 0.2 }}
-              >
-                fast.
-              </motion.span>
-            </motion.h1>
-          </div>
-          
-          <div className="overflow-hidden">
-            <motion.h1 
-              className="text-3xl md:text-4xl lg:text-5xl font-bold tracking-tight leading-tight inline-flex gap-3 justify-center"
-              initial="hidden"
-              animate="visible"
-            >
-              <motion.span 
-                custom={2} 
-                variants={wordVariants}
-                className="text-foreground/60 inline-block"
-                whileHover={{ scale: 1.05, color: "hsl(var(--foreground))" }}
-                transition={{ duration: 0.2 }}
-              >
-                Ship
-              </motion.span>
-              <motion.span 
-                custom={3} 
-                variants={wordVariants}
-                className="bg-gradient-to-r from-accent-purple to-primary bg-clip-text text-transparent inline-block"
-                whileHover={{ scale: 1.1 }}
-                transition={{ duration: 0.2 }}
-              >
-                lean.
-              </motion.span>
-            </motion.h1>
-          </div>
+          {/* Main headline - simple white text */}
+          <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold tracking-tight leading-tight text-foreground mb-2">
+            Build fast.
+          </h1>
+          <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold tracking-tight leading-tight text-foreground">
+            Ship lean.
+          </h1>
 
           {/* Animated decorative line */}
           <motion.div 

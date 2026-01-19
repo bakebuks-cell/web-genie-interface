@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Menu, X } from "lucide-react";
+import { Menu, X, Sparkles } from "lucide-react";
 import { motion } from "framer-motion";
 
 const navItems = [
@@ -10,8 +10,15 @@ const navItems = [
   { label: "About", href: "/about" },
 ];
 
+// Letter animation variants
+const letterVariants = {
+  initial: { y: 0 },
+  hover: { y: -3 },
+};
+
 export const Navbar = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isHovering, setIsHovering] = useState(false);
   const navigate = useNavigate();
 
   const handleLogin = () => {
@@ -22,27 +29,89 @@ export const Navbar = () => {
     navigate("/signup");
   };
 
+  const brandText = "DataBuks Studio";
+
   return (
     <nav className="fixed top-4 left-0 right-0 z-50 px-4 sm:px-6 lg:px-8">
       <div className="flex items-center justify-between">
-        {/* Brand Name - Left side with animation */}
+        {/* Brand Name - Left side with enhanced animation */}
         <motion.div
           initial={{ opacity: 0, x: -20 }}
           animate={{ opacity: 1, x: 0 }}
           transition={{ duration: 0.5, ease: "easeOut" }}
         >
-          <Link to="/" className="group relative">
-            <motion.span 
-              className="font-bold text-lg sm:text-xl bg-gradient-to-r from-foreground via-primary to-foreground bg-[length:200%_100%] bg-clip-text text-transparent"
-              animate={{ backgroundPosition: ["0% 0%", "100% 0%", "0% 0%"] }}
-              transition={{ duration: 5, repeat: Infinity, ease: "linear" }}
+          <Link 
+            to="/" 
+            className="group relative flex items-center gap-2"
+            onMouseEnter={() => setIsHovering(true)}
+            onMouseLeave={() => setIsHovering(false)}
+          >
+            {/* Animated sparkle icon */}
+            <motion.div
+              animate={{ 
+                rotate: isHovering ? [0, 15, -15, 0] : 0,
+                scale: isHovering ? [1, 1.2, 1] : 1,
+              }}
+              transition={{ duration: 0.5 }}
             >
-              DataBuks Studio
-            </motion.span>
+              <Sparkles className="w-5 h-5 text-primary" />
+            </motion.div>
+            
+            {/* Animated letters */}
+            <span className="font-bold text-lg sm:text-xl flex">
+              {brandText.split("").map((letter, index) => (
+                <motion.span
+                  key={index}
+                  className="inline-block"
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ 
+                    opacity: 1, 
+                    y: 0,
+                    color: isHovering 
+                      ? index < 8 ? "hsl(var(--primary))" : "hsl(var(--foreground))"
+                      : "hsl(var(--foreground))"
+                  }}
+                  transition={{ 
+                    delay: index * 0.03,
+                    duration: 0.3,
+                    y: { type: "spring", stiffness: 300, damping: 20 }
+                  }}
+                  whileHover={{
+                    y: -5,
+                    color: "hsl(var(--primary))",
+                    transition: { duration: 0.1 }
+                  }}
+                  style={{ 
+                    display: letter === " " ? "inline" : "inline-block",
+                    width: letter === " " ? "0.25em" : "auto"
+                  }}
+                >
+                  {letter === " " ? "\u00A0" : letter}
+                </motion.span>
+              ))}
+            </span>
+
+            {/* Glowing underline on hover */}
             <motion.div 
-              className="absolute -bottom-1 left-0 h-0.5 bg-gradient-to-r from-primary to-accent-purple"
-              initial={{ width: 0 }}
-              whileHover={{ width: "100%" }}
+              className="absolute -bottom-1 left-7 right-0 h-0.5 bg-gradient-to-r from-primary via-accent-purple to-primary rounded-full"
+              initial={{ scaleX: 0, opacity: 0 }}
+              animate={{ 
+                scaleX: isHovering ? 1 : 0,
+                opacity: isHovering ? 1 : 0
+              }}
+              transition={{ duration: 0.3 }}
+              style={{ transformOrigin: "left" }}
+            />
+            
+            {/* Glow effect behind text */}
+            <motion.div
+              className="absolute inset-0 -z-10 blur-xl"
+              animate={{
+                opacity: isHovering ? 0.3 : 0,
+                background: isHovering 
+                  ? "radial-gradient(circle, hsl(var(--primary)) 0%, transparent 70%)" 
+                  : "transparent"
+              }}
               transition={{ duration: 0.3 }}
             />
           </Link>

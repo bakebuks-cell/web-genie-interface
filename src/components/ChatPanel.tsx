@@ -12,8 +12,33 @@ import {
   Palette,
   Zap,
   RefreshCw,
+  Mic,
+  MicOff,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+
+// Extend Window interface for Speech Recognition
+interface SpeechRecognitionEvent extends Event {
+  resultIndex: number;
+  results: SpeechRecognitionResultList;
+}
+
+interface SpeechRecognition extends EventTarget {
+  continuous: boolean;
+  interimResults: boolean;
+  start: () => void;
+  stop: () => void;
+  onresult: ((event: SpeechRecognitionEvent) => void) | null;
+  onerror: ((event: Event) => void) | null;
+  onend: (() => void) | null;
+}
+
+declare global {
+  interface Window {
+    SpeechRecognition?: new () => SpeechRecognition;
+    webkitSpeechRecognition?: new () => SpeechRecognition;
+  }
+}
 import * as React from "react";
 
 interface UseAutoResizeTextareaProps {
@@ -91,12 +116,14 @@ const ChatPanel = () => {
   const [isPending, startTransition] = useTransition();
   const [activeSuggestion, setActiveSuggestion] = useState<number>(-1);
   const [showCommandPalette, setShowCommandPalette] = useState(false);
+  const [isRecording, setIsRecording] = useState(false);
   const { textareaRef, adjustHeight } = useAutoResizeTextarea({
     minHeight: 44,
     maxHeight: 120,
   });
   const commandPaletteRef = useRef<HTMLDivElement>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const recognitionRef = useRef<SpeechRecognition | null>(null);
 
   const commandSuggestions: CommandSuggestion[] = [
     {
@@ -164,6 +191,48 @@ const ChatPanel = () => {
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
+
+  // Initialize speech recognition
+  useEffect(() => {
+    const SpeechRecognitionAPI = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (SpeechRecognitionAPI) {
+      recognitionRef.current = new SpeechRecognitionAPI();
+      recognitionRef.current.continuous = true;
+      recognitionRef.current.interimResults = true;
+      
+      recognitionRef.current.onresult = (event) => {
+        let transcript = '';
+        for (let i = event.resultIndex; i < event.results.length; i++) {
+          transcript += event.results[i][0].transcript;
+        }
+        setValue(prev => prev + transcript);
+        adjustHeight();
+      };
+
+      recognitionRef.current.onerror = () => {
+        setIsRecording(false);
+      };
+
+      recognitionRef.current.onend = () => {
+        setIsRecording(false);
+      };
+    }
+  }, [adjustHeight]);
+
+  const toggleVoiceRecording = () => {
+    if (!recognitionRef.current) {
+      alert("Speech recognition is not supported in your browser.");
+      return;
+    }
+
+    if (isRecording) {
+      recognitionRef.current.stop();
+      setIsRecording(false);
+    } else {
+      recognitionRef.current.start();
+      setIsRecording(true);
+    }
+  };
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (showCommandPalette) {
@@ -440,6 +509,34 @@ const ChatPanel = () => {
               style={{ overflow: "hidden" }}
             />
 
+            {/* Voice Button */}
+            <motion.button
+              type="button"
+              onClick={toggleVoiceRecording}
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              className={cn(
+                "p-2.5 rounded-lg text-sm font-medium transition-all relative",
+                isRecording
+                  ? "bg-destructive text-destructive-foreground shadow-lg shadow-destructive/30"
+                  : "bg-secondary text-muted-foreground hover:text-foreground hover:bg-secondary/80"
+              )}
+            >
+              {isRecording ? (
+                <>
+                  <MicOff className="w-4 h-4" />
+                  <motion.div
+                    className="absolute inset-0 rounded-lg border-2 border-destructive"
+                    animate={{ scale: [1, 1.2, 1], opacity: [1, 0, 1] }}
+                    transition={{ duration: 1.5, repeat: Infinity }}
+                  />
+                </>
+              ) : (
+                <Mic className="w-4 h-4" />
+              )}
+            </motion.button>
+
+            {/* Send Button */}
             <motion.button
               type="button"
               onClick={handleSendMessage}

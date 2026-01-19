@@ -2,7 +2,6 @@ import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Menu, X } from "lucide-react";
-import databuksLogo from "@/assets/databuks_logo.jfif";
 
 const navItems = [
   { label: "Home", href: "/" },
@@ -23,19 +22,15 @@ export const Navbar = () => {
   };
 
   return (
-    <nav className="fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-lg border-b border-border">
+    <nav className="fixed top-0 left-0 right-0 z-50 bg-background/60 backdrop-blur-2xl border-b border-primary/10 shadow-[0_4px_30px_rgba(59,130,246,0.08)]">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
-          {/* Logo */}
-          <Link to="/" className="flex items-center gap-2.5 group">
-            <img 
-              src={databuksLogo} 
-              alt="DataBuks Logo" 
-              className="w-9 h-9 rounded-xl object-cover shadow-soft group-hover:shadow-glow transition-shadow duration-300"
-            />
-            <span className="font-bold text-lg text-foreground">
+          {/* Brand Name Only - No Logo */}
+          <Link to="/" className="group relative">
+            <span className="font-bold text-xl bg-gradient-to-r from-foreground via-foreground to-primary/80 bg-clip-text text-transparent transition-all duration-300 group-hover:from-primary group-hover:to-foreground">
               DataBuks Studio
             </span>
+            <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-gradient-to-r from-primary to-primary/50 transition-all duration-300 group-hover:w-full" />
           </Link>
 
           {/* Desktop Navigation */}
@@ -44,9 +39,10 @@ export const Navbar = () => {
               <Link
                 key={item.label}
                 to={item.href}
-                className="text-muted-foreground hover:text-foreground transition-colors duration-200 text-sm font-medium"
+                className="relative text-muted-foreground hover:text-foreground transition-all duration-300 text-sm font-medium group"
               >
                 {item.label}
+                <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-primary/60 transition-all duration-300 group-hover:w-full" />
               </Link>
             ))}
           </div>

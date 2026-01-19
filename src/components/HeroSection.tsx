@@ -57,7 +57,7 @@ export const HeroSection = () => {
       <HeroBackground />
 
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-        {/* Centered Quote - Two separate lines */}
+        {/* Centered Quote - Two separate lines with supporting text */}
         <motion.div 
           className="text-center mb-16"
           initial={{ opacity: 0, y: 20 }}
@@ -65,7 +65,7 @@ export const HeroSection = () => {
           transition={{ duration: 0.6, ease: "easeOut" }}
         >
           <motion.h1 
-            className="text-4xl md:text-5xl lg:text-6xl font-semibold tracking-tight text-foreground leading-tight"
+            className="text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight text-foreground leading-tight"
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.2, duration: 0.8 }}
@@ -73,13 +73,23 @@ export const HeroSection = () => {
             Build fast.
           </motion.h1>
           <motion.h1 
-            className="text-4xl md:text-5xl lg:text-6xl font-semibold tracking-tight text-foreground/60 leading-tight mt-2"
+            className="text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight text-foreground/60 leading-tight mt-2"
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.4, duration: 0.8 }}
           >
             Ship lean.
           </motion.h1>
+          
+          {/* Supporting Quote */}
+          <motion.p 
+            className="mt-6 text-muted-foreground text-base md:text-lg font-light tracking-wide max-w-xl mx-auto"
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.6, duration: 0.8 }}
+          >
+            "Bringing clarity, speed, and precision to prompt-driven development"
+          </motion.p>
         </motion.div>
 
         {/* Unified Input Container */}

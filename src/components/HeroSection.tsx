@@ -4,7 +4,6 @@ import LanguageSelector from "./LanguageSelector";
 import IdeaInput from "./IdeaInput";
 import TemplateCards from "./TemplateCards";
 import { useToast } from "@/hooks/use-toast";
-import { VideoText } from "./magicui/video-text";
 
 export const HeroSection = () => {
   const [selectedLanguage, setSelectedLanguage] = useState<string | null>(null);
@@ -15,7 +14,7 @@ export const HeroSection = () => {
   const handleLanguageSelect = (language: string) => {
     setSelectedLanguage(language);
     toast({
-      title: "Technology Selected",
+      title: "Language Selected",
       description: `You selected ${language}`,
     });
   };
@@ -23,8 +22,8 @@ export const HeroSection = () => {
   const handleGenerate = () => {
     if (!selectedLanguage) {
       toast({
-        title: "Select a Technology",
-        description: "Please select a technology first",
+        title: "Select a Language",
+        description: "Please select a programming language first",
         variant: "destructive",
       });
       return;
@@ -44,59 +43,40 @@ export const HeroSection = () => {
     navigate("/generate", { state: { language: selectedLanguage, idea } });
   };
 
-  const handleTemplateSelect = (template: string, language?: string) => {
+  const handleTemplateSelect = (template: string) => {
     setIdea(template);
-    if (language) {
-      setSelectedLanguage(language);
-    }
     toast({
       title: "Template Selected",
-      description: "Template applied to your idea",
+      description: "Template description added to your idea",
     });
   };
 
   return (
     <section className="relative pt-28 pb-16 md:pt-36 md:pb-24 overflow-hidden">
-      {/* Animated background elements */}
-      <div className="absolute inset-0 -z-10 overflow-hidden">
-        {/* Gradient orbs */}
-        <div className="absolute top-1/4 left-1/4 w-[600px] h-[600px] bg-primary/10 rounded-full blur-[120px] animate-float" />
-        <div className="absolute bottom-1/4 right-1/4 w-[500px] h-[500px] bg-accent/10 rounded-full blur-[100px] animate-float" style={{ animationDelay: "2s" }} />
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-primary/5 rounded-full blur-[150px]" />
-        
-        {/* Grid pattern overlay */}
-        <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.02)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.02)_1px,transparent_1px)] bg-[size:50px_50px]" />
+      {/* Background decoration */}
+      <div className="absolute inset-0 -z-10">
+        <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-primary/5 rounded-full blur-3xl animate-float" />
+        <div className="absolute bottom-1/4 right-1/4 w-80 h-80 bg-accent/5 rounded-full blur-3xl animate-float" style={{ animationDelay: "2s" }} />
       </div>
 
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-        {/* Video Text Header */}
+        {/* Quote */}
         <div className="text-center mb-12 animate-fade-in">
-          <div className="h-32 md:h-48 lg:h-56 w-full max-w-4xl mx-auto">
-            <VideoText
-              src="https://cdn.pixabay.com/video/2020/08/12/46964-449623750_large.mp4"
-              className="h-full w-full"
-              fontSize={12}
-              fontWeight="900"
-              fontFamily="system-ui, -apple-system, sans-serif"
-            >
-              DATABUKS
-            </VideoText>
-          </div>
-          <p className="mt-6 text-lg md:text-xl text-muted-foreground font-light max-w-xl mx-auto">
-            From ideas to production-ready applications.
+          <p className="text-xl md:text-2xl text-muted-foreground font-light italic max-w-xl mx-auto">
+            "Build powerful web applications from simple ideas."
           </p>
         </div>
 
-        {/* Step 1: Language Selection */}
-        <div className="mb-12 animate-fade-in-up" style={{ animationDelay: "0.1s" }}>
+        {/* Language Selection */}
+        <div className="mb-10 animate-fade-in-up" style={{ animationDelay: "0.1s" }}>
           <LanguageSelector 
             selectedLanguage={selectedLanguage} 
             onSelect={handleLanguageSelect} 
           />
         </div>
 
-        {/* Step 2: Idea Input */}
-        <div className="mb-20 animate-fade-in-up" style={{ animationDelay: "0.2s" }}>
+        {/* Idea Input */}
+        <div className="mb-16 animate-fade-in-up" style={{ animationDelay: "0.2s" }}>
           <IdeaInput
             value={idea}
             onChange={setIdea}

@@ -1,9 +1,17 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import LanguageSelector from "./LanguageSelector";
-import IdeaInput from "./IdeaInput";
+import UnifiedInput from "./UnifiedInput";
 import TemplateCards from "./TemplateCards";
 import { useToast } from "@/hooks/use-toast";
+
+// Language mapping for display names
+const languageNames: Record<string, string> = {
+  "php": "PHP",
+  "java-spring": "Java Spring Boot",
+  "python-django": "Python Django",
+  "aspnet": "ASP.NET",
+  "nodejs-react": "Node.js + React",
+};
 
 export const HeroSection = () => {
   const [selectedLanguage, setSelectedLanguage] = useState<string | null>(null);
@@ -15,7 +23,7 @@ export const HeroSection = () => {
     setSelectedLanguage(language);
     toast({
       title: "Language Selected",
-      description: `You selected ${language}`,
+      description: `You selected ${languageNames[language] || language}`,
     });
   };
 
@@ -43,11 +51,14 @@ export const HeroSection = () => {
     navigate("/generate", { state: { language: selectedLanguage, idea } });
   };
 
-  const handleTemplateSelect = (template: string) => {
-    setIdea(template);
+  const handleTemplateSelect = (template: { description: string; language?: string }) => {
+    setIdea(template.description);
+    if (template.language) {
+      setSelectedLanguage(template.language);
+    }
     toast({
       title: "Template Selected",
-      description: "Template description added to your idea",
+      description: "Template applied to your idea",
     });
   };
 
@@ -67,26 +78,19 @@ export const HeroSection = () => {
           </p>
         </div>
 
-        {/* Language Selection */}
-        <div className="mb-10 animate-fade-in-up" style={{ animationDelay: "0.1s" }}>
-          <LanguageSelector 
-            selectedLanguage={selectedLanguage} 
-            onSelect={handleLanguageSelect} 
-          />
-        </div>
-
-        {/* Idea Input */}
-        <div className="mb-16 animate-fade-in-up" style={{ animationDelay: "0.2s" }}>
-          <IdeaInput
-            value={idea}
-            onChange={setIdea}
+        {/* Unified Input Container */}
+        <div className="mb-20 animate-fade-in-up" style={{ animationDelay: "0.15s" }}>
+          <UnifiedInput
+            selectedLanguage={selectedLanguage}
+            onLanguageSelect={handleLanguageSelect}
+            idea={idea}
+            onIdeaChange={setIdea}
             onGenerate={handleGenerate}
-            disabled={!selectedLanguage}
           />
         </div>
 
         {/* Templates Section */}
-        <div className="animate-fade-in-up" style={{ animationDelay: "0.3s" }}>
+        <div className="animate-fade-in-up" style={{ animationDelay: "0.25s" }}>
           <TemplateCards onSelectTemplate={handleTemplateSelect} />
         </div>
       </div>

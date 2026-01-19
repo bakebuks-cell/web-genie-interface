@@ -29,12 +29,12 @@ export const Navbar = () => {
       <div className="flex items-center justify-between">
         {/* Brand Name - Left side with subtle effect */}
         <Link to="/" className="group relative">
-          <span className="font-bold text-lg sm:text-xl text-foreground transition-all duration-300 group-hover:text-primary">
+          <span className="font-bold text-lg sm:text-xl text-foreground transition-all duration-300 group-hover:drop-shadow-[0_0_8px_rgba(255,255,255,0.5)]">
             {brandText}
           </span>
           
           {/* Subtle underline on hover */}
-          <span className="absolute -bottom-0.5 left-0 w-0 h-px bg-primary transition-all duration-300 group-hover:w-full" />
+          <span className="absolute -bottom-0.5 left-0 w-0 h-px bg-foreground transition-all duration-300 group-hover:w-full" />
         </Link>
 
         {/* Pill-style navigation container - Right side */}

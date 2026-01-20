@@ -7,8 +7,8 @@ import { useAuth } from "@/contexts/AuthContext";
 
 const languageNames: Record<string, string> = {
   php: "PHP",
-  nodejs: "Node.js",
-  "python-django": "Python",
+  nodejs: "Node/TS",
+  python: "Python",
   golang: "Golang",
   react: "React",
 };

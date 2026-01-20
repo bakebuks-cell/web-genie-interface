@@ -254,7 +254,7 @@ const About = () => {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.5, delay: 0.85 }}
               >
-                The platform offers genuine multi-technology support across PHP, Java Spring Boot, Python Django, ASP.NET, Node.js, and React. This means developers can choose the stack that fits their project requirements without compromising on code quality or architectural consistency. Whether you're building enterprise backends or modern frontends, DataBuks Studio adapts to your workflow.
+                The platform offers genuine multi-technology support across React, Node.js/TypeScript, PHP, Golang, and Python. This means developers can choose the stack that fits their project requirements without compromising on code quality or architectural consistency. Whether you're building enterprise backends or modern frontends, DataBuks Studio adapts to your workflow.
               </motion.p>
               
               <motion.p 

@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useLocation } from "react-router-dom";
-import ChatPanel from "@/components/ChatPanel";
+import ChatPanel from "@/components/ChatPanel"; // Updated with initialPrompt prop
 import PreviewPanel from "@/components/PreviewPanel";
 import GenerateToolbar from "@/components/GenerateToolbar";
 import { useAuth } from "@/contexts/AuthContext";

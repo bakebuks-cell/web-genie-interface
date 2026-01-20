@@ -107,7 +107,11 @@ interface Message {
   content: string;
 }
 
-const ChatPanel = () => {
+interface ChatPanelProps {
+  selectedStack?: string;
+}
+
+const ChatPanel = ({ selectedStack = "node-react" }: ChatPanelProps) => {
   const navigate = useNavigate();
   const { user, profile, deductCredit: authDeductCredit } = useAuth();
   const { credits: guestCredits, hasCredits: guestHasCredits, deductCredit: guestDeductCredit } = useGuestCredits();
@@ -327,8 +331,8 @@ const ChatPanel = () => {
             "Content-Type": "application/json",
           },
           body: JSON.stringify({
-            message: value,
-            attachments: attachments,
+            prompt: value,
+            stack: selectedStack,
           }),
         });
 

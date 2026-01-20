@@ -30,7 +30,7 @@ const GenerationPage = () => {
       <div className="flex-1 flex overflow-hidden">
         {/* Left Panel - Chat */}
         <div className="w-[400px] flex-shrink-0 border-r border-border">
-          <ChatPanel />
+          <ChatPanel selectedStack={language} />
         </div>
         
         {/* Right Panel - Preview */}

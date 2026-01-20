@@ -41,44 +41,6 @@ const PreviewPanel = ({ language, idea }: PreviewPanelProps) => {
 
   return (
     <div className="h-full flex flex-col bg-muted/30">
-      <div className="p-4 border-b border-border bg-card flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <Button
-            variant={viewMode === "desktop" ? "default" : "ghost"}
-            size="icon"
-            onClick={() => setViewMode("desktop")}
-            className="rounded-lg"
-          >
-            <Monitor className="w-4 h-4" />
-          </Button>
-          <Button
-            variant={viewMode === "tablet" ? "default" : "ghost"}
-            size="icon"
-            onClick={() => setViewMode("tablet")}
-            className="rounded-lg"
-          >
-            <Tablet className="w-4 h-4" />
-          </Button>
-          <Button
-            variant={viewMode === "mobile" ? "default" : "ghost"}
-            size="icon"
-            onClick={() => setViewMode("mobile")}
-            className="rounded-lg"
-          >
-            <Smartphone className="w-4 h-4" />
-          </Button>
-        </div>
-        
-        <div className="flex items-center gap-2">
-          <Button variant="ghost" size="icon" className="rounded-lg">
-            <RefreshCw className="w-4 h-4" />
-          </Button>
-          <Button variant="ghost" size="icon" className="rounded-lg">
-            <ExternalLink className="w-4 h-4" />
-          </Button>
-        </div>
-      </div>
-      
       <div className="flex-1 p-4 overflow-auto flex items-start justify-center">
         <div className={`${getPreviewWidth()} h-full mx-auto transition-all duration-300`}>
           {isLoading ? (

@@ -1,44 +1,72 @@
 import { Link } from "react-router-dom";
-import { 
-  Globe, 
-  MessageSquareText, 
-  Save, 
-  Bell, 
-  Sparkles, 
-  Code2 
-} from "lucide-react";
 import { motion } from "framer-motion";
 
-const features = [
+const technologies = [
   {
-    icon: Globe,
-    title: "Multilingual Support",
-    description: "Supports multiple programming and natural languages.",
+    name: "PHP",
+    color: "from-blue-500/20 to-blue-600/10",
+    glowColor: "group-hover:shadow-blue-500/20",
+    borderColor: "group-hover:border-blue-500/50",
+    capabilities: [
+      "Web applications",
+      "APIs & backend systems",
+      "CMS & custom dashboards",
+    ],
   },
   {
-    icon: MessageSquareText,
-    title: "Full-Text Prompt Understanding",
-    description: "Understands your idea deeply before generating output.",
+    name: "Java – Spring Boot",
+    color: "from-green-500/20 to-green-600/10",
+    glowColor: "group-hover:shadow-green-500/20",
+    borderColor: "group-hover:border-green-500/50",
+    capabilities: [
+      "Enterprise-grade backend services",
+      "Secure APIs",
+      "Scalable microservices",
+    ],
   },
   {
-    icon: Save,
-    title: "Save & Version Prompts",
-    description: "Automatically saves prompts and iterations.",
+    name: "Python – Django",
+    color: "from-yellow-500/20 to-yellow-600/10",
+    glowColor: "group-hover:shadow-yellow-500/20",
+    borderColor: "group-hover:border-yellow-500/50",
+    capabilities: [
+      "Rapid backend development",
+      "AI / ML integrations",
+      "Data-driven applications",
+    ],
   },
   {
-    icon: Bell,
-    title: "Notifications & Updates",
-    description: "Get updates when generation is complete.",
+    name: "ASP.NET",
+    color: "from-red-500/20 to-red-600/10",
+    glowColor: "group-hover:shadow-red-500/20",
+    borderColor: "group-hover:border-red-500/50",
+    capabilities: [
+      "High-performance enterprise apps",
+      "Secure business platforms",
+      "Large-scale systems",
+    ],
   },
   {
-    icon: Sparkles,
-    title: "Template-Free Generation",
-    description: "No templates, pure idea-driven generation.",
+    name: "Node.js",
+    color: "from-purple-500/20 to-purple-600/10",
+    glowColor: "group-hover:shadow-purple-500/20",
+    borderColor: "group-hover:border-purple-500/50",
+    capabilities: [
+      "Real-time applications",
+      "Fast APIs",
+      "Scalable server-side solutions",
+    ],
   },
   {
-    icon: Code2,
-    title: "Developer-First Architecture",
-    description: "Built for speed, clarity, and scalability.",
+    name: "React.js",
+    color: "from-cyan-500/20 to-cyan-600/10",
+    glowColor: "group-hover:shadow-cyan-500/20",
+    borderColor: "group-hover:border-cyan-500/50",
+    capabilities: [
+      "Modern UI / UX",
+      "Single Page Applications",
+      "Fast, responsive frontends",
+    ],
   },
 ];
 
@@ -47,14 +75,14 @@ const containerVariants = {
   visible: {
     opacity: 1,
     transition: {
-      staggerChildren: 0.1,
+      staggerChildren: 0.08,
       delayChildren: 0.2,
     },
   },
 };
 
 const cardVariants = {
-  hidden: { opacity: 0, y: 30 },
+  hidden: { opacity: 0, y: 20 },
   visible: {
     opacity: 1,
     y: 0,
@@ -65,39 +93,43 @@ const cardVariants = {
   },
 };
 
-const FeatureCard = ({ feature, index }: { feature: typeof features[0]; index: number }) => {
-  const IconComponent = feature.icon;
-  
+const TechCard = ({ tech }: { tech: typeof technologies[0] }) => {
   return (
     <motion.div
       variants={cardVariants}
       whileHover={{ 
-        y: -4,
-        transition: { duration: 0.2, ease: "easeOut" }
+        y: -6,
+        transition: { duration: 0.25, ease: "easeOut" }
       }}
-      className="group relative p-8 rounded-2xl 
-        bg-card/50 backdrop-blur-xl
-        border border-border/50
-        hover:border-border
-        hover:bg-card/70
+      className={`group relative p-6 rounded-xl 
+        bg-gradient-to-br ${tech.color}
+        backdrop-blur-sm
+        border border-white/[0.08]
+        ${tech.borderColor}
+        ${tech.glowColor}
+        hover:shadow-xl
         transition-all duration-300 ease-out
-        cursor-default"
+        cursor-default`}
     >
-      {/* Subtle glow on hover */}
-      <div className="absolute inset-0 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300 bg-gradient-to-br from-primary/5 via-transparent to-transparent pointer-events-none" />
+      {/* Subtle inner glow */}
+      <div className="absolute inset-0 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300 bg-gradient-to-br from-white/[0.03] via-transparent to-transparent pointer-events-none" />
       
       <div className="relative z-10">
-        <div className="w-12 h-12 rounded-xl bg-secondary/80 flex items-center justify-center mb-6 group-hover:bg-secondary transition-colors duration-300">
-          <IconComponent className="w-6 h-6 text-muted-foreground group-hover:text-foreground transition-colors duration-300" />
-        </div>
-        
-        <h3 className="text-lg font-semibold text-foreground mb-3">
-          {feature.title}
+        <h3 className="text-lg font-semibold text-white/90 group-hover:text-white mb-4 transition-colors duration-300">
+          {tech.name}
         </h3>
         
-        <p className="text-muted-foreground text-sm leading-relaxed">
-          {feature.description}
-        </p>
+        <ul className="space-y-2">
+          {tech.capabilities.map((capability, index) => (
+            <li 
+              key={index}
+              className="text-sm text-white/50 group-hover:text-white/70 transition-colors duration-300 flex items-start gap-2"
+            >
+              <span className="w-1 h-1 rounded-full bg-white/30 mt-2 flex-shrink-0" />
+              {capability}
+            </li>
+          ))}
+        </ul>
       </div>
     </motion.div>
   );
@@ -105,45 +137,27 @@ const FeatureCard = ({ feature, index }: { feature: typeof features[0]; index: n
 
 const Technologies = () => {
   return (
-    <div className="min-h-screen bg-background relative overflow-hidden">
-      {/* Ambient background glow effects */}
+    <div className="min-h-screen bg-black relative overflow-hidden">
+      {/* Dot grid background */}
+      <div 
+        className="fixed inset-0 pointer-events-none opacity-[0.03]"
+        style={{
+          backgroundImage: `radial-gradient(circle at 1px 1px, white 1px, transparent 0)`,
+          backgroundSize: '32px 32px',
+        }}
+      />
+      
+      {/* Subtle ambient glow */}
       <div className="fixed inset-0 pointer-events-none overflow-hidden">
-        {/* Top-left blue/purple glow */}
-        <motion.div 
-          className="absolute -top-32 -left-32 w-[500px] h-[500px] rounded-full"
-          style={{
-            background: 'radial-gradient(circle, hsl(250 83% 60% / 0.08) 0%, transparent 70%)',
-          }}
-          animate={{ 
-            scale: [1, 1.1, 1],
-            opacity: [0.6, 0.8, 0.6],
-          }}
-          transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }}
-        />
-        
-        {/* Bottom-right purple glow */}
-        <motion.div 
-          className="absolute -bottom-32 -right-32 w-[600px] h-[600px] rounded-full"
-          style={{
-            background: 'radial-gradient(circle, hsl(280 83% 55% / 0.06) 0%, transparent 70%)',
-          }}
-          animate={{ 
-            scale: [1.1, 1, 1.1],
-            opacity: [0.5, 0.7, 0.5],
-          }}
-          transition={{ duration: 10, repeat: Infinity, ease: "easeInOut" }}
-        />
-        
-        {/* Center subtle glow */}
         <div 
-          className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] rounded-full"
+          className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[400px]"
           style={{
-            background: 'radial-gradient(circle, hsl(250 83% 60% / 0.03) 0%, transparent 60%)',
+            background: 'radial-gradient(ellipse, hsl(250 60% 50% / 0.08) 0%, transparent 70%)',
           }}
         />
       </div>
 
-      {/* Floating Header - Right aligned */}
+      {/* Floating Header */}
       <header className="fixed top-6 right-6 z-50">
         <motion.div
           initial={{ opacity: 0, y: -20 }}
@@ -152,13 +166,13 @@ const Technologies = () => {
         >
           <Link 
             to="/"
-            className="inline-flex items-center px-6 py-3 rounded-full 
-              bg-card/60 backdrop-blur-xl 
-              border border-border/50
-              hover:bg-card/80 hover:border-border
+            className="inline-flex items-center px-5 py-2.5 rounded-full 
+              bg-white/[0.05] backdrop-blur-xl 
+              border border-white/[0.08]
+              hover:bg-white/[0.08] hover:border-white/[0.15]
               transition-all duration-300"
           >
-            <span className="text-foreground font-semibold tracking-tight">
+            <span className="text-white/90 font-medium text-sm tracking-tight">
               DataBuks Studio
             </span>
           </Link>
@@ -166,31 +180,31 @@ const Technologies = () => {
       </header>
 
       <main className="relative z-10 pt-32 pb-24 px-6">
-        <div className="max-w-5xl mx-auto">
-          {/* Page Header */}
+        <div className="max-w-4xl mx-auto">
+          {/* Page Header - Center Aligned */}
           <motion.div 
-            className="mb-16"
+            className="text-center mb-16"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6 }}
           >
-            <h1 className="text-4xl md:text-5xl font-bold text-foreground mb-4">
-              Technology Features
+            <h1 className="text-3xl md:text-4xl font-bold text-white mb-4">
+              Technologies We Work With
             </h1>
-            <p className="text-muted-foreground text-lg max-w-xl">
-              Powerful capabilities designed to transform your ideas into production-ready applications.
+            <p className="text-white/40 text-base max-w-lg mx-auto">
+              Build, scale, and ship products using modern and reliable technologies.
             </p>
           </motion.div>
 
-          {/* Feature Cards Grid */}
+          {/* Technology Cards Grid */}
           <motion.div 
-            className="grid grid-cols-1 md:grid-cols-2 gap-5"
+            className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4"
             variants={containerVariants}
             initial="hidden"
             animate="visible"
           >
-            {features.map((feature, index) => (
-              <FeatureCard key={feature.title} feature={feature} index={index} />
+            {technologies.map((tech) => (
+              <TechCard key={tech.name} tech={tech} />
             ))}
           </motion.div>
         </div>

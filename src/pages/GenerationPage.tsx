@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { useLocation } from "react-router-dom";
 import ChatPanel from "@/components/ChatPanel";
 import PreviewPanel from "@/components/PreviewPanel";
@@ -18,13 +19,35 @@ const GenerationPage = () => {
   const { language, idea } = location.state || { language: "node-react", idea: "Sample application" };
   const languageDisplay = languageNames[language] || language;
 
+  // State for toolbar controls
+  const [currentPath, setCurrentPath] = useState("/");
+  const [selectedDevice, setSelectedDevice] = useState<"desktop" | "tablet" | "mobile">("desktop");
+
   // Get user initial from profile or email
-  const userInitial = profile?.display_name?.charAt(0) || user?.email?.charAt(0) || "U";
+  const userInitial = profile?.display_name?.charAt(0) || user?.email?.charAt(0) || "b";
+
+  const handleRefresh = () => {
+    // Simulate refresh by briefly resetting
+    console.log("Refreshing preview...");
+  };
+
+  const handleOpenExternal = () => {
+    // Open current route in new tab
+    window.open(`https://preview.example.com${currentPath}`, "_blank");
+  };
 
   return (
-    <div className="h-screen flex flex-col bg-muted/30">
+    <div className="h-screen flex flex-col bg-background">
       {/* Top Toolbar */}
-      <GenerateToolbar userInitial={userInitial} currentPath="/" />
+      <GenerateToolbar 
+        userInitial={userInitial} 
+        currentPath={currentPath}
+        onPathChange={setCurrentPath}
+        onDeviceChange={setSelectedDevice}
+        selectedDevice={selectedDevice}
+        onRefresh={handleRefresh}
+        onOpenExternal={handleOpenExternal}
+      />
 
       {/* Main Content - Split View */}
       <div className="flex-1 flex overflow-hidden">
@@ -35,7 +58,12 @@ const GenerationPage = () => {
         
         {/* Right Panel - Preview */}
         <div className="flex-1 bg-muted/20">
-          <PreviewPanel language={languageDisplay} idea={idea} />
+          <PreviewPanel 
+            language={languageDisplay} 
+            idea={idea} 
+            currentRoute={currentPath}
+            viewMode={selectedDevice}
+          />
         </div>
       </div>
     </div>

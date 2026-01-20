@@ -5,13 +5,13 @@ import UnifiedInput from "./UnifiedInput";
 import { HeroBackground } from "./HeroBackground";
 import { useToast } from "@/hooks/use-toast";
 
-// Language mapping for display names
+// Language mapping for display names - Updated to match new languages
 const languageNames: Record<string, string> = {
+  "react": "React",
+  "python": "Python",
   "php": "PHP",
-  "java-spring": "Java Spring Boot",
-  "python-django": "Python Django",
-  "aspnet": "ASP.NET",
-  "nodejs-react": "Node.js + React",
+  "golang": "Golang",
+  "node-typescript": "Node / TypeScript",
 };
 
 export const HeroSection = () => {

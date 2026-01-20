@@ -315,25 +315,46 @@ const ChatPanel = () => {
       };
       setMessages((prev) => [...prev, newMessage]);
 
-      startTransition(() => {
-        setIsTyping(true);
-        setValue("");
-        setAttachments([]);
-        adjustHeight(true);
+      setIsTyping(true);
+      setValue("");
+      setAttachments([]);
+      adjustHeight(true);
 
-        // Simulate assistant response
-        setTimeout(() => {
-          setMessages((prev) => [
-            ...prev,
-            {
-              id: (Date.now() + 1).toString(),
-              role: "assistant",
-              content: "I'll make those changes for you. Updating the application now...",
-            },
-          ]);
-          setIsTyping(false);
-        }, 2000);
-      });
+      try {
+        const response = await fetch("https://703l8k0g-3000.inc1.devtunnels.ms/build", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            message: value,
+            attachments: attachments,
+          }),
+        });
+
+        const data = await response.json();
+        
+        setMessages((prev) => [
+          ...prev,
+          {
+            id: (Date.now() + 1).toString(),
+            role: "assistant",
+            content: data.response || data.message || "I'll make those changes for you. Updating the application now...",
+          },
+        ]);
+      } catch (error) {
+        console.error("API error:", error);
+        setMessages((prev) => [
+          ...prev,
+          {
+            id: (Date.now() + 1).toString(),
+            role: "assistant",
+            content: "Sorry, there was an error connecting to the server. Please try again.",
+          },
+        ]);
+      } finally {
+        setIsTyping(false);
+      }
     }
   };
 

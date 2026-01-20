@@ -173,7 +173,7 @@ const About = () => {
             transition={{ duration: 0.7 }}
           >
             <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-white mb-8 leading-tight">
-              About DataBuks Studio
+              About
             </h1>
             
             <div className="space-y-5">

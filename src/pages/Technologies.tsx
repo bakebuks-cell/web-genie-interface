@@ -10,70 +10,99 @@ import {
 
 const technologies = [
   {
-    name: "PHP",
-    color: "from-blue-500/20 to-blue-600/10",
-    glowColor: "group-hover:shadow-blue-500/20",
-    borderColor: "group-hover:border-blue-500/50",
-    capabilities: [
-      "Web applications",
-      "APIs & backend systems",
-      "CMS & custom dashboards",
-    ],
-  },
-  {
-    name: "Java – Spring Boot",
-    color: "from-green-500/20 to-green-600/10",
-    glowColor: "group-hover:shadow-green-500/20",
-    borderColor: "group-hover:border-green-500/50",
-    capabilities: [
-      "Enterprise-grade backend services",
-      "Secure APIs",
-      "Scalable microservices",
-    ],
-  },
-  {
-    name: "Python – Django",
-    color: "from-yellow-500/20 to-yellow-600/10",
-    glowColor: "group-hover:shadow-yellow-500/20",
-    borderColor: "group-hover:border-yellow-500/50",
-    capabilities: [
-      "Rapid backend development",
-      "AI / ML integrations",
-      "Data-driven applications",
-    ],
-  },
-  {
-    name: "ASP.NET",
-    color: "from-red-500/20 to-red-600/10",
-    glowColor: "group-hover:shadow-red-500/20",
-    borderColor: "group-hover:border-red-500/50",
-    capabilities: [
-      "High-performance enterprise apps",
-      "Secure business platforms",
-      "Large-scale systems",
-    ],
-  },
-  {
-    name: "Node.js",
-    color: "from-purple-500/20 to-purple-600/10",
-    glowColor: "group-hover:shadow-purple-500/20",
-    borderColor: "group-hover:border-purple-500/50",
-    capabilities: [
-      "Real-time applications",
-      "Fast APIs",
-      "Scalable server-side solutions",
-    ],
-  },
-  {
-    name: "React.js",
+    name: "React",
+    icon: "⚛️",
+    description: "A powerful JavaScript library for building dynamic, interactive user interfaces with component-based architecture.",
     color: "from-cyan-500/20 to-cyan-600/10",
     glowColor: "group-hover:shadow-cyan-500/20",
     borderColor: "group-hover:border-cyan-500/50",
-    capabilities: [
-      "Modern UI / UX",
-      "Single Page Applications",
-      "Fast, responsive frontends",
+    useCases: [
+      "Single Page Applications (SPAs)",
+      "Progressive Web Apps (PWAs)",
+      "Interactive dashboards & data visualization",
     ],
+    benefits: [
+      "Component reusability",
+      "Virtual DOM for performance",
+      "Rich ecosystem & community",
+    ],
+    projectTypes: "Web apps, Admin panels, E-commerce frontends, SaaS dashboards",
+  },
+  {
+    name: "Node/TS",
+    icon: "🟢",
+    description: "Server-side JavaScript runtime with TypeScript for building fast, scalable, and type-safe backend applications.",
+    color: "from-green-500/20 to-green-600/10",
+    glowColor: "group-hover:shadow-green-500/20",
+    borderColor: "group-hover:border-green-500/50",
+    useCases: [
+      "RESTful & GraphQL APIs",
+      "Real-time applications (WebSockets)",
+      "Microservices architecture",
+    ],
+    benefits: [
+      "Type safety with TypeScript",
+      "Non-blocking I/O for scalability",
+      "Full-stack JavaScript ecosystem",
+    ],
+    projectTypes: "APIs, Real-time apps, Backend services, Serverless functions",
+  },
+  {
+    name: "PHP",
+    icon: "🐘",
+    description: "A versatile server-side scripting language optimized for web development and rapid application building.",
+    color: "from-blue-500/20 to-blue-600/10",
+    glowColor: "group-hover:shadow-blue-500/20",
+    borderColor: "group-hover:border-blue-500/50",
+    useCases: [
+      "Dynamic web applications",
+      "Content management systems",
+      "E-commerce platforms",
+    ],
+    benefits: [
+      "Easy deployment & hosting",
+      "Mature ecosystem & libraries",
+      "Cost-effective development",
+    ],
+    projectTypes: "Websites, CMS, E-commerce, Custom web apps, APIs",
+  },
+  {
+    name: "Golang",
+    icon: "🐹",
+    description: "A statically typed, compiled language designed for simplicity, performance, and building reliable concurrent systems.",
+    color: "from-sky-500/20 to-sky-600/10",
+    glowColor: "group-hover:shadow-sky-500/20",
+    borderColor: "group-hover:border-sky-500/50",
+    useCases: [
+      "High-performance APIs & services",
+      "Cloud-native applications",
+      "CLI tools & DevOps automation",
+    ],
+    benefits: [
+      "Exceptional performance",
+      "Built-in concurrency",
+      "Simple & clean syntax",
+    ],
+    projectTypes: "Microservices, CLI tools, Cloud infrastructure, APIs",
+  },
+  {
+    name: "Python",
+    icon: "🐍",
+    description: "A versatile, readable programming language ideal for rapid development, automation, and data-driven applications.",
+    color: "from-yellow-500/20 to-yellow-600/10",
+    glowColor: "group-hover:shadow-yellow-500/20",
+    borderColor: "group-hover:border-yellow-500/50",
+    useCases: [
+      "API development & backends",
+      "Data processing & automation",
+      "Scripting & task automation",
+    ],
+    benefits: [
+      "Readable & maintainable code",
+      "Extensive standard library",
+      "Rapid prototyping",
+    ],
+    projectTypes: "APIs, Automation scripts, Data pipelines, Backend services",
   },
 ];
 
@@ -176,21 +205,58 @@ const TechCard = ({ tech }: { tech: typeof technologies[0] }) => {
       <div className="absolute inset-0 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300 bg-gradient-to-br from-white/[0.03] via-transparent to-transparent pointer-events-none" />
       
       <div className="relative z-10">
-        <h3 className="text-lg font-semibold text-white/90 group-hover:text-white mb-4 transition-colors duration-300">
-          {tech.name}
-        </h3>
+        {/* Header with icon and name */}
+        <div className="flex items-center gap-3 mb-3">
+          <span className="text-2xl">{tech.icon}</span>
+          <h3 className="text-lg font-semibold text-white/90 group-hover:text-white transition-colors duration-300">
+            {tech.name}
+          </h3>
+        </div>
         
-        <ul className="space-y-2">
-          {tech.capabilities.map((capability, index) => (
-            <li 
-              key={index}
-              className="text-sm text-white/50 group-hover:text-white/70 transition-colors duration-300 flex items-start gap-2"
-            >
-              <span className="w-1 h-1 rounded-full bg-white/30 mt-2 flex-shrink-0" />
-              {capability}
-            </li>
-          ))}
-        </ul>
+        {/* Description */}
+        <p className="text-sm text-white/50 group-hover:text-white/70 transition-colors duration-300 mb-4">
+          {tech.description}
+        </p>
+        
+        {/* Use Cases */}
+        <div className="mb-4">
+          <h4 className="text-xs font-medium text-white/40 uppercase tracking-wide mb-2">Use Cases</h4>
+          <ul className="space-y-1.5">
+            {tech.useCases.map((useCase, index) => (
+              <li 
+                key={index}
+                className="text-sm text-white/50 group-hover:text-white/70 transition-colors duration-300 flex items-start gap-2"
+              >
+                <span className="w-1 h-1 rounded-full bg-white/30 mt-2 flex-shrink-0" />
+                {useCase}
+              </li>
+            ))}
+          </ul>
+        </div>
+        
+        {/* Benefits */}
+        <div className="mb-4">
+          <h4 className="text-xs font-medium text-white/40 uppercase tracking-wide mb-2">Key Benefits</h4>
+          <ul className="space-y-1.5">
+            {tech.benefits.map((benefit, index) => (
+              <li 
+                key={index}
+                className="text-sm text-white/50 group-hover:text-white/70 transition-colors duration-300 flex items-start gap-2"
+              >
+                <span className="w-1 h-1 rounded-full bg-primary/50 mt-2 flex-shrink-0" />
+                {benefit}
+              </li>
+            ))}
+          </ul>
+        </div>
+        
+        {/* Project Types */}
+        <div>
+          <h4 className="text-xs font-medium text-white/40 uppercase tracking-wide mb-2">Typical Projects</h4>
+          <p className="text-xs text-white/40 group-hover:text-white/60 transition-colors duration-300">
+            {tech.projectTypes}
+          </p>
+        </div>
       </div>
     </motion.div>
   );

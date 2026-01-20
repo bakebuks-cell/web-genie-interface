@@ -286,6 +286,9 @@ const ChatPanel = ({ selectedStack = "node-react" }: ChatPanelProps) => {
 
   const handleSendMessage = async () => {
     if (value.trim()) {
+      const promptText = value;
+      const selectedLanguage = selectedStack;
+
       // Check credits before sending
       let canProceed = false;
       
@@ -315,7 +318,7 @@ const ChatPanel = ({ selectedStack = "node-react" }: ChatPanelProps) => {
       const newMessage: Message = {
         id: Date.now().toString(),
         role: "user",
-        content: value,
+        content: promptText,
       };
       setMessages((prev) => [...prev, newMessage]);
 
@@ -327,13 +330,8 @@ const ChatPanel = ({ selectedStack = "node-react" }: ChatPanelProps) => {
       try {
         const response = await fetch("https://703l8k0g-3000.inc1.devtunnels.ms/build", {
           method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            prompt: value,
-            stack: selectedStack,
-          }),
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ prompt: promptText, stack: selectedLanguage }),
         });
 
         const data = await response.json();

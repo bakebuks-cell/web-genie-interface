@@ -232,9 +232,39 @@ const About = () => {
               <span className="inline-block text-xs font-medium tracking-widest text-white/30 uppercase mb-3">
                 Advantages
               </span>
-              <h2 className="text-2xl md:text-3xl font-bold text-white">
+              <h2 className="text-2xl md:text-3xl font-bold text-white mb-8">
                 Why Choose DataBuks Studio
               </h2>
+            </div>
+
+            {/* Premium paragraph content */}
+            <div className="space-y-6 mb-12">
+              <motion.p 
+                className="text-lg md:text-xl text-white/60 leading-relaxed"
+                initial={{ opacity: 0, y: 15 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5, delay: 0.7 }}
+              >
+                Unlike generic AI tools that produce fragmented or boilerplate code, DataBuks Studio is purpose-built for real-world software development. Every output is structured around clean architecture principles — separating concerns, enforcing modularity, and ensuring that generated applications are maintainable from the first line of code.
+              </motion.p>
+              
+              <motion.p 
+                className="text-lg md:text-xl text-white/55 leading-relaxed"
+                initial={{ opacity: 0, y: 15 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5, delay: 0.85 }}
+              >
+                The platform offers genuine multi-technology support across PHP, Java Spring Boot, Python Django, ASP.NET, Node.js, and React. This means developers can choose the stack that fits their project requirements without compromising on code quality or architectural consistency. Whether you're building enterprise backends or modern frontends, DataBuks Studio adapts to your workflow.
+              </motion.p>
+              
+              <motion.p 
+                className="text-lg md:text-xl text-white/50 leading-relaxed"
+                initial={{ opacity: 0, y: 15 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5, delay: 1 }}
+              >
+                Speed and clarity are at the core of the experience. The platform eliminates the noise of traditional development by giving you exactly what you need — production-ready code with clear structure, sensible defaults, and room for customization. Developers retain full control over the output while benefiting from AI-accelerated generation that respects industry standards and scalability requirements.
+              </motion.p>
             </div>
 
             <motion.div 

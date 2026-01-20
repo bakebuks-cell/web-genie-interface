@@ -18,7 +18,7 @@ interface UnifiedInputProps {
 
 const languages = [
   { id: "php", name: "PHP", icon: "🐘" },
-  { id: "nodejs", name: "Node.js", icon: "🟢" },
+  { id: "nodejs", name: "Node/TS", icon: "🟢" },
   { id: "python-django", name: "Python", icon: "🐍" },
   { id: "golang", name: "Golang", icon: "🐹" },
   { id: "react", name: "React", icon: "⚛️" },

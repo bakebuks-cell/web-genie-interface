@@ -34,8 +34,8 @@ export const Navbar = () => {
             {brandText}
           </span>
           
-          {/* Subtle underline on hover */}
-          <span className="absolute -bottom-0.5 left-0 w-0 h-px bg-foreground transition-all duration-300 group-hover:w-full" />
+          {/* Permanent underline */}
+          <span className="absolute -bottom-0.5 left-0 w-full h-px bg-foreground" />
         </Link>
 
         {/* Pill-style navigation container - Right side */}

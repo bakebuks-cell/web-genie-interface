@@ -22,18 +22,30 @@ const GenerationPage = () => {
   // State for toolbar controls
   const [currentPath, setCurrentPath] = useState("/");
   const [selectedDevice, setSelectedDevice] = useState<"desktop" | "tablet" | "mobile">("desktop");
+  
+  // State for generated URL from backend
+  const [generatedUrl, setGeneratedUrl] = useState<string | undefined>(undefined);
 
   // Get user initial from profile or email
   const userInitial = profile?.display_name?.charAt(0) || user?.email?.charAt(0) || "b";
 
   const handleRefresh = () => {
-    // Simulate refresh by briefly resetting
-    console.log("Refreshing preview...");
+    // Refresh the iframe by resetting and setting the URL again
+    if (generatedUrl) {
+      const currentUrl = generatedUrl;
+      setGeneratedUrl(undefined);
+      setTimeout(() => setGeneratedUrl(currentUrl), 100);
+    }
   };
 
   const handleOpenExternal = () => {
-    // Open current route in new tab
-    window.open(`https://preview.example.com${currentPath}`, "_blank");
+    // Open generated URL or fallback
+    const urlToOpen = generatedUrl || `https://preview.example.com${currentPath}`;
+    window.open(urlToOpen, "_blank");
+  };
+
+  const handleGeneratedUrl = (url: string) => {
+    setGeneratedUrl(url);
   };
 
   return (
@@ -53,7 +65,10 @@ const GenerationPage = () => {
       <div className="flex-1 flex overflow-hidden">
         {/* Left Panel - Chat */}
         <div className="w-[400px] flex-shrink-0 border-r border-border">
-          <ChatPanel selectedStack={language} />
+          <ChatPanel 
+            selectedStack={language} 
+            onGeneratedUrl={handleGeneratedUrl}
+          />
         </div>
         
         {/* Right Panel - Preview */}
@@ -63,6 +78,7 @@ const GenerationPage = () => {
             idea={idea} 
             currentRoute={currentPath}
             viewMode={selectedDevice}
+            generatedUrl={generatedUrl}
           />
         </div>
       </div>

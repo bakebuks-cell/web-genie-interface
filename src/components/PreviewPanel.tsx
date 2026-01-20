@@ -1,10 +1,12 @@
 import { useState, useEffect } from "react";
+import { ExternalLink } from "lucide-react";
 
 interface PreviewPanelProps {
   language: string;
   idea: string;
   currentRoute?: string;
   viewMode?: "desktop" | "tablet" | "mobile";
+  generatedUrl?: string;
 }
 
 // Mock content for different routes
@@ -20,12 +22,20 @@ const PreviewPanel = ({
   language, 
   idea, 
   currentRoute = "/",
-  viewMode = "desktop" 
+  viewMode = "desktop",
+  generatedUrl
 }: PreviewPanelProps) => {
   const [isLoading, setIsLoading] = useState(true);
   const [progress, setProgress] = useState(0);
 
   useEffect(() => {
+    // If we have a generated URL, skip the loading animation
+    if (generatedUrl) {
+      setIsLoading(false);
+      setProgress(100);
+      return;
+    }
+
     // Simulate generation progress
     const interval = setInterval(() => {
       setProgress((prev) => {
@@ -39,7 +49,7 @@ const PreviewPanel = ({
     }, 100);
 
     return () => clearInterval(interval);
-  }, []);
+  }, [generatedUrl]);
 
   const getPreviewWidth = () => {
     switch (viewMode) {
@@ -56,6 +66,24 @@ const PreviewPanel = ({
 
   return (
     <div className="h-full flex flex-col bg-muted/30">
+      {/* Open Generated App Link - Only shown when URL is available */}
+      {generatedUrl && (
+        <div className="px-4 py-2 bg-primary/10 border-b border-border flex items-center justify-between">
+          <span className="text-sm text-foreground">
+            Generated app is ready!
+          </span>
+          <a
+            href={generatedUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center gap-2 text-sm font-medium text-primary hover:text-primary/80 transition-colors"
+          >
+            <ExternalLink className="w-4 h-4" />
+            Open Generated App
+          </a>
+        </div>
+      )}
+
       <div className="flex-1 p-4 overflow-auto flex items-start justify-center">
         <div className={`${getPreviewWidth()} h-full mx-auto transition-all duration-300`}>
           {isLoading ? (
@@ -87,6 +115,33 @@ const PreviewPanel = ({
                 <p className={progress > 60 ? "text-primary" : ""}>✓ Generating components...</p>
                 <p className={progress > 80 ? "text-primary" : ""}>✓ Applying styles...</p>
                 <p className={progress >= 100 ? "text-primary" : ""}>✓ Finalizing application...</p>
+              </div>
+            </div>
+          ) : generatedUrl ? (
+            // Display iframe with generated URL
+            <div className="h-full bg-card rounded-2xl border border-border overflow-hidden flex flex-col">
+              {/* Browser Chrome */}
+              <div className="h-12 bg-muted/50 border-b border-border flex items-center px-4 gap-2 flex-shrink-0">
+                <div className="w-3 h-3 rounded-full bg-destructive/60" />
+                <div className="w-3 h-3 rounded-full bg-warning/60" />
+                <div className="w-3 h-3 rounded-full bg-primary/60" />
+                <div className="flex-1 mx-4">
+                  <div className="h-6 bg-background border border-border rounded-lg flex items-center px-3 max-w-md">
+                    <span className="text-xs text-muted-foreground font-mono truncate">
+                      {generatedUrl}
+                    </span>
+                  </div>
+                </div>
+              </div>
+              
+              {/* Iframe */}
+              <div className="flex-1 relative">
+                <iframe
+                  src={generatedUrl}
+                  className="absolute inset-0 w-full h-full border-0"
+                  title="Generated Application Preview"
+                  sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-modals"
+                />
               </div>
             </div>
           ) : (

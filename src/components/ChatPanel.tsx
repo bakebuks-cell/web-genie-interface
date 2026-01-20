@@ -109,9 +109,10 @@ interface Message {
 
 interface ChatPanelProps {
   selectedStack?: string;
+  onGeneratedUrl?: (url: string) => void;
 }
 
-const ChatPanel = ({ selectedStack = "node-react" }: ChatPanelProps) => {
+const ChatPanel = ({ selectedStack = "node-react", onGeneratedUrl }: ChatPanelProps) => {
   const navigate = useNavigate();
   const { user, profile, deductCredit: authDeductCredit } = useAuth();
   const { credits: guestCredits, hasCredits: guestHasCredits, deductCredit: guestDeductCredit } = useGuestCredits();
@@ -336,14 +337,27 @@ const ChatPanel = ({ selectedStack = "node-react" }: ChatPanelProps) => {
 
         const data = await response.json();
         
-        setMessages((prev) => [
-          ...prev,
-          {
-            id: (Date.now() + 1).toString(),
-            role: "assistant",
-            content: data.response || data.message || "I'll make those changes for you. Updating the application now...",
-          },
-        ]);
+        // Check if response contains a generated URL
+        if (data.success && data.url) {
+          onGeneratedUrl?.(data.url);
+          setMessages((prev) => [
+            ...prev,
+            {
+              id: (Date.now() + 1).toString(),
+              role: "assistant",
+              content: `Your application has been generated successfully! You can view it in the preview panel or open it directly at: ${data.url}`,
+            },
+          ]);
+        } else {
+          setMessages((prev) => [
+            ...prev,
+            {
+              id: (Date.now() + 1).toString(),
+              role: "assistant",
+              content: data.response || data.message || "I'll make those changes for you. Updating the application now...",
+            },
+          ]);
+        }
       } catch (error) {
         console.error("API error:", error);
         setMessages((prev) => [

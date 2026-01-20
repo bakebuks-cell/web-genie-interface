@@ -3,10 +3,9 @@ import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Navbar } from "@/components/Navbar";
-import { Footer } from "@/components/Footer";
 import { useToast } from "@/hooks/use-toast";
 import { Eye, EyeOff } from "lucide-react";
+import { useAuth } from "@/contexts/AuthContext";
 
 const Login = () => {
   const [email, setEmail] = useState("");
@@ -15,6 +14,7 @@ const Login = () => {
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { signIn } = useAuth();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -30,9 +30,17 @@ const Login = () => {
 
     setIsLoading(true);
     
-    // API integration will be added here
-    // Simulating login delay
-    await new Promise((resolve) => setTimeout(resolve, 1000));
+    const { error } = await signIn(email, password);
+    
+    if (error) {
+      toast({
+        title: "Login Failed",
+        description: error.message,
+        variant: "destructive",
+      });
+      setIsLoading(false);
+      return;
+    }
     
     toast({
       title: "Login Successful",
@@ -45,7 +53,6 @@ const Login = () => {
 
   return (
     <div className="min-h-screen w-full bg-background flex flex-col">
-      <Navbar />
       <main className="flex-1 flex items-center justify-center pt-16 pb-8 px-4">
         <div className="w-full max-w-md animate-fade-in-up">
           {/* Brand Name */}
@@ -116,7 +123,6 @@ const Login = () => {
           </div>
         </div>
       </main>
-      <Footer />
     </div>
   );
 };

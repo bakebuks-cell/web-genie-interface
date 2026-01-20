@@ -107,7 +107,7 @@ interface Message {
   content: string;
 }
 
-interface ChatPanelProps {
+export interface ChatPanelProps {
   selectedStack?: string;
   initialPrompt?: string;
   onGeneratedUrl?: (url: string) => void;

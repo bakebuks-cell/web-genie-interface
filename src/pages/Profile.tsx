@@ -1,10 +1,12 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { User, Crown, Zap, Calendar, Mail, Shield } from 'lucide-react';
+import { User, Crown, Zap, Calendar, Mail, Shield, Settings, FolderOpen } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/contexts/AuthContext';
 import { Layout } from '@/components/Layout';
+import { ProjectsList } from '@/components/ProjectsList';
+import { OnboardingModal } from '@/components/OnboardingModal';
 
 const planDetails = {
   free: {
@@ -36,12 +38,28 @@ const planDetails = {
 const Profile = () => {
   const navigate = useNavigate();
   const { user, profile, userCredits, isLoading, signOut } = useAuth();
+  const [showOnboarding, setShowOnboarding] = useState(false);
+  
+  // Mock projects for now - would come from database in production
+  const [projects] = useState<Array<{id: string; name: string; createdAt: string; technology: string}>>([]);
 
   useEffect(() => {
     if (!isLoading && !user) {
       navigate('/login');
     }
   }, [user, isLoading, navigate]);
+
+  useEffect(() => {
+    // Check if onboarding should be shown (first-time user)
+    if (user && profile) {
+      const onboardingCompleted = localStorage.getItem('onboarding_completed');
+      const isNewUser = new Date(profile.created_at).getTime() > Date.now() - 60000; // Created within last minute
+      
+      if (!onboardingCompleted && isNewUser) {
+        setShowOnboarding(true);
+      }
+    }
+  }, [user, profile]);
 
   if (isLoading) {
     return (
@@ -71,8 +89,14 @@ const Profile = () => {
 
   return (
     <Layout>
+      <OnboardingModal
+        isOpen={showOnboarding}
+        onClose={() => setShowOnboarding(false)}
+        userName={profile.display_name || undefined}
+      />
+      
       <div className="min-h-screen pt-24 pb-16 px-4">
-        <div className="max-w-2xl mx-auto">
+        <div className="max-w-3xl mx-auto">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -96,7 +120,7 @@ const Profile = () => {
                 <div className="w-16 h-16 rounded-full bg-gradient-to-br from-primary to-accent-purple flex items-center justify-center">
                   <User className="w-8 h-8 text-primary-foreground" />
                 </div>
-                <div>
+                <div className="flex-1">
                   <h2 className="text-xl font-semibold text-foreground">
                     {profile.display_name || 'DataBuks User'}
                   </h2>
@@ -105,6 +129,9 @@ const Profile = () => {
                     <span className="text-sm">{profile.email}</span>
                   </div>
                 </div>
+                <Button variant="ghost" size="icon" className="text-muted-foreground hover:text-foreground">
+                  <Settings className="w-5 h-5" />
+                </Button>
               </div>
 
               <div className="h-px bg-border" />
@@ -198,6 +225,21 @@ const Profile = () => {
                   Sign Out
                 </Button>
               </div>
+            </motion.div>
+
+            {/* Projects Section */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.2 }}
+              className="bg-card/80 backdrop-blur-xl border border-border rounded-2xl p-6"
+            >
+              <h3 className="text-lg font-semibold text-foreground flex items-center gap-2 mb-6">
+                <FolderOpen className="w-5 h-5 text-primary" />
+                Your Projects
+              </h3>
+              
+              <ProjectsList projects={projects} />
             </motion.div>
           </motion.div>
         </div>

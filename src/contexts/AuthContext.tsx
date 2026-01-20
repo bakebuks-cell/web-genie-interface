@@ -116,6 +116,24 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
+  const applySelectedPlan = async (userId: string) => {
+    const selectedPlan = localStorage.getItem('selected_plan') as PlanType | null;
+    if (selectedPlan && selectedPlan !== 'free') {
+      await supabase
+        .from('profiles')
+        .update({ plan: selectedPlan })
+        .eq('user_id', userId);
+      
+      // For paid plans, set unlimited credits
+      await supabase
+        .from('user_credits')
+        .update({ credits_remaining: -1 })
+        .eq('user_id', userId);
+      
+      localStorage.removeItem('selected_plan');
+    }
+  };
+
   useEffect(() => {
     // Set up auth state listener BEFORE checking session
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
@@ -131,6 +149,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           // Merge guest session on sign in
           if (event === 'SIGNED_IN') {
             await mergeGuestSession(session.user.id);
+            await applySelectedPlan(session.user.id);
+            await fetchProfile(session.user.id);
             await fetchCredits(session.user.id);
           }
         }, 0);

@@ -20,7 +20,7 @@ const languages = [
   { id: "php", name: "PHP", icon: "🐘" },
   { id: "java-spring", name: "Java Spring Boot", icon: "☕" },
   { id: "python-django", name: "Python", icon: "🐍" },
-  { id: "aspnet", name: "ASP.NET", icon: "🔷" },
+  { id: "golang", name: "Golang", icon: "🐹" },
   { id: "nodejs-react", name: "Node.js + React", icon: "⚛️" },
 ];
 

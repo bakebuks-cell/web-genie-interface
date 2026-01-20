@@ -109,10 +109,11 @@ interface Message {
 
 interface ChatPanelProps {
   selectedStack?: string;
+  initialPrompt?: string;
   onGeneratedUrl?: (url: string) => void;
 }
 
-const ChatPanel = ({ selectedStack = "node-react", onGeneratedUrl }: ChatPanelProps) => {
+const ChatPanel = ({ selectedStack = "react", initialPrompt = "", onGeneratedUrl }: ChatPanelProps) => {
   const navigate = useNavigate();
   const { user, profile, deductCredit: authDeductCredit } = useAuth();
   const { credits: guestCredits, hasCredits: guestHasCredits, deductCredit: guestDeductCredit } = useGuestCredits();
@@ -132,6 +133,7 @@ const ChatPanel = ({ selectedStack = "node-react", onGeneratedUrl }: ChatPanelPr
   const [showCommandPalette, setShowCommandPalette] = useState(false);
   const [isRecording, setIsRecording] = useState(false);
   const [showUpgradePrompt, setShowUpgradePrompt] = useState(false);
+  const [hasAutoTriggered, setHasAutoTriggered] = useState(false);
   const { textareaRef, adjustHeight } = useAutoResizeTextarea({
     minHeight: 44,
     maxHeight: 120,
@@ -238,6 +240,105 @@ const ChatPanel = ({ selectedStack = "node-react", onGeneratedUrl }: ChatPanelPr
       };
     }
   }, [adjustHeight]);
+
+  // Auto-trigger build when initialPrompt is provided from landing page
+  useEffect(() => {
+    if (initialPrompt && initialPrompt.trim() && !hasAutoTriggered) {
+      setHasAutoTriggered(true);
+      // Set the value and trigger send after a short delay to ensure component is ready
+      setValue(initialPrompt);
+      const timer = setTimeout(() => {
+        triggerBuild(initialPrompt);
+      }, 500);
+      return () => clearTimeout(timer);
+    }
+  }, [initialPrompt, hasAutoTriggered]);
+
+  // Separate function to trigger build with specific prompt (for auto-trigger)
+  const triggerBuild = async (prompt: string) => {
+    if (!prompt.trim()) return;
+
+    // Check credits before sending
+    let canProceed = false;
+    
+    if (isAuthenticated) {
+      if (isUnlimited) {
+        canProceed = true;
+      } else {
+        canProceed = await authDeductCredit();
+      }
+    } else {
+      canProceed = guestDeductCredit();
+    }
+    
+    if (!canProceed) {
+      setShowUpgradePrompt(true);
+      setMessages((prev) => [
+        ...prev,
+        {
+          id: Date.now().toString(),
+          role: "assistant",
+          content: "You've run out of credits for today. Sign in or upgrade to continue building!",
+        },
+      ]);
+      return;
+    }
+
+    const newMessage: Message = {
+      id: Date.now().toString(),
+      role: "user",
+      content: prompt,
+    };
+    setMessages((prev) => [...prev, newMessage]);
+
+    setIsTyping(true);
+    setValue("");
+    setAttachments([]);
+    adjustHeight(true);
+
+    try {
+      const response = await fetch("https://703l8k0g-3000.inc1.devtunnels.ms/build", {
+        method: "POST",
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ prompt: prompt, stack: selectedStack }),
+      });
+
+      const data = await response.json();
+      
+      if (data.success && data.url) {
+        onGeneratedUrl?.(data.url);
+        setMessages((prev) => [
+          ...prev,
+          {
+            id: (Date.now() + 1).toString(),
+            role: "assistant",
+            content: `Your application has been generated successfully! You can view it in the preview panel or open it directly at: ${data.url}`,
+          },
+        ]);
+      } else {
+        setMessages((prev) => [
+          ...prev,
+          {
+            id: (Date.now() + 1).toString(),
+            role: "assistant",
+            content: data.response || data.message || "I'll make those changes for you. Updating the application now...",
+          },
+        ]);
+      }
+    } catch (error) {
+      console.error("API error:", error);
+      setMessages((prev) => [
+        ...prev,
+        {
+          id: (Date.now() + 1).toString(),
+          role: "assistant",
+          content: "Sorry, there was an error connecting to the server. Please try again.",
+        },
+      ]);
+    } finally {
+      setIsTyping(false);
+    }
+  };
 
   const toggleVoiceRecording = () => {
     if (!recognitionRef.current) {

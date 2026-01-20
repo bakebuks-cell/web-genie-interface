@@ -8,10 +8,10 @@ import { useToast } from "@/hooks/use-toast";
 // Language mapping for display names
 const languageNames: Record<string, string> = {
   "php": "PHP",
-  "java-spring": "Java Spring Boot",
-  "python-django": "Python Django",
-  "aspnet": "ASP.NET",
-  "nodejs-react": "Node.js + React",
+  "nodejs": "Node.js",
+  "python-django": "Python",
+  "golang": "Golang",
+  "react": "React",
 };
 
 export const HeroSection = () => {

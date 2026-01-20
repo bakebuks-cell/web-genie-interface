@@ -7,16 +7,16 @@ import { useAuth } from "@/contexts/AuthContext";
 
 const languageNames: Record<string, string> = {
   php: "PHP",
-  java: "Java Spring Boot",
-  python: "Python Django",
-  dotnet: "ASP.NET",
-  "node-react": "Node.js + React",
+  nodejs: "Node.js",
+  "python-django": "Python",
+  golang: "Golang",
+  react: "React",
 };
 
 const GenerationPage = () => {
   const location = useLocation();
   const { user, profile } = useAuth();
-  const { language, idea } = location.state || { language: "node-react", idea: "Sample application" };
+  const { language, idea } = location.state || { language: "react", idea: "" };
   const languageDisplay = languageNames[language] || language;
 
   // State for toolbar controls
@@ -67,6 +67,7 @@ const GenerationPage = () => {
         <div className="w-[400px] flex-shrink-0 border-r border-border">
           <ChatPanel 
             selectedStack={language} 
+            initialPrompt={idea}
             onGeneratedUrl={handleGeneratedUrl}
           />
         </div>

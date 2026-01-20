@@ -21,7 +21,7 @@ const languages = [
   { id: "java-spring", name: "Java Spring Boot", icon: "☕" },
   { id: "python-django", name: "Python", icon: "🐍" },
   { id: "golang", name: "Golang", icon: "🐹" },
-  { id: "nodejs-react", name: "Node.js + React", icon: "⚛️" },
+  { id: "react", name: "React", icon: "⚛️" },
 ];
 
 const UnifiedInput = ({

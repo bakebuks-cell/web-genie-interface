@@ -6,11 +6,11 @@ import GenerateToolbar from "@/components/GenerateToolbar";
 import { useAuth } from "@/contexts/AuthContext";
 
 const languageNames: Record<string, string> = {
-  react: "React",
-  python: "Python",
   php: "PHP",
-  golang: "Golang",
-  "node-typescript": "Node / TypeScript",
+  java: "Java Spring Boot",
+  python: "Python Django",
+  dotnet: "ASP.NET",
+  "node-react": "Node.js + React",
 };
 
 const GenerationPage = () => {

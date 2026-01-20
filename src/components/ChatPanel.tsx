@@ -16,6 +16,11 @@ import {
   MicOff,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import { useNavigate } from "react-router-dom";
+import { CreditsDisplay } from "./CreditsDisplay";
+import { UpgradePrompt } from "./UpgradePrompt";
+import { useAuth } from "@/contexts/AuthContext";
+import { useGuestCredits } from "@/hooks/useCredits";
 
 // Extend Window interface for Speech Recognition
 interface SpeechRecognitionEvent extends Event {
@@ -103,6 +108,10 @@ interface Message {
 }
 
 const ChatPanel = () => {
+  const navigate = useNavigate();
+  const { user, profile, deductCredit: authDeductCredit } = useAuth();
+  const { credits: guestCredits, hasCredits: guestHasCredits, deductCredit: guestDeductCredit } = useGuestCredits();
+  
   const [messages, setMessages] = useState<Message[]>([
     {
       id: "1",
@@ -117,6 +126,7 @@ const ChatPanel = () => {
   const [activeSuggestion, setActiveSuggestion] = useState<number>(-1);
   const [showCommandPalette, setShowCommandPalette] = useState(false);
   const [isRecording, setIsRecording] = useState(false);
+  const [showUpgradePrompt, setShowUpgradePrompt] = useState(false);
   const { textareaRef, adjustHeight } = useAutoResizeTextarea({
     minHeight: 44,
     maxHeight: 120,
@@ -124,6 +134,11 @@ const ChatPanel = () => {
   const commandPaletteRef = useRef<HTMLDivElement>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const recognitionRef = useRef<SpeechRecognition | null>(null);
+
+  // Determine if user has credits
+  const isAuthenticated = !!user;
+  const isUnlimited = profile?.plan === 'pro' || profile?.plan === 'enterprise';
+  const hasCredits = isAuthenticated ? (isUnlimited || (profile?.plan === 'free')) : guestHasCredits;
 
   const commandSuggestions: CommandSuggestion[] = [
     {
@@ -265,8 +280,34 @@ const ChatPanel = () => {
     }
   };
 
-  const handleSendMessage = () => {
+  const handleSendMessage = async () => {
     if (value.trim()) {
+      // Check credits before sending
+      let canProceed = false;
+      
+      if (isAuthenticated) {
+        if (isUnlimited) {
+          canProceed = true;
+        } else {
+          canProceed = await authDeductCredit();
+        }
+      } else {
+        canProceed = guestDeductCredit();
+      }
+      
+      if (!canProceed) {
+        setShowUpgradePrompt(true);
+        setMessages((prev) => [
+          ...prev,
+          {
+            id: Date.now().toString(),
+            role: "assistant",
+            content: "You've run out of credits for today. Sign in or upgrade to continue building!",
+          },
+        ]);
+        return;
+      }
+
       const newMessage: Message = {
         id: Date.now().toString(),
         role: "user",
@@ -313,13 +354,16 @@ const ChatPanel = () => {
 
   return (
     <div className="h-full flex flex-col bg-card/50 backdrop-blur-xl border-r border-border">
-      {/* Header */}
-      <div className="p-4 border-b border-border">
-        <h2 className="font-semibold text-foreground flex items-center gap-2">
-          <Bot className="w-5 h-5 text-primary" />
-          AI Assistant
-        </h2>
-        <p className="text-sm text-muted-foreground">Edit your application with natural language</p>
+      {/* Header with Credits */}
+      <div className="p-4 border-b border-border space-y-3">
+        <div>
+          <h2 className="font-semibold text-foreground flex items-center gap-2">
+            <Bot className="w-5 h-5 text-primary" />
+            AI Assistant
+          </h2>
+          <p className="text-sm text-muted-foreground">Edit your application with natural language</p>
+        </div>
+        <CreditsDisplay onUpgradeClick={() => navigate('/pricing')} />
       </div>
 
       {/* Messages */}

@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useLocation } from "react-router-dom";
-import ChatPanel from "@/components/ChatPanel"; // Updated with initialPrompt prop
+import ChatPanel, { HealthCheckStatus } from "@/components/ChatPanel";
 import PreviewPanel from "@/components/PreviewPanel";
 import GenerateToolbar from "@/components/GenerateToolbar";
 import { useAuth } from "@/contexts/AuthContext";
@@ -25,6 +25,9 @@ const GenerationPage = () => {
   
   // State for generated URL from backend
   const [generatedUrl, setGeneratedUrl] = useState<string | undefined>(undefined);
+  
+  // State for health check status
+  const [healthCheckStatus, setHealthCheckStatus] = useState<HealthCheckStatus | undefined>(undefined);
 
   // Get user initial from profile or email
   const userInitial = profile?.display_name?.charAt(0) || user?.email?.charAt(0) || "b";
@@ -48,6 +51,10 @@ const GenerationPage = () => {
     setGeneratedUrl(url);
   };
 
+  const handleHealthCheckStatus = (status: HealthCheckStatus) => {
+    setHealthCheckStatus(status);
+  };
+
   return (
     <div className="h-screen flex flex-col bg-background">
       {/* Top Toolbar */}
@@ -69,6 +76,7 @@ const GenerationPage = () => {
             selectedStack={language} 
             initialPrompt={idea}
             onGeneratedUrl={handleGeneratedUrl}
+            onHealthCheckStatus={handleHealthCheckStatus}
           />
         </div>
         
@@ -80,6 +88,8 @@ const GenerationPage = () => {
             currentRoute={currentPath}
             viewMode={selectedDevice}
             generatedUrl={generatedUrl}
+            healthCheckStatus={healthCheckStatus}
+            onRefresh={handleRefresh}
           />
         </div>
       </div>

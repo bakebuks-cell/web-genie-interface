@@ -316,27 +316,6 @@ const ChatPanel = ({ selectedStack = "react", initialPrompt = "", onGeneratedUrl
     const pollInterval = 2000; // 2 seconds
     const startTime = Date.now();
 
-    // Guard: if backend returns localhost/0.0.0.0, this hosted app cannot reach it.
-    // (This manifests as endless "Failed to fetch" regardless of CORS mode.)
-    try {
-      const parsed = new URL(url);
-      const localHosts = new Set(["localhost", "127.0.0.1", "0.0.0.0"]);
-      if (localHosts.has(parsed.hostname)) {
-        const message =
-          "Preview URL points to localhost, which isn't reachable from this hosted preview. Configure the backend to return a publicly reachable URL.";
-        console.log("[HealthCheck] Unreachable URL (localhost):", url);
-        onHealthCheckStatus?.({
-          isChecking: false,
-          isReady: false,
-          elapsedSeconds: 0,
-          error: message,
-        });
-        return false;
-      }
-    } catch {
-      // If URL parsing fails, fall back to normal polling.
-    }
-
     console.log("[HealthCheck] Starting health check for:", url);
 
     const updateStatus = (elapsedMs: number, isReady: boolean, error?: string) => {

@@ -66,21 +66,27 @@ const PreviewPanel = ({
 
   return (
     <div className="h-full flex flex-col bg-muted/30">
-      {/* Open Generated App Link - Only shown when URL is available */}
+      {/* Prominent OPEN APP Button - Shown when URL is available */}
       {generatedUrl && (
-        <div className="px-4 py-2 bg-primary/10 border-b border-border flex items-center justify-between">
-          <span className="text-sm text-foreground">
-            Generated app is ready!
-          </span>
+        <div className="px-4 py-4 bg-gradient-to-r from-primary/20 to-primary/10 border-b-2 border-primary/30 flex flex-col sm:flex-row items-center justify-between gap-3">
+          <div className="flex items-center gap-2">
+            <div className="w-3 h-3 bg-primary rounded-full animate-pulse" />
+            <span className="text-sm font-medium text-foreground">
+              ✅ Generated app is ready!
+            </span>
+          </div>
           <a
             href={generatedUrl}
             target="_blank"
             rel="noopener noreferrer"
-            className="flex items-center gap-2 text-sm font-medium text-primary hover:text-primary/80 transition-colors"
+            className="flex items-center gap-2 px-6 py-2.5 bg-primary text-primary-foreground font-semibold rounded-lg hover:bg-primary/90 transition-all shadow-lg hover:shadow-xl transform hover:scale-105"
           >
-            <ExternalLink className="w-4 h-4" />
-            Open Generated App
+            <ExternalLink className="w-5 h-5" />
+            OPEN APP
           </a>
+          <p className="text-xs text-muted-foreground text-center sm:text-left">
+            ⚠️ If preview below is blocked, click "OPEN APP" to view in new tab
+          </p>
         </div>
       )}
 

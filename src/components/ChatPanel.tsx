@@ -297,13 +297,28 @@ const ChatPanel = ({ selectedStack = "react", initialPrompt = "", onGeneratedUrl
     adjustHeight(true);
 
     try {
+      // Create AbortController with 120 second timeout
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 120000); // 120 seconds = 2 minutes
+
+      console.log("[triggerBuild] Sending request to backend...", { prompt, stack: selectedStack });
+
       const response = await fetch("https://703l8k0g-3000.inc1.devtunnels.ms/build", {
         method: "POST",
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ prompt: prompt, stack: selectedStack }),
+        signal: controller.signal,
       });
 
-      const data = await response.json();
+      clearTimeout(timeoutId);
+
+      // Log raw response before parsing
+      const rawText = await response.text();
+      console.log("[triggerBuild] Raw response from backend:", rawText);
+
+      // Parse JSON from raw text
+      const data = JSON.parse(rawText);
+      console.log("[triggerBuild] Parsed response:", data);
       
       if (data.success && data.url) {
         onGeneratedUrl?.(data.url);
@@ -325,16 +340,28 @@ const ChatPanel = ({ selectedStack = "react", initialPrompt = "", onGeneratedUrl
           },
         ]);
       }
-    } catch (error) {
-      console.error("API error:", error);
-      setMessages((prev) => [
-        ...prev,
-        {
-          id: (Date.now() + 1).toString(),
-          role: "assistant",
-          content: "Sorry, there was an error connecting to the server. Please try again.",
-        },
-      ]);
+    } catch (error: any) {
+      if (error.name === 'AbortError') {
+        console.error("[triggerBuild] Request timed out after 120 seconds");
+        setMessages((prev) => [
+          ...prev,
+          {
+            id: (Date.now() + 1).toString(),
+            role: "assistant",
+            content: "The request timed out after 2 minutes. The server might be starting up. Please try again.",
+          },
+        ]);
+      } else {
+        console.error("[triggerBuild] API error:", error);
+        setMessages((prev) => [
+          ...prev,
+          {
+            id: (Date.now() + 1).toString(),
+            role: "assistant",
+            content: "Sorry, there was an error connecting to the server. Please try again.",
+          },
+        ]);
+      }
     } finally {
       setIsTyping(false);
     }
@@ -430,13 +457,28 @@ const ChatPanel = ({ selectedStack = "react", initialPrompt = "", onGeneratedUrl
       adjustHeight(true);
 
       try {
+        // Create AbortController with 120 second timeout
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 120000); // 120 seconds = 2 minutes
+
+        console.log("[handleSendMessage] Sending request to backend...", { prompt: promptText, stack: selectedLanguage });
+
         const response = await fetch("https://703l8k0g-3000.inc1.devtunnels.ms/build", {
           method: "POST",
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ prompt: promptText, stack: selectedLanguage }),
+          signal: controller.signal,
         });
 
-        const data = await response.json();
+        clearTimeout(timeoutId);
+
+        // Log raw response before parsing
+        const rawText = await response.text();
+        console.log("[handleSendMessage] Raw response from backend:", rawText);
+
+        // Parse JSON from raw text
+        const data = JSON.parse(rawText);
+        console.log("[handleSendMessage] Parsed response:", data);
         
         // Check if response contains a generated URL
         if (data.success && data.url) {
@@ -459,16 +501,28 @@ const ChatPanel = ({ selectedStack = "react", initialPrompt = "", onGeneratedUrl
             },
           ]);
         }
-      } catch (error) {
-        console.error("API error:", error);
-        setMessages((prev) => [
-          ...prev,
-          {
-            id: (Date.now() + 1).toString(),
-            role: "assistant",
-            content: "Sorry, there was an error connecting to the server. Please try again.",
-          },
-        ]);
+      } catch (error: any) {
+        if (error.name === 'AbortError') {
+          console.error("[handleSendMessage] Request timed out after 120 seconds");
+          setMessages((prev) => [
+            ...prev,
+            {
+              id: (Date.now() + 1).toString(),
+              role: "assistant",
+              content: "The request timed out after 2 minutes. The server might be starting up. Please try again.",
+            },
+          ]);
+        } else {
+          console.error("[handleSendMessage] API error:", error);
+          setMessages((prev) => [
+            ...prev,
+            {
+              id: (Date.now() + 1).toString(),
+              role: "assistant",
+              content: "Sorry, there was an error connecting to the server. Please try again.",
+            },
+          ]);
+        }
       } finally {
         setIsTyping(false);
       }

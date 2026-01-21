@@ -254,22 +254,33 @@ const ChatPanel = ({ selectedStack = "react", initialPrompt = "", onGeneratedUrl
     }
   }, [initialPrompt, hasAutoTriggered]);
 
-  // Helper function to make fetch request (backend returns instantly now)
+  // Helper function to make fetch request (backend returns URL instantly)
   const fetchBuild = async (prompt: string, stack: string): Promise<{ success: boolean; data?: any; error?: string }> => {
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 15000); // 15 seconds (response is instant)
+    const timeoutId = setTimeout(() => controller.abort(), 30000); // 30 seconds timeout
 
     console.log("[fetchBuild] Sending request to backend...", { prompt, stack });
 
     try {
       const response = await fetch("https://703l8k0g-3000.inc1.devtunnels.ms/build", {
         method: "POST",
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+        },
         body: JSON.stringify({ prompt, stack }),
         signal: controller.signal,
+        mode: 'cors',
       });
 
       clearTimeout(timeoutId);
+
+      console.log("[fetchBuild] Response status:", response.status);
+      
+      if (!response.ok) {
+        console.error("[fetchBuild] Response not OK:", response.status, response.statusText);
+        return { success: false, error: 'server_error' };
+      }
 
       const rawText = await response.text();
       console.log("[fetchBuild] Raw response from backend:", rawText);
@@ -282,10 +293,10 @@ const ChatPanel = ({ selectedStack = "react", initialPrompt = "", onGeneratedUrl
       clearTimeout(timeoutId);
 
       if (error.name === 'AbortError') {
-        console.error("[fetchBuild] Request timed out after 15 seconds");
+        console.error("[fetchBuild] Request timed out");
         return { success: false, error: 'timeout' };
       } else {
-        console.error("[fetchBuild] API error:", error);
+        console.error("[fetchBuild] API error:", error.message || error);
         return { success: false, error: 'network' };
       }
     }

@@ -130,7 +130,7 @@ const ChatPanel = ({ selectedStack = "react", initialPrompt = "", onGeneratedUrl
     {
       id: "1",
       role: "assistant",
-      content: "I'm generating your application. You can give me additional instructions to customize it!",
+      content: "🏗️ Building your app... This can take up to 2 hours for large projects. Please do not close this tab.",
     },
   ]);
   const [value, setValue] = useState("");
@@ -262,12 +262,12 @@ const ChatPanel = ({ selectedStack = "react", initialPrompt = "", onGeneratedUrl
     }
   }, [initialPrompt, hasAutoTriggered]);
 
-  // Helper function to make fetch request (backend waits for Docker to be ready, up to 5 mins)
+  // Helper function to make fetch request (backend waits for Docker to be ready, up to 2 hours)
   const fetchBuild = async (prompt: string, stack: string): Promise<{ success: boolean; data?: any; error?: string }> => {
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 300000); // 5 minutes timeout
+    const timeoutId = setTimeout(() => controller.abort(), 7200000); // 2 hours timeout (7,200,000ms)
 
-    console.log("[fetchBuild] Sending request to backend (sync mode, 5 min timeout)...", { prompt, stack });
+    console.log("[fetchBuild] Sending request to backend (sync mode, 2 hour timeout)...", { prompt, stack });
 
     try {
       const response = await fetch("https://703l8k0g-3000.inc1.devtunnels.ms/build", {
@@ -301,7 +301,7 @@ const ChatPanel = ({ selectedStack = "react", initialPrompt = "", onGeneratedUrl
       clearTimeout(timeoutId);
 
       if (error.name === 'AbortError') {
-        console.error("[fetchBuild] Request timed out after 5 minutes");
+        console.error("[fetchBuild] Request timed out after 2 hours");
         return { success: false, error: 'timeout' };
       } else {
         console.error("[fetchBuild] API error:", error.message || error);

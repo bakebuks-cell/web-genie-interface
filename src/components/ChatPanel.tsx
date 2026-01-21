@@ -262,12 +262,12 @@ const ChatPanel = ({ selectedStack = "react", initialPrompt = "", onGeneratedUrl
     }
   }, [initialPrompt, hasAutoTriggered]);
 
-  // Helper function to make fetch request (backend returns URL instantly)
+  // Helper function to make fetch request (backend waits for Docker to be ready, up to 5 mins)
   const fetchBuild = async (prompt: string, stack: string): Promise<{ success: boolean; data?: any; error?: string }> => {
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 30000); // 30 seconds timeout
+    const timeoutId = setTimeout(() => controller.abort(), 300000); // 5 minutes timeout
 
-    console.log("[fetchBuild] Sending request to backend...", { prompt, stack });
+    console.log("[fetchBuild] Sending request to backend (sync mode, 5 min timeout)...", { prompt, stack });
 
     try {
       const response = await fetch("https://703l8k0g-3000.inc1.devtunnels.ms/build", {
@@ -301,7 +301,7 @@ const ChatPanel = ({ selectedStack = "react", initialPrompt = "", onGeneratedUrl
       clearTimeout(timeoutId);
 
       if (error.name === 'AbortError') {
-        console.error("[fetchBuild] Request timed out");
+        console.error("[fetchBuild] Request timed out after 5 minutes");
         return { success: false, error: 'timeout' };
       } else {
         console.error("[fetchBuild] API error:", error.message || error);
@@ -310,86 +310,14 @@ const ChatPanel = ({ selectedStack = "react", initialPrompt = "", onGeneratedUrl
     }
   };
 
-  // Smart Health Check - uses no-cors mode, treats any completed fetch as success
-  const startHealthCheck = async (url: string) => {
-    const maxDuration = 300000; // 5 minutes in ms
-    const pollInterval = 2000; // 2 seconds
-    const startTime = Date.now();
-
-    const updateStatus = (elapsedMs: number, isReady: boolean, error?: string) => {
-      onHealthCheckStatus?.({
-        isChecking: !isReady && !error,
-        isReady,
-        elapsedSeconds: Math.floor(elapsedMs / 1000),
-        error,
-      });
-    };
-
-    // Start with initial status
-    updateStatus(0, false);
-
-    // Local dev / mixed-content: don't block the UI behind a health check that the browser may refuse.
-    // We still render the iframe immediately and let the user handle browser permissions.
-    try {
-      const parsed = new URL(url);
-      const localHosts = new Set(["localhost", "127.0.0.1", "0.0.0.0"]);
-      const isLocal = localHosts.has(parsed.hostname);
-      const isMixedContent = window.location.protocol === "https:" && parsed.protocol === "http:";
-
-      if (isLocal || isMixedContent) {
-        console.log("[HealthCheck] Skipping polling for local/mixed-content URL:", url);
-        updateStatus(0, true);
-        return true;
-      }
-    } catch {
-      // If URL parsing fails, fall back to normal polling.
-    }
-
-    console.log("[HealthCheck] Starting health check for:", url);
-
-    const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
-
-    while (true) {
-      const elapsed = Date.now() - startTime;
-
-      // Check if we've exceeded timeout
-      if (elapsed >= maxDuration) {
-        console.log("[HealthCheck] Timeout after 5 minutes");
-        updateStatus(elapsed, false, "Connection timed out. Please check Docker logs.");
-        return false;
-      }
-
-      // Update elapsed time for UI
-      updateStatus(elapsed, false);
-
-      try {
-        console.log(`[HealthCheck] Polling... (${Math.floor(elapsed / 1000)}s elapsed)`);
-
-        // Use no-cors mode to avoid CORS issues.
-        // Success condition: if fetch() resolves (no network error), assume server is up.
-        // Add a short per-request timeout so a hanging connection doesn't block the loop.
-        const controller = new AbortController();
-        const perRequestTimeoutId = window.setTimeout(() => controller.abort(), 6000);
-
-        await fetch(url, {
-          method: "GET",
-          mode: "no-cors",
-          cache: "no-store",
-          signal: controller.signal,
-        });
-
-        window.clearTimeout(perRequestTimeoutId);
-
-        console.log("[HealthCheck] Server is ready! Fetch completed without network error.");
-        updateStatus(elapsed, true);
-        return true;
-      } catch (error) {
-        // Network error (or abort) means server is not reachable yet.
-        console.log("[HealthCheck] Server not ready yet (network error):", error);
-      }
-
-      await sleep(pollInterval);
-    }
+  // No more polling - backend now waits synchronously. Just mark as ready immediately.
+  const markAsReady = (url: string) => {
+    console.log("[markAsReady] Backend returned URL, marking as ready:", url);
+    onHealthCheckStatus?.({
+      isChecking: false,
+      isReady: true,
+      elapsedSeconds: 0,
+    });
   };
 
   // Separate function to trigger build with specific prompt (for auto-trigger)
@@ -446,12 +374,12 @@ const ChatPanel = ({ selectedStack = "react", initialPrompt = "", onGeneratedUrl
             {
               id: (Date.now() + 2).toString(),
               role: "assistant",
-              content: `🚀 Build started! Waiting for your container to be ready...\n\nURL: ${data.url}`,
+              content: `🚀 Your app is ready!\n\nURL: ${data.url}`,
             },
           ]);
           
-          // Start health check - this will update the PreviewPanel status
-          startHealthCheck(data.url);
+          // Mark as ready immediately - no more polling
+          markAsReady(data.url);
         } else {
           setMessages((prev) => [
             ...prev,
@@ -585,19 +513,19 @@ const ChatPanel = ({ selectedStack = "react", initialPrompt = "", onGeneratedUrl
 
         if (result.success && result.data) {
           const data = result.data;
-          if (data.success && data.url) {
-            onGeneratedUrl?.(data.url);
-            setMessages((prev) => [
-              ...prev,
-              {
-                id: (Date.now() + 2).toString(),
-                role: "assistant",
-                content: `🚀 Build started! Waiting for your container to be ready...\n\nURL: ${data.url}`,
-              },
-            ]);
-            
-            // Start health check - this will update the PreviewPanel status
-            startHealthCheck(data.url);
+        if (data.success && data.url) {
+          onGeneratedUrl?.(data.url);
+          setMessages((prev) => [
+            ...prev,
+            {
+              id: (Date.now() + 2).toString(),
+              role: "assistant",
+              content: `🚀 Your app is ready!\n\nURL: ${data.url}`,
+            },
+          ]);
+          
+          // Mark as ready immediately - no more polling
+          markAsReady(data.url);
           } else {
             setMessages((prev) => [
               ...prev,

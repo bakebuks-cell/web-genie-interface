@@ -254,6 +254,43 @@ const ChatPanel = ({ selectedStack = "react", initialPrompt = "", onGeneratedUrl
     }
   }, [initialPrompt, hasAutoTriggered]);
 
+  // Helper function to make fetch request with retry
+  const fetchWithRetry = async (prompt: string, stack: string, isRetry: boolean = false): Promise<{ success: boolean; data?: any; error?: string }> => {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 120000); // 120 seconds
+
+    console.log(`[fetchWithRetry] ${isRetry ? 'RETRY: ' : ''}Sending request to backend...`, { prompt, stack });
+
+    try {
+      const response = await fetch("https://703l8k0g-3000.inc1.devtunnels.ms/build", {
+        method: "POST",
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ prompt, stack }),
+        signal: controller.signal,
+      });
+
+      clearTimeout(timeoutId);
+
+      const rawText = await response.text();
+      console.log(`[fetchWithRetry] ${isRetry ? 'RETRY: ' : ''}Raw response from backend:`, rawText);
+
+      const data = JSON.parse(rawText);
+      console.log(`[fetchWithRetry] ${isRetry ? 'RETRY: ' : ''}Parsed response:`, data);
+
+      return { success: true, data };
+    } catch (error: any) {
+      clearTimeout(timeoutId);
+
+      if (error.name === 'AbortError') {
+        console.error(`[fetchWithRetry] ${isRetry ? 'RETRY: ' : ''}Request timed out after 120 seconds`);
+        return { success: false, error: 'timeout' };
+      } else {
+        console.error(`[fetchWithRetry] ${isRetry ? 'RETRY: ' : ''}API error:`, error);
+        return { success: false, error: 'network' };
+      }
+    }
+  };
+
   // Separate function to trigger build with specific prompt (for auto-trigger)
   const triggerBuild = async (prompt: string) => {
     if (!prompt.trim()) return;
@@ -297,71 +334,72 @@ const ChatPanel = ({ selectedStack = "react", initialPrompt = "", onGeneratedUrl
     adjustHeight(true);
 
     try {
-      // Create AbortController with 120 second timeout
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 120000); // 120 seconds = 2 minutes
+      // First attempt
+      let result = await fetchWithRetry(prompt, selectedStack, false);
 
-      console.log("[triggerBuild] Sending request to backend...", { prompt, stack: selectedStack });
-
-      const response = await fetch("https://703l8k0g-3000.inc1.devtunnels.ms/build", {
-        method: "POST",
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ prompt: prompt, stack: selectedStack }),
-        signal: controller.signal,
-      });
-
-      clearTimeout(timeoutId);
-
-      // Log raw response before parsing
-      const rawText = await response.text();
-      console.log("[triggerBuild] Raw response from backend:", rawText);
-
-      // Parse JSON from raw text
-      const data = JSON.parse(rawText);
-      console.log("[triggerBuild] Parsed response:", data);
-      
-      if (data.success && data.url) {
-        onGeneratedUrl?.(data.url);
+      // If failed, retry once after 5 seconds
+      if (!result.success) {
+        console.log("[triggerBuild] First attempt failed, retrying in 5 seconds...");
         setMessages((prev) => [
           ...prev,
           {
             id: (Date.now() + 1).toString(),
             role: "assistant",
-            content: `Your application has been generated successfully! You can view it in the preview panel or open it directly at: ${data.url}`,
+            content: "⏳ Connection failed. Retrying automatically in 5 seconds...",
           },
         ]);
+
+        await new Promise(resolve => setTimeout(resolve, 5000));
+        result = await fetchWithRetry(prompt, selectedStack, true);
+      }
+
+      if (result.success && result.data) {
+        const data = result.data;
+        if (data.success && data.url) {
+          onGeneratedUrl?.(data.url);
+          setMessages((prev) => [
+            ...prev,
+            {
+              id: (Date.now() + 2).toString(),
+              role: "assistant",
+              content: `Your application has been generated successfully! You can view it in the preview panel or open it directly at: ${data.url}`,
+            },
+          ]);
+        } else {
+          setMessages((prev) => [
+            ...prev,
+            {
+              id: (Date.now() + 2).toString(),
+              role: "assistant",
+              content: data.response || data.message || "I'll make those changes for you. Updating the application now...",
+            },
+          ]);
+        }
       } else {
+        // Both attempts failed
+        const errorMessage = result.error === 'timeout'
+          ? "The request timed out after 2 minutes (including retry). The server might be under heavy load. Please try again later."
+          : "Sorry, there was an error connecting to the server after retry. Please check your connection and try again.";
+        
         setMessages((prev) => [
           ...prev,
           {
-            id: (Date.now() + 1).toString(),
+            id: (Date.now() + 2).toString(),
             role: "assistant",
-            content: data.response || data.message || "I'll make those changes for you. Updating the application now...",
+            content: errorMessage,
           },
         ]);
       }
     } catch (error: any) {
-      if (error.name === 'AbortError') {
-        console.error("[triggerBuild] Request timed out after 120 seconds");
-        setMessages((prev) => [
-          ...prev,
-          {
-            id: (Date.now() + 1).toString(),
-            role: "assistant",
-            content: "The request timed out after 2 minutes. The server might be starting up. Please try again.",
-          },
-        ]);
-      } else {
-        console.error("[triggerBuild] API error:", error);
-        setMessages((prev) => [
-          ...prev,
-          {
-            id: (Date.now() + 1).toString(),
-            role: "assistant",
-            content: "Sorry, there was an error connecting to the server. Please try again.",
-          },
-        ]);
-      }
+      console.error("[triggerBuild] Unexpected error:", error);
+      setMessages((prev) => [
+        ...prev,
+        {
+          id: (Date.now() + 1).toString(),
+          role: "assistant",
+          content: "An unexpected error occurred. Please try again.",
+        },
+      ]);
     } finally {
       setIsTyping(false);
     }
@@ -457,72 +495,72 @@ const ChatPanel = ({ selectedStack = "react", initialPrompt = "", onGeneratedUrl
       adjustHeight(true);
 
       try {
-        // Create AbortController with 120 second timeout
-        const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 120000); // 120 seconds = 2 minutes
+        // First attempt
+        let result = await fetchWithRetry(promptText, selectedLanguage, false);
 
-        console.log("[handleSendMessage] Sending request to backend...", { prompt: promptText, stack: selectedLanguage });
-
-        const response = await fetch("https://703l8k0g-3000.inc1.devtunnels.ms/build", {
-          method: "POST",
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ prompt: promptText, stack: selectedLanguage }),
-          signal: controller.signal,
-        });
-
-        clearTimeout(timeoutId);
-
-        // Log raw response before parsing
-        const rawText = await response.text();
-        console.log("[handleSendMessage] Raw response from backend:", rawText);
-
-        // Parse JSON from raw text
-        const data = JSON.parse(rawText);
-        console.log("[handleSendMessage] Parsed response:", data);
-        
-        // Check if response contains a generated URL
-        if (data.success && data.url) {
-          onGeneratedUrl?.(data.url);
+        // If failed, retry once after 5 seconds
+        if (!result.success) {
+          console.log("[handleSendMessage] First attempt failed, retrying in 5 seconds...");
           setMessages((prev) => [
             ...prev,
             {
               id: (Date.now() + 1).toString(),
               role: "assistant",
-              content: `Your application has been generated successfully! You can view it in the preview panel or open it directly at: ${data.url}`,
+              content: "⏳ Connection failed. Retrying automatically in 5 seconds...",
             },
           ]);
+
+          await new Promise(resolve => setTimeout(resolve, 5000));
+          result = await fetchWithRetry(promptText, selectedLanguage, true);
+        }
+
+        if (result.success && result.data) {
+          const data = result.data;
+          if (data.success && data.url) {
+            onGeneratedUrl?.(data.url);
+            setMessages((prev) => [
+              ...prev,
+              {
+                id: (Date.now() + 2).toString(),
+                role: "assistant",
+                content: `Your application has been generated successfully! You can view it in the preview panel or open it directly at: ${data.url}`,
+              },
+            ]);
+          } else {
+            setMessages((prev) => [
+              ...prev,
+              {
+                id: (Date.now() + 2).toString(),
+                role: "assistant",
+                content: data.response || data.message || "I'll make those changes for you. Updating the application now...",
+              },
+            ]);
+          }
         } else {
+          // Both attempts failed
+          const errorMessage = result.error === 'timeout'
+            ? "The request timed out after 2 minutes (including retry). The server might be under heavy load. Please try again later."
+            : "Sorry, there was an error connecting to the server after retry. Please check your connection and try again.";
+          
           setMessages((prev) => [
             ...prev,
             {
-              id: (Date.now() + 1).toString(),
+              id: (Date.now() + 2).toString(),
               role: "assistant",
-              content: data.response || data.message || "I'll make those changes for you. Updating the application now...",
+              content: errorMessage,
             },
           ]);
         }
       } catch (error: any) {
-        if (error.name === 'AbortError') {
-          console.error("[handleSendMessage] Request timed out after 120 seconds");
-          setMessages((prev) => [
-            ...prev,
-            {
-              id: (Date.now() + 1).toString(),
-              role: "assistant",
-              content: "The request timed out after 2 minutes. The server might be starting up. Please try again.",
-            },
-          ]);
-        } else {
-          console.error("[handleSendMessage] API error:", error);
-          setMessages((prev) => [
-            ...prev,
-            {
-              id: (Date.now() + 1).toString(),
-              role: "assistant",
-              content: "Sorry, there was an error connecting to the server. Please try again.",
-            },
-          ]);
-        }
+        console.error("[handleSendMessage] Unexpected error:", error);
+        setMessages((prev) => [
+          ...prev,
+          {
+            id: (Date.now() + 1).toString(),
+            role: "assistant",
+            content: "An unexpected error occurred. Please try again.",
+          },
+        ]);
       } finally {
         setIsTyping(false);
       }

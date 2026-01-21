@@ -107,13 +107,21 @@ interface Message {
   content: string;
 }
 
+export interface HealthCheckStatus {
+  isChecking: boolean;
+  isReady: boolean;
+  elapsedSeconds: number;
+  error?: string;
+}
+
 export interface ChatPanelProps {
   selectedStack?: string;
   initialPrompt?: string;
   onGeneratedUrl?: (url: string) => void;
+  onHealthCheckStatus?: (status: HealthCheckStatus) => void;
 }
 
-const ChatPanel = ({ selectedStack = "react", initialPrompt = "", onGeneratedUrl }: ChatPanelProps) => {
+const ChatPanel = ({ selectedStack = "react", initialPrompt = "", onGeneratedUrl, onHealthCheckStatus }: ChatPanelProps) => {
   const navigate = useNavigate();
   const { user, profile, deductCredit: authDeductCredit } = useAuth();
   const { credits: guestCredits, hasCredits: guestHasCredits, deductCredit: guestDeductCredit } = useGuestCredits();
@@ -302,6 +310,74 @@ const ChatPanel = ({ selectedStack = "react", initialPrompt = "", onGeneratedUrl
     }
   };
 
+  // Smart Health Check - polls URL until HTTP 200 or timeout (5 minutes)
+  const startHealthCheck = async (url: string) => {
+    const maxDuration = 300000; // 5 minutes in ms
+    const pollInterval = 2000; // 2 seconds
+    const startTime = Date.now();
+
+    console.log("[HealthCheck] Starting health check for:", url);
+
+    const updateStatus = (elapsedMs: number, isReady: boolean, error?: string) => {
+      onHealthCheckStatus?.({
+        isChecking: !isReady && !error,
+        isReady,
+        elapsedSeconds: Math.floor(elapsedMs / 1000),
+        error,
+      });
+    };
+
+    // Start with initial status
+    updateStatus(0, false);
+
+    const poll = async (): Promise<boolean> => {
+      const elapsed = Date.now() - startTime;
+
+      // Check if we've exceeded timeout
+      if (elapsed >= maxDuration) {
+        console.log("[HealthCheck] Timeout after 5 minutes");
+        updateStatus(elapsed, false, "Connection timed out. Please check Docker logs.");
+        return false;
+      }
+
+      // Update elapsed time for UI
+      updateStatus(elapsed, false);
+
+      try {
+        console.log(`[HealthCheck] Polling... (${Math.floor(elapsed / 1000)}s elapsed)`);
+        const response = await fetch(url, {
+          method: 'GET',
+          mode: 'no-cors', // Handle CORS for external URLs
+        });
+
+        // With no-cors, we can't read status, so we check if request completed
+        // For actual status checking, try with cors first
+        try {
+          const corsResponse = await fetch(url, { method: 'HEAD' });
+          if (corsResponse.ok) {
+            console.log("[HealthCheck] Server is ready! HTTP 200 received.");
+            updateStatus(elapsed, true);
+            return true;
+          }
+        } catch {
+          // CORS failed, but no-cors succeeded - server might be up
+          // We'll rely on iframe to show content
+          console.log("[HealthCheck] CORS check failed, but server responded. Marking as ready.");
+          updateStatus(elapsed, true);
+          return true;
+        }
+      } catch (error) {
+        console.log("[HealthCheck] Server not ready yet:", error);
+      }
+
+      // Wait and try again
+      await new Promise(resolve => setTimeout(resolve, pollInterval));
+      return poll();
+    };
+
+    return poll();
+  };
+
   // Separate function to trigger build with specific prompt (for auto-trigger)
   const triggerBuild = async (prompt: string) => {
     if (!prompt.trim()) return;
@@ -356,9 +432,12 @@ const ChatPanel = ({ selectedStack = "react", initialPrompt = "", onGeneratedUrl
             {
               id: (Date.now() + 2).toString(),
               role: "assistant",
-              content: `✅ Your application is ready! The container is starting up - if preview shows an error, wait 10-15 seconds and refresh.\n\nURL: ${data.url}`,
+              content: `🚀 Build started! Waiting for your container to be ready...\n\nURL: ${data.url}`,
             },
           ]);
+          
+          // Start health check - this will update the PreviewPanel status
+          startHealthCheck(data.url);
         } else {
           setMessages((prev) => [
             ...prev,
@@ -499,9 +578,12 @@ const ChatPanel = ({ selectedStack = "react", initialPrompt = "", onGeneratedUrl
               {
                 id: (Date.now() + 2).toString(),
                 role: "assistant",
-                content: `✅ Your application is ready! The container is starting up - if preview shows an error, wait 10-15 seconds and refresh.\n\nURL: ${data.url}`,
+                content: `🚀 Build started! Waiting for your container to be ready...\n\nURL: ${data.url}`,
               },
             ]);
+            
+            // Start health check - this will update the PreviewPanel status
+            startHealthCheck(data.url);
           } else {
             setMessages((prev) => [
               ...prev,

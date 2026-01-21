@@ -1,5 +1,13 @@
 import { useState, useEffect } from "react";
-import { ExternalLink } from "lucide-react";
+import { ExternalLink, RefreshCw } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
+
+interface HealthCheckStatus {
+  isChecking: boolean;
+  isReady: boolean;
+  elapsedSeconds: number;
+  error?: string;
+}
 
 interface PreviewPanelProps {
   language: string;
@@ -7,6 +15,8 @@ interface PreviewPanelProps {
   currentRoute?: string;
   viewMode?: "desktop" | "tablet" | "mobile";
   generatedUrl?: string;
+  healthCheckStatus?: HealthCheckStatus;
+  onRefresh?: () => void;
 }
 
 // Mock content for different routes
@@ -18,38 +28,61 @@ const ROUTE_CONTENT: Record<string, { title: string; description: string }> = {
   "/profile": { title: "Profile", description: "Manage your profile" },
 };
 
+// Get progressive status message based on elapsed time
+const getProgressiveMessage = (elapsedSeconds: number): { emoji: string; message: string } => {
+  if (elapsedSeconds < 15) {
+    return { emoji: "🐳", message: "Booting up the Container..." };
+  } else if (elapsedSeconds < 60) {
+    return { emoji: "📦", message: "Installing Dependencies (This happens once)..." };
+  } else if (elapsedSeconds < 120) {
+    return { emoji: "⚙️", message: "Starting the Server... Almost there..." };
+  } else {
+    return { emoji: "🐢", message: "Heavy build detected! Still working, please hold on..." };
+  }
+};
+
 const PreviewPanel = ({ 
   language, 
   idea, 
   currentRoute = "/",
   viewMode = "desktop",
-  generatedUrl
+  generatedUrl,
+  healthCheckStatus,
+  onRefresh
 }: PreviewPanelProps) => {
   const [isLoading, setIsLoading] = useState(true);
   const [progress, setProgress] = useState(0);
 
   useEffect(() => {
-    // If we have a generated URL, skip the loading animation
-    if (generatedUrl) {
+    // If we have a generated URL and health check says ready, skip loading
+    if (generatedUrl && healthCheckStatus?.isReady) {
       setIsLoading(false);
       setProgress(100);
       return;
     }
 
-    // Simulate generation progress
-    const interval = setInterval(() => {
-      setProgress((prev) => {
-        if (prev >= 100) {
-          clearInterval(interval);
-          setIsLoading(false);
-          return 100;
-        }
-        return prev + 2;
-      });
-    }, 100);
+    // If we have URL but still checking, show the health check status instead
+    if (generatedUrl && healthCheckStatus?.isChecking) {
+      setIsLoading(false);
+      return;
+    }
 
-    return () => clearInterval(interval);
-  }, [generatedUrl]);
+    // If no URL yet, simulate generation progress
+    if (!generatedUrl) {
+      const interval = setInterval(() => {
+        setProgress((prev) => {
+          if (prev >= 100) {
+            clearInterval(interval);
+            setIsLoading(false);
+            return 100;
+          }
+          return prev + 2;
+        });
+      }, 100);
+
+      return () => clearInterval(interval);
+    }
+  }, [generatedUrl, healthCheckStatus?.isReady, healthCheckStatus?.isChecking]);
 
   const getPreviewWidth = () => {
     switch (viewMode) {
@@ -63,41 +96,83 @@ const PreviewPanel = ({
   };
 
   const routeContent = ROUTE_CONTENT[currentRoute] || ROUTE_CONTENT["/"];
+  const progressMessage = healthCheckStatus ? getProgressiveMessage(healthCheckStatus.elapsedSeconds) : null;
+
+  // Show health check loading state
+  const showHealthCheckLoader = generatedUrl && healthCheckStatus?.isChecking && !healthCheckStatus?.isReady;
+  const showHealthCheckError = generatedUrl && healthCheckStatus?.error;
+  const showReadyState = generatedUrl && healthCheckStatus?.isReady;
 
   return (
     <div className="h-full flex flex-col bg-muted/30">
-      {/* Prominent OPEN APP Button + Container Warning - Shown when URL is available */}
+      {/* Health Check Status Banner */}
       {generatedUrl && (
-        <div className="px-4 py-4 bg-gradient-to-r from-primary/20 to-primary/10 border-b-2 border-primary/30 flex flex-col gap-3">
+        <div className={`px-4 py-4 border-b-2 flex flex-col gap-3 ${
+          showReadyState 
+            ? "bg-gradient-to-r from-primary/20 to-primary/10 border-primary/30" 
+            : showHealthCheckError
+              ? "bg-gradient-to-r from-destructive/20 to-destructive/10 border-destructive/30"
+              : "bg-gradient-to-r from-warning/20 to-warning/10 border-warning/30"
+        }`}>
           <div className="flex flex-col sm:flex-row items-center justify-between gap-3">
             <div className="flex items-center gap-2">
-              <div className="w-3 h-3 bg-primary rounded-full animate-pulse" />
-              <span className="text-sm font-medium text-foreground">
-                ✅ Generated app is ready!
-              </span>
+              {showReadyState ? (
+                <>
+                  <div className="w-3 h-3 bg-primary rounded-full animate-pulse" />
+                  <span className="text-sm font-medium text-foreground">
+                    ✅ Your app is ready!
+                  </span>
+                </>
+              ) : showHealthCheckError ? (
+                <>
+                  <div className="w-3 h-3 bg-destructive rounded-full" />
+                  <span className="text-sm font-medium text-foreground">
+                    ⚠️ {healthCheckStatus?.error}
+                  </span>
+                </>
+              ) : (
+                <>
+                  <motion.div 
+                    className="w-3 h-3 bg-warning rounded-full"
+                    animate={{ scale: [1, 1.3, 1], opacity: [1, 0.7, 1] }}
+                    transition={{ duration: 1.5, repeat: Infinity }}
+                  />
+                  <span className="text-sm font-medium text-foreground">
+                    {progressMessage?.emoji} {progressMessage?.message}
+                  </span>
+                  <span className="text-xs text-muted-foreground ml-2">
+                    ({healthCheckStatus?.elapsedSeconds}s)
+                  </span>
+                </>
+              )}
             </div>
-            <a
-              href={generatedUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex items-center gap-2 px-6 py-2.5 bg-primary text-primary-foreground font-semibold rounded-lg hover:bg-primary/90 transition-all shadow-lg hover:shadow-xl transform hover:scale-105"
-            >
-              <ExternalLink className="w-5 h-5" />
-              OPEN APP
-            </a>
-          </div>
-          {/* Container startup warning */}
-          <div className="bg-warning/20 border border-warning/40 rounded-lg px-3 py-2 text-center">
-            <p className="text-sm text-warning-foreground font-medium">
-              ⚠️ Container is starting... if the preview shows an error, please wait 10-15 seconds and click Refresh.
-            </p>
+            <div className="flex items-center gap-2">
+              {onRefresh && (
+                <button
+                  onClick={onRefresh}
+                  className="flex items-center gap-2 px-4 py-2 bg-secondary text-foreground font-medium rounded-lg hover:bg-secondary/80 transition-all"
+                >
+                  <RefreshCw className="w-4 h-4" />
+                  Refresh
+                </button>
+              )}
+              <a
+                href={generatedUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-2 px-6 py-2.5 bg-primary text-primary-foreground font-semibold rounded-lg hover:bg-primary/90 transition-all shadow-lg hover:shadow-xl transform hover:scale-105"
+              >
+                <ExternalLink className="w-5 h-5" />
+                OPEN APP
+              </a>
+            </div>
           </div>
         </div>
       )}
 
       <div className="flex-1 p-4 overflow-auto flex items-start justify-center">
         <div className={`${getPreviewWidth()} h-full mx-auto transition-all duration-300`}>
-          {isLoading ? (
+          {isLoading && !generatedUrl ? (
             <div className="h-full bg-card rounded-2xl border border-border flex flex-col items-center justify-center p-8">
               <div className="w-16 h-16 rounded-2xl bg-primary/10 flex items-center justify-center mb-6 animate-pulse">
                 <div className="w-8 h-8 border-3 border-primary border-t-transparent rounded-full animate-spin" />
@@ -126,6 +201,75 @@ const PreviewPanel = ({
                 <p className={progress > 60 ? "text-primary" : ""}>✓ Generating components...</p>
                 <p className={progress > 80 ? "text-primary" : ""}>✓ Applying styles...</p>
                 <p className={progress >= 100 ? "text-primary" : ""}>✓ Finalizing application...</p>
+              </div>
+            </div>
+          ) : showHealthCheckLoader ? (
+            // Health check loading state with progressive messages
+            <div className="h-full bg-card rounded-2xl border border-border flex flex-col items-center justify-center p-8">
+              <AnimatePresence mode="wait">
+                <motion.div
+                  key={progressMessage?.emoji}
+                  initial={{ opacity: 0, scale: 0.8 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0.8 }}
+                  className="text-6xl mb-6"
+                >
+                  {progressMessage?.emoji}
+                </motion.div>
+              </AnimatePresence>
+              
+              <motion.div 
+                className="w-16 h-16 rounded-2xl bg-warning/10 flex items-center justify-center mb-6"
+                animate={{ rotate: 360 }}
+                transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
+              >
+                <div className="w-8 h-8 border-3 border-warning border-t-transparent rounded-full" />
+              </motion.div>
+              
+              <AnimatePresence mode="wait">
+                <motion.h3
+                  key={progressMessage?.message}
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -10 }}
+                  className="text-lg font-semibold text-foreground mb-2 text-center"
+                >
+                  {progressMessage?.message}
+                </motion.h3>
+              </AnimatePresence>
+              
+              <p className="text-sm text-muted-foreground mb-6 text-center max-w-md">
+                Your container is starting up. This can take a few minutes for first-time builds.
+              </p>
+              
+              {/* Progress indicator based on time */}
+              <div className="w-full max-w-xs mb-6">
+                <div className="h-2 bg-muted rounded-full overflow-hidden">
+                  <motion.div
+                    className="h-full bg-gradient-to-r from-warning to-warning/60"
+                    initial={{ width: "0%" }}
+                    animate={{ width: `${Math.min((healthCheckStatus?.elapsedSeconds || 0) / 3, 100)}%` }}
+                    transition={{ duration: 0.5 }}
+                  />
+                </div>
+                <p className="text-xs text-muted-foreground text-center mt-2">
+                  {healthCheckStatus?.elapsedSeconds}s / 300s max
+                </p>
+              </div>
+              
+              <div className="space-y-2 text-sm">
+                <p className={(healthCheckStatus?.elapsedSeconds || 0) >= 0 ? "text-warning" : "text-muted-foreground"}>
+                  ✓ URL received from backend
+                </p>
+                <p className={(healthCheckStatus?.elapsedSeconds || 0) >= 5 ? "text-warning" : "text-muted-foreground"}>
+                  ✓ Waiting for container to boot...
+                </p>
+                <p className={(healthCheckStatus?.elapsedSeconds || 0) >= 15 ? "text-warning" : "text-muted-foreground"}>
+                  ✓ Installing dependencies...
+                </p>
+                <p className={(healthCheckStatus?.elapsedSeconds || 0) >= 60 ? "text-warning" : "text-muted-foreground"}>
+                  ○ Starting application server...
+                </p>
               </div>
             </div>
           ) : generatedUrl ? (

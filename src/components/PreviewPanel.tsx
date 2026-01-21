@@ -203,77 +203,8 @@ const PreviewPanel = ({
                 <p className={progress >= 100 ? "text-primary" : ""}>✓ Finalizing application...</p>
               </div>
             </div>
-          ) : showHealthCheckLoader ? (
-            // Health check loading state with progressive messages
-            <div className="h-full bg-card rounded-2xl border border-border flex flex-col items-center justify-center p-8">
-              <AnimatePresence mode="wait">
-                <motion.div
-                  key={progressMessage?.emoji}
-                  initial={{ opacity: 0, scale: 0.8 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  exit={{ opacity: 0, scale: 0.8 }}
-                  className="text-6xl mb-6"
-                >
-                  {progressMessage?.emoji}
-                </motion.div>
-              </AnimatePresence>
-              
-              <motion.div 
-                className="w-16 h-16 rounded-2xl bg-warning/10 flex items-center justify-center mb-6"
-                animate={{ rotate: 360 }}
-                transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
-              >
-                <div className="w-8 h-8 border-3 border-warning border-t-transparent rounded-full" />
-              </motion.div>
-              
-              <AnimatePresence mode="wait">
-                <motion.h3
-                  key={progressMessage?.message}
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -10 }}
-                  className="text-lg font-semibold text-foreground mb-2 text-center"
-                >
-                  {progressMessage?.message}
-                </motion.h3>
-              </AnimatePresence>
-              
-              <p className="text-sm text-muted-foreground mb-6 text-center max-w-md">
-                Your container is starting up. This can take a few minutes for first-time builds.
-              </p>
-              
-              {/* Progress indicator based on time */}
-              <div className="w-full max-w-xs mb-6">
-                <div className="h-2 bg-muted rounded-full overflow-hidden">
-                  <motion.div
-                    className="h-full bg-gradient-to-r from-warning to-warning/60"
-                    initial={{ width: "0%" }}
-                    animate={{ width: `${Math.min((healthCheckStatus?.elapsedSeconds || 0) / 3, 100)}%` }}
-                    transition={{ duration: 0.5 }}
-                  />
-                </div>
-                <p className="text-xs text-muted-foreground text-center mt-2">
-                  {healthCheckStatus?.elapsedSeconds}s / 300s max
-                </p>
-              </div>
-              
-              <div className="space-y-2 text-sm">
-                <p className={(healthCheckStatus?.elapsedSeconds || 0) >= 0 ? "text-warning" : "text-muted-foreground"}>
-                  ✓ URL received from backend
-                </p>
-                <p className={(healthCheckStatus?.elapsedSeconds || 0) >= 5 ? "text-warning" : "text-muted-foreground"}>
-                  ✓ Waiting for container to boot...
-                </p>
-                <p className={(healthCheckStatus?.elapsedSeconds || 0) >= 15 ? "text-warning" : "text-muted-foreground"}>
-                  ✓ Installing dependencies...
-                </p>
-                <p className={(healthCheckStatus?.elapsedSeconds || 0) >= 60 ? "text-warning" : "text-muted-foreground"}>
-                  ○ Starting application server...
-                </p>
-              </div>
-            </div>
           ) : generatedUrl ? (
-            // Display iframe with generated URL
+            // Always display iframe immediately; overlay health-check UI on top while polling.
             <div className="h-full bg-card rounded-2xl border border-border overflow-hidden flex flex-col">
               {/* Browser Chrome */}
               <div className="h-12 bg-muted/50 border-b border-border flex items-center px-4 gap-2 flex-shrink-0">
@@ -297,6 +228,82 @@ const PreviewPanel = ({
                   title="Generated Application Preview"
                   sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-modals"
                 />
+
+                {/* Overlay loader / error */}
+                <AnimatePresence>
+                  {(showHealthCheckLoader || showHealthCheckError) && (
+                    <motion.div
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      exit={{ opacity: 0 }}
+                      className="absolute inset-0 bg-background/80 backdrop-blur-sm flex flex-col items-center justify-center p-8"
+                    >
+                      {showHealthCheckError ? (
+                        <>
+                          <div className="text-5xl mb-4">⚠️</div>
+                          <h3 className="text-lg font-semibold text-foreground mb-2 text-center">
+                            {healthCheckStatus?.error}
+                          </h3>
+                          <p className="text-sm text-muted-foreground text-center max-w-md">
+                            If the app is already running, try Refresh. Otherwise, check your container logs.
+                          </p>
+                        </>
+                      ) : (
+                        <>
+                          <AnimatePresence mode="wait">
+                            <motion.div
+                              key={progressMessage?.emoji}
+                              initial={{ opacity: 0, scale: 0.8 }}
+                              animate={{ opacity: 1, scale: 1 }}
+                              exit={{ opacity: 0, scale: 0.8 }}
+                              className="text-6xl mb-6"
+                            >
+                              {progressMessage?.emoji}
+                            </motion.div>
+                          </AnimatePresence>
+
+                          <motion.div
+                            className="w-16 h-16 rounded-2xl bg-warning/10 flex items-center justify-center mb-6"
+                            animate={{ rotate: 360 }}
+                            transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
+                          >
+                            <div className="w-8 h-8 border-3 border-warning border-t-transparent rounded-full" />
+                          </motion.div>
+
+                          <AnimatePresence mode="wait">
+                            <motion.h3
+                              key={progressMessage?.message}
+                              initial={{ opacity: 0, y: 10 }}
+                              animate={{ opacity: 1, y: 0 }}
+                              exit={{ opacity: 0, y: -10 }}
+                              className="text-lg font-semibold text-foreground mb-2 text-center"
+                            >
+                              {progressMessage?.message}
+                            </motion.h3>
+                          </AnimatePresence>
+
+                          <p className="text-sm text-muted-foreground mb-6 text-center max-w-md">
+                            Container is starting... Refresh if site is not reachable yet.
+                          </p>
+
+                          <div className="w-full max-w-xs">
+                            <div className="h-2 bg-muted rounded-full overflow-hidden">
+                              <motion.div
+                                className="h-full bg-gradient-to-r from-warning to-warning/60"
+                                initial={{ width: "0%" }}
+                                animate={{ width: `${Math.min((healthCheckStatus?.elapsedSeconds || 0) / 3, 100)}%` }}
+                                transition={{ duration: 0.5 }}
+                              />
+                            </div>
+                            <p className="text-xs text-muted-foreground text-center mt-2">
+                              {healthCheckStatus?.elapsedSeconds}s / 300s max
+                            </p>
+                          </div>
+                        </>
+                      )}
+                    </motion.div>
+                  )}
+                </AnimatePresence>
               </div>
             </div>
           ) : (

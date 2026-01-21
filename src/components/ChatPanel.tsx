@@ -316,6 +316,27 @@ const ChatPanel = ({ selectedStack = "react", initialPrompt = "", onGeneratedUrl
     const pollInterval = 2000; // 2 seconds
     const startTime = Date.now();
 
+    // Guard: if backend returns localhost/0.0.0.0, this hosted app cannot reach it.
+    // (This manifests as endless "Failed to fetch" regardless of CORS mode.)
+    try {
+      const parsed = new URL(url);
+      const localHosts = new Set(["localhost", "127.0.0.1", "0.0.0.0"]);
+      if (localHosts.has(parsed.hostname)) {
+        const message =
+          "Preview URL points to localhost, which isn't reachable from this hosted preview. Configure the backend to return a publicly reachable URL.";
+        console.log("[HealthCheck] Unreachable URL (localhost):", url);
+        onHealthCheckStatus?.({
+          isChecking: false,
+          isReady: false,
+          elapsedSeconds: 0,
+          error: message,
+        });
+        return false;
+      }
+    } catch {
+      // If URL parsing fails, fall back to normal polling.
+    }
+
     console.log("[HealthCheck] Starting health check for:", url);
 
     const updateStatus = (elapsedMs: number, isReady: boolean, error?: string) => {
@@ -330,7 +351,9 @@ const ChatPanel = ({ selectedStack = "react", initialPrompt = "", onGeneratedUrl
     // Start with initial status
     updateStatus(0, false);
 
-    const poll = async (): Promise<boolean> => {
+    const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+
+    while (true) {
       const elapsed = Date.now() - startTime;
 
       // Check if we've exceeded timeout
@@ -345,32 +368,32 @@ const ChatPanel = ({ selectedStack = "react", initialPrompt = "", onGeneratedUrl
 
       try {
         console.log(`[HealthCheck] Polling... (${Math.floor(elapsed / 1000)}s elapsed)`);
-        
-        // Use no-cors mode to avoid CORS issues
-        // In no-cors mode, we get an opaque response - we can't read status
-        // But if the fetch completes without throwing, the server is responding
+
+        // Use no-cors mode to avoid CORS issues.
+        // Success condition: if fetch() resolves (no network error), assume server is up.
+        // Add a short per-request timeout so a hanging connection doesn't block the loop.
+        const controller = new AbortController();
+        const perRequestTimeoutId = window.setTimeout(() => controller.abort(), 6000);
+
         await fetch(url, {
-          method: 'GET',
-          mode: 'no-cors',
+          method: "GET",
+          mode: "no-cors",
+          cache: "no-store",
+          signal: controller.signal,
         });
 
-        // If we reach here, the fetch completed successfully (no network error)
-        // This means the server is UP and responding, even if we can't read the response
+        window.clearTimeout(perRequestTimeoutId);
+
         console.log("[HealthCheck] Server is ready! Fetch completed without network error.");
         updateStatus(elapsed, true);
         return true;
-        
       } catch (error) {
-        // Network error means server is not reachable yet
+        // Network error (or abort) means server is not reachable yet.
         console.log("[HealthCheck] Server not ready yet (network error):", error);
       }
 
-      // Wait and try again
-      await new Promise(resolve => setTimeout(resolve, pollInterval));
-      return poll();
-    };
-
-    return poll();
+      await sleep(pollInterval);
+    }
   };
 
   // Separate function to trigger build with specific prompt (for auto-trigger)

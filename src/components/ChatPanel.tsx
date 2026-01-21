@@ -316,8 +316,6 @@ const ChatPanel = ({ selectedStack = "react", initialPrompt = "", onGeneratedUrl
     const pollInterval = 2000; // 2 seconds
     const startTime = Date.now();
 
-    console.log("[HealthCheck] Starting health check for:", url);
-
     const updateStatus = (elapsedMs: number, isReady: boolean, error?: string) => {
       onHealthCheckStatus?.({
         isChecking: !isReady && !error,
@@ -329,6 +327,25 @@ const ChatPanel = ({ selectedStack = "react", initialPrompt = "", onGeneratedUrl
 
     // Start with initial status
     updateStatus(0, false);
+
+    // Local dev / mixed-content: don't block the UI behind a health check that the browser may refuse.
+    // We still render the iframe immediately and let the user handle browser permissions.
+    try {
+      const parsed = new URL(url);
+      const localHosts = new Set(["localhost", "127.0.0.1", "0.0.0.0"]);
+      const isLocal = localHosts.has(parsed.hostname);
+      const isMixedContent = window.location.protocol === "https:" && parsed.protocol === "http:";
+
+      if (isLocal || isMixedContent) {
+        console.log("[HealthCheck] Skipping polling for local/mixed-content URL:", url);
+        updateStatus(0, true);
+        return true;
+      }
+    } catch {
+      // If URL parsing fails, fall back to normal polling.
+    }
+
+    console.log("[HealthCheck] Starting health check for:", url);
 
     const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 

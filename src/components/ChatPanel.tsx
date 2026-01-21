@@ -254,12 +254,12 @@ const ChatPanel = ({ selectedStack = "react", initialPrompt = "", onGeneratedUrl
     }
   }, [initialPrompt, hasAutoTriggered]);
 
-  // Helper function to make fetch request with retry
-  const fetchWithRetry = async (prompt: string, stack: string, isRetry: boolean = false): Promise<{ success: boolean; data?: any; error?: string }> => {
+  // Helper function to make fetch request (backend returns instantly now)
+  const fetchBuild = async (prompt: string, stack: string): Promise<{ success: boolean; data?: any; error?: string }> => {
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 120000); // 120 seconds
+    const timeoutId = setTimeout(() => controller.abort(), 15000); // 15 seconds (response is instant)
 
-    console.log(`[fetchWithRetry] ${isRetry ? 'RETRY: ' : ''}Sending request to backend...`, { prompt, stack });
+    console.log("[fetchBuild] Sending request to backend...", { prompt, stack });
 
     try {
       const response = await fetch("https://703l8k0g-3000.inc1.devtunnels.ms/build", {
@@ -272,20 +272,20 @@ const ChatPanel = ({ selectedStack = "react", initialPrompt = "", onGeneratedUrl
       clearTimeout(timeoutId);
 
       const rawText = await response.text();
-      console.log(`[fetchWithRetry] ${isRetry ? 'RETRY: ' : ''}Raw response from backend:`, rawText);
+      console.log("[fetchBuild] Raw response from backend:", rawText);
 
       const data = JSON.parse(rawText);
-      console.log(`[fetchWithRetry] ${isRetry ? 'RETRY: ' : ''}Parsed response:`, data);
+      console.log("[fetchBuild] Parsed response:", data);
 
       return { success: true, data };
     } catch (error: any) {
       clearTimeout(timeoutId);
 
       if (error.name === 'AbortError') {
-        console.error(`[fetchWithRetry] ${isRetry ? 'RETRY: ' : ''}Request timed out after 120 seconds`);
+        console.error("[fetchBuild] Request timed out after 15 seconds");
         return { success: false, error: 'timeout' };
       } else {
-        console.error(`[fetchWithRetry] ${isRetry ? 'RETRY: ' : ''}API error:`, error);
+        console.error("[fetchBuild] API error:", error);
         return { success: false, error: 'network' };
       }
     }
@@ -334,24 +334,7 @@ const ChatPanel = ({ selectedStack = "react", initialPrompt = "", onGeneratedUrl
     adjustHeight(true);
 
     try {
-      // First attempt
-      let result = await fetchWithRetry(prompt, selectedStack, false);
-
-      // If failed, retry once after 5 seconds
-      if (!result.success) {
-        console.log("[triggerBuild] First attempt failed, retrying in 5 seconds...");
-        setMessages((prev) => [
-          ...prev,
-          {
-            id: (Date.now() + 1).toString(),
-            role: "assistant",
-            content: "⏳ Connection failed. Retrying automatically in 5 seconds...",
-          },
-        ]);
-
-        await new Promise(resolve => setTimeout(resolve, 5000));
-        result = await fetchWithRetry(prompt, selectedStack, true);
-      }
+      const result = await fetchBuild(prompt, selectedStack);
 
       if (result.success && result.data) {
         const data = result.data;
@@ -362,7 +345,7 @@ const ChatPanel = ({ selectedStack = "react", initialPrompt = "", onGeneratedUrl
             {
               id: (Date.now() + 2).toString(),
               role: "assistant",
-              content: `Your application has been generated successfully! You can view it in the preview panel or open it directly at: ${data.url}`,
+              content: `✅ Your application is ready! The container is starting up - if preview shows an error, wait 10-15 seconds and refresh.\n\nURL: ${data.url}`,
             },
           ]);
         } else {
@@ -376,10 +359,9 @@ const ChatPanel = ({ selectedStack = "react", initialPrompt = "", onGeneratedUrl
           ]);
         }
       } else {
-        // Both attempts failed
         const errorMessage = result.error === 'timeout'
-          ? "The request timed out after 2 minutes (including retry). The server might be under heavy load. Please try again later."
-          : "Sorry, there was an error connecting to the server after retry. Please check your connection and try again.";
+          ? "The request timed out. Please try again."
+          : "Sorry, there was an error connecting to the server. Please check your connection and try again.";
         
         setMessages((prev) => [
           ...prev,
@@ -495,24 +477,7 @@ const ChatPanel = ({ selectedStack = "react", initialPrompt = "", onGeneratedUrl
       adjustHeight(true);
 
       try {
-        // First attempt
-        let result = await fetchWithRetry(promptText, selectedLanguage, false);
-
-        // If failed, retry once after 5 seconds
-        if (!result.success) {
-          console.log("[handleSendMessage] First attempt failed, retrying in 5 seconds...");
-          setMessages((prev) => [
-            ...prev,
-            {
-              id: (Date.now() + 1).toString(),
-              role: "assistant",
-              content: "⏳ Connection failed. Retrying automatically in 5 seconds...",
-            },
-          ]);
-
-          await new Promise(resolve => setTimeout(resolve, 5000));
-          result = await fetchWithRetry(promptText, selectedLanguage, true);
-        }
+        const result = await fetchBuild(promptText, selectedLanguage);
 
         if (result.success && result.data) {
           const data = result.data;
@@ -523,7 +488,7 @@ const ChatPanel = ({ selectedStack = "react", initialPrompt = "", onGeneratedUrl
               {
                 id: (Date.now() + 2).toString(),
                 role: "assistant",
-                content: `Your application has been generated successfully! You can view it in the preview panel or open it directly at: ${data.url}`,
+                content: `✅ Your application is ready! The container is starting up - if preview shows an error, wait 10-15 seconds and refresh.\n\nURL: ${data.url}`,
               },
             ]);
           } else {
@@ -537,10 +502,9 @@ const ChatPanel = ({ selectedStack = "react", initialPrompt = "", onGeneratedUrl
             ]);
           }
         } else {
-          // Both attempts failed
           const errorMessage = result.error === 'timeout'
-            ? "The request timed out after 2 minutes (including retry). The server might be under heavy load. Please try again later."
-            : "Sorry, there was an error connecting to the server after retry. Please check your connection and try again.";
+            ? "The request timed out. Please try again."
+            : "Sorry, there was an error connecting to the server. Please check your connection and try again.";
           
           setMessages((prev) => [
             ...prev,

@@ -66,27 +66,32 @@ const PreviewPanel = ({
 
   return (
     <div className="h-full flex flex-col bg-muted/30">
-      {/* Prominent OPEN APP Button - Shown when URL is available */}
+      {/* Prominent OPEN APP Button + Container Warning - Shown when URL is available */}
       {generatedUrl && (
-        <div className="px-4 py-4 bg-gradient-to-r from-primary/20 to-primary/10 border-b-2 border-primary/30 flex flex-col sm:flex-row items-center justify-between gap-3">
-          <div className="flex items-center gap-2">
-            <div className="w-3 h-3 bg-primary rounded-full animate-pulse" />
-            <span className="text-sm font-medium text-foreground">
-              ✅ Generated app is ready!
-            </span>
+        <div className="px-4 py-4 bg-gradient-to-r from-primary/20 to-primary/10 border-b-2 border-primary/30 flex flex-col gap-3">
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-3">
+            <div className="flex items-center gap-2">
+              <div className="w-3 h-3 bg-primary rounded-full animate-pulse" />
+              <span className="text-sm font-medium text-foreground">
+                ✅ Generated app is ready!
+              </span>
+            </div>
+            <a
+              href={generatedUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-2 px-6 py-2.5 bg-primary text-primary-foreground font-semibold rounded-lg hover:bg-primary/90 transition-all shadow-lg hover:shadow-xl transform hover:scale-105"
+            >
+              <ExternalLink className="w-5 h-5" />
+              OPEN APP
+            </a>
           </div>
-          <a
-            href={generatedUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="flex items-center gap-2 px-6 py-2.5 bg-primary text-primary-foreground font-semibold rounded-lg hover:bg-primary/90 transition-all shadow-lg hover:shadow-xl transform hover:scale-105"
-          >
-            <ExternalLink className="w-5 h-5" />
-            OPEN APP
-          </a>
-          <p className="text-xs text-muted-foreground text-center sm:text-left">
-            ⚠️ If preview below is blocked, click "OPEN APP" to view in new tab
-          </p>
+          {/* Container startup warning */}
+          <div className="bg-warning/20 border border-warning/40 rounded-lg px-3 py-2 text-center">
+            <p className="text-sm text-warning-foreground font-medium">
+              ⚠️ Container is starting... if the preview shows an error, please wait 10-15 seconds and click Refresh.
+            </p>
+          </div>
         </div>
       )}
 

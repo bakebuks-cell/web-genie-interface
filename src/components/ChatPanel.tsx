@@ -310,7 +310,7 @@ const ChatPanel = ({ selectedStack = "react", initialPrompt = "", onGeneratedUrl
     }
   };
 
-  // Smart Health Check - polls URL until HTTP 200 or timeout (5 minutes)
+  // Smart Health Check - uses no-cors mode, treats any completed fetch as success
   const startHealthCheck = async (url: string) => {
     const maxDuration = 300000; // 5 minutes in ms
     const pollInterval = 2000; // 2 seconds
@@ -345,29 +345,24 @@ const ChatPanel = ({ selectedStack = "react", initialPrompt = "", onGeneratedUrl
 
       try {
         console.log(`[HealthCheck] Polling... (${Math.floor(elapsed / 1000)}s elapsed)`);
-        const response = await fetch(url, {
+        
+        // Use no-cors mode to avoid CORS issues
+        // In no-cors mode, we get an opaque response - we can't read status
+        // But if the fetch completes without throwing, the server is responding
+        await fetch(url, {
           method: 'GET',
-          mode: 'no-cors', // Handle CORS for external URLs
+          mode: 'no-cors',
         });
 
-        // With no-cors, we can't read status, so we check if request completed
-        // For actual status checking, try with cors first
-        try {
-          const corsResponse = await fetch(url, { method: 'HEAD' });
-          if (corsResponse.ok) {
-            console.log("[HealthCheck] Server is ready! HTTP 200 received.");
-            updateStatus(elapsed, true);
-            return true;
-          }
-        } catch {
-          // CORS failed, but no-cors succeeded - server might be up
-          // We'll rely on iframe to show content
-          console.log("[HealthCheck] CORS check failed, but server responded. Marking as ready.");
-          updateStatus(elapsed, true);
-          return true;
-        }
+        // If we reach here, the fetch completed successfully (no network error)
+        // This means the server is UP and responding, even if we can't read the response
+        console.log("[HealthCheck] Server is ready! Fetch completed without network error.");
+        updateStatus(elapsed, true);
+        return true;
+        
       } catch (error) {
-        console.log("[HealthCheck] Server not ready yet:", error);
+        // Network error means server is not reachable yet
+        console.log("[HealthCheck] Server not ready yet (network error):", error);
       }
 
       // Wait and try again

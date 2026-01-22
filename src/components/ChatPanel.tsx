@@ -130,7 +130,7 @@ const ChatPanel = ({ selectedStack = "react", initialPrompt = "", onGeneratedUrl
     {
       id: "1",
       role: "assistant",
-      content: "🏗️ Building your app... This can take up to 2 hours for large projects. Please do not close this tab.",
+      content: "I'm ready to generate your application. Describe what you want to build!",
     },
   ]);
   const [value, setValue] = useState("");
@@ -262,15 +262,15 @@ const ChatPanel = ({ selectedStack = "react", initialPrompt = "", onGeneratedUrl
     }
   }, [initialPrompt, hasAutoTriggered]);
 
-  // Helper function to make fetch request (backend waits for Docker to be ready, up to 2 hours)
+  // Helper function to make fetch request to localhost backend (waits up to 10 minutes for Docker)
   const fetchBuild = async (prompt: string, stack: string): Promise<{ success: boolean; data?: any; error?: string }> => {
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 7200000); // 2 hours timeout (7,200,000ms)
+    const timeoutId = setTimeout(() => controller.abort(), 600000); // 10 minutes timeout (600,000ms)
 
-    console.log("[fetchBuild] Sending request to backend (sync mode, 2 hour timeout)...", { prompt, stack });
+    console.log("[fetchBuild] Sending request to localhost backend (sync mode, 10 min timeout)...", { prompt, stack });
 
     try {
-      const response = await fetch("https://703l8k0g-3000.inc1.devtunnels.ms/build", {
+      const response = await fetch("http://localhost:3000/build", {
         method: "POST",
         headers: { 
           'Content-Type': 'application/json',
@@ -278,7 +278,6 @@ const ChatPanel = ({ selectedStack = "react", initialPrompt = "", onGeneratedUrl
         },
         body: JSON.stringify({ prompt, stack }),
         signal: controller.signal,
-        mode: 'cors',
       });
 
       clearTimeout(timeoutId);
@@ -301,7 +300,7 @@ const ChatPanel = ({ selectedStack = "react", initialPrompt = "", onGeneratedUrl
       clearTimeout(timeoutId);
 
       if (error.name === 'AbortError') {
-        console.error("[fetchBuild] Request timed out after 2 hours");
+        console.error("[fetchBuild] Request timed out after 10 minutes");
         return { success: false, error: 'timeout' };
       } else {
         console.error("[fetchBuild] API error:", error.message || error);
@@ -392,7 +391,7 @@ const ChatPanel = ({ selectedStack = "react", initialPrompt = "", onGeneratedUrl
         }
       } else {
         const errorMessage = result.error === 'timeout'
-          ? "The request timed out. Please try again."
+          ? "The request timed out after 10 minutes. Please try again."
           : "Sorry, there was an error connecting to the server. Please check your connection and try again.";
         
         setMessages((prev) => [

@@ -22,6 +22,8 @@ const languages = [
   { id: "python", name: "Python", icon: "🐍" },
   { id: "golang", name: "Golang", icon: "🐹" },
   { id: "react", name: "React", icon: "⚛️" },
+  { id: "java", name: "Java (Enterprise)", icon: "☕" },
+  { id: "csharp", name: "ASP.NET (C#)", icon: "🔷" },
 ];
 
 const UnifiedInput = ({

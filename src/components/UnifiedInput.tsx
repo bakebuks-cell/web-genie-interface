@@ -35,10 +35,18 @@ const UnifiedInput = ({
 }: UnifiedInputProps) => {
   const [isFocused, setIsFocused] = useState(false);
   const [isRecording, setIsRecording] = useState(false);
+  const [isAutoStopping, setIsAutoStopping] = useState(false);
   const [interimTranscript, setInterimTranscript] = useState("");
   const fileInputRef = useRef<HTMLInputElement>(null);
   const recognitionRef = useRef<any>(null);
-  const silenceTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const silenceTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // Refs to avoid stale state inside SpeechRecognition callbacks
+  const isRecordingRef = useRef(false);
+  const startIdeaRef = useRef("");
+  const finalTranscriptRef = useRef("");
+  const interimTranscriptRef = useRef("");
+  const finalizeOnEndRef = useRef(false);
   const { toast } = useToast();
   
   const selectedLang = languages.find((l) => l.id === selectedLanguage);
@@ -47,6 +55,8 @@ const UnifiedInput = ({
   // Cleanup on unmount
   useEffect(() => {
     return () => {
+      isRecordingRef.current = false;
+      finalizeOnEndRef.current = false;
       if (recognitionRef.current) {
         recognitionRef.current.stop();
       }
@@ -73,33 +83,66 @@ const UnifiedInput = ({
     e.target.value = "";
   };
 
-  const stopRecording = () => {
-    if (recognitionRef.current) {
-      recognitionRef.current.stop();
-      recognitionRef.current = null;
-    }
+  const clearSilenceTimer = () => {
     if (silenceTimeoutRef.current) {
       clearTimeout(silenceTimeoutRef.current);
       silenceTimeoutRef.current = null;
     }
-    setIsRecording(false);
+  };
+
+  const finalizeTranscriptToIdea = () => {
+    const combined = `${finalTranscriptRef.current} ${interimTranscriptRef.current}`.trim();
+    if (!combined) return;
+
+    const base = startIdeaRef.current.trim();
+    const next = base ? `${base} ${combined}` : combined;
+    onIdeaChange(next);
+  };
+
+  const cleanupRecognition = () => {
+    clearSilenceTimer();
+    recognitionRef.current = null;
     setInterimTranscript("");
+    interimTranscriptRef.current = "";
+    finalTranscriptRef.current = "";
+    setIsAutoStopping(false);
+  };
+
+  const requestStop = (reason: "manual" | "silence") => {
+    if (!recognitionRef.current) {
+      isRecordingRef.current = false;
+      setIsRecording(false);
+      setIsAutoStopping(false);
+      cleanupRecognition();
+      return;
+    }
+
+    // UI should stop immediately; recognition will finalize on `onend`.
+    isRecordingRef.current = false;
+    setIsRecording(false);
+    setIsAutoStopping(reason === "silence");
+    finalizeOnEndRef.current = true;
+    clearSilenceTimer();
+
+    try {
+      recognitionRef.current.stop();
+    } catch {
+      // ignore
+    }
   };
 
   const resetSilenceTimeout = () => {
-    if (silenceTimeoutRef.current) {
-      clearTimeout(silenceTimeoutRef.current);
-    }
-    // Auto-stop after 2.5 seconds of silence
+    clearSilenceTimer();
+    // Auto-stop after ~3.5s of continuous silence (target 3–4 seconds)
     silenceTimeoutRef.current = setTimeout(() => {
-      if (isRecording) {
-        toast({
-          title: "Voice Input Complete",
-          description: "Stopped listening due to silence",
-        });
-        stopRecording();
-      }
-    }, 2500);
+      if (!isRecordingRef.current) return;
+
+      toast({
+        title: "Voice Input Complete",
+        description: "Stopped listening due to silence",
+      });
+      requestStop("silence");
+    }, 3500);
   };
 
   const handleVoice = async () => {
@@ -113,16 +156,22 @@ const UnifiedInput = ({
     }
 
     // Toggle off if already recording
-    if (isRecording) {
+    if (isRecordingRef.current) {
       toast({
         title: "Voice Input Stopped",
         description: "Recording manually stopped",
       });
-      stopRecording();
+      requestStop("manual");
       return;
     }
 
     // Start new recording session
+    startIdeaRef.current = idea;
+    finalTranscriptRef.current = "";
+    interimTranscriptRef.current = "";
+    finalizeOnEndRef.current = false;
+    isRecordingRef.current = true;
+
     setIsRecording(true);
     setInterimTranscript("");
     
@@ -140,8 +189,6 @@ const UnifiedInput = ({
     recognition.continuous = true; // Keep listening continuously
     recognition.maxAlternatives = 1;
 
-    let finalTranscript = "";
-
     recognition.onresult = (event: any) => {
       // Reset silence timeout on any speech detection
       resetSilenceTimeout();
@@ -151,14 +198,18 @@ const UnifiedInput = ({
       for (let i = event.resultIndex; i < event.results.length; i++) {
         const transcript = event.results[i][0].transcript;
         if (event.results[i].isFinal) {
-          finalTranscript += transcript + " ";
-          // Update the input with the final transcript
-          onIdeaChange(idea ? `${idea} ${finalTranscript.trim()}` : finalTranscript.trim());
+          finalTranscriptRef.current += transcript + " ";
+          interimTranscriptRef.current = "";
+          // Update the input live with the finalized portion so far
+          const finalSoFar = finalTranscriptRef.current.trim();
+          const base = startIdeaRef.current.trim();
+          onIdeaChange(base ? `${base} ${finalSoFar}` : finalSoFar);
         } else {
           interim = transcript;
         }
       }
-      
+
+      interimTranscriptRef.current = interim;
       setInterimTranscript(interim);
     };
 
@@ -171,20 +222,34 @@ const UnifiedInput = ({
           variant: "destructive",
         });
       }
-      stopRecording();
+      isRecordingRef.current = false;
+      setIsRecording(false);
+      cleanupRecognition();
     };
 
     recognition.onend = () => {
-      // Only restart if we're still supposed to be recording
-      // This handles cases where the browser stops recognition unexpectedly
-      if (isRecording && recognitionRef.current) {
+      // If we intentionally stopped (manual or silence), finalize and cleanup.
+      if (finalizeOnEndRef.current) {
+        finalizeOnEndRef.current = false;
+        finalizeTranscriptToIdea();
+        cleanupRecognition();
+        return;
+      }
+
+      // Browser sometimes ends recognition unexpectedly; restart if user still wants it.
+      if (isRecordingRef.current && recognitionRef.current) {
         try {
           recognition.start();
-        } catch (e) {
-          // Recognition already started or stopped
-          stopRecording();
+          resetSilenceTimeout();
+        } catch {
+          isRecordingRef.current = false;
+          setIsRecording(false);
+          cleanupRecognition();
         }
+        return;
       }
+
+      cleanupRecognition();
     };
 
     recognition.onspeechstart = () => {
@@ -200,7 +265,9 @@ const UnifiedInput = ({
       resetSilenceTimeout();
     } catch (e) {
       console.error("Failed to start recognition:", e);
-      stopRecording();
+      isRecordingRef.current = false;
+      setIsRecording(false);
+      cleanupRecognition();
     }
   };
 
@@ -254,13 +321,19 @@ const UnifiedInput = ({
         )}
 
         {/* Recording status bar */}
-        {isRecording && (
-          <div className="flex items-center gap-2 px-1 py-2 text-sm text-destructive">
+        {(isRecording || isAutoStopping) && (
+          <div
+            className={`flex items-center gap-2 px-1 py-2 text-sm transition-opacity duration-200 ${
+              isAutoStopping ? "opacity-80" : "opacity-100"
+            }`}
+          >
             <span className="relative flex h-2 w-2">
               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-destructive opacity-75"></span>
               <span className="relative inline-flex rounded-full h-2 w-2 bg-destructive"></span>
             </span>
-            <span className="font-medium">Listening... Click mic to stop</span>
+            <span className="font-medium text-destructive">
+              {isAutoStopping ? "Finishing..." : "Listening... Click mic to stop"}
+            </span>
           </div>
         )}
 
@@ -340,21 +413,32 @@ const UnifiedInput = ({
             <div className="relative">
               <button
                 onClick={handleVoice}
+                disabled={isAutoStopping}
                 className={`
                   p-2.5 rounded-xl 
-                  transition-all duration-200 active:scale-95
-                  ${isRecording 
-                    ? "bg-destructive/20 text-destructive" 
+                  transition-all duration-200 active:scale-95 disabled:opacity-60 disabled:cursor-not-allowed
+                  ${(isRecording || isAutoStopping)
+                    ? "bg-destructive/20 text-destructive"
                     : "text-muted-foreground hover:text-foreground hover:bg-secondary/60"
                   }
                 `}
-                title={isRecording ? "Click to stop recording" : "Voice input"}
+                title={
+                  isAutoStopping
+                    ? "Finishing speech recognition..."
+                    : isRecording
+                      ? "Click to stop recording"
+                      : "Voice input"
+                }
               >
-                {isRecording ? <MicOff className="w-5 h-5" /> : <Mic className="w-5 h-5" />}
+                {(isRecording || isAutoStopping) ? (
+                  <MicOff className="w-5 h-5" />
+                ) : (
+                  <Mic className="w-5 h-5" />
+                )}
               </button>
               
               {/* Pulsing ring indicator when recording */}
-              {isRecording && (
+              {(isRecording || isAutoStopping) && (
                 <>
                   <span className="absolute inset-0 rounded-xl border-2 border-destructive animate-ping opacity-75" />
                   <span className="absolute -top-1 -right-1 w-3 h-3 bg-destructive rounded-full animate-pulse" />

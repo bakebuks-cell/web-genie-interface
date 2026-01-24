@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from "react";
-import { Paperclip, Mic, Zap, ChevronDown, Check, MicOff } from "lucide-react";
+import { Paperclip, Mic, Zap, ChevronDown, Check } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -35,21 +35,18 @@ const UnifiedInput = ({
 }: UnifiedInputProps) => {
   const [isFocused, setIsFocused] = useState(false);
   const [isRecording, setIsRecording] = useState(false);
-  const [isAutoStopping, setIsAutoStopping] = useState(false);
-  const [displayText, setDisplayText] = useState(""); // What user sees (final + interim preview)
-  const [isAnalyzing, setIsAnalyzing] = useState(false); // Shows "analyzing" state before final commit
+  const [displayText, setDisplayText] = useState("");
   const fileInputRef = useRef<HTMLInputElement>(null);
   const recognitionRef = useRef<any>(null);
-  const silenceCheckIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const silenceTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const finalizeTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  // Refs to avoid stale state inside SpeechRecognition callbacks
+  // Refs for speech state
   const isRecordingRef = useRef(false);
-  const startIdeaRef = useRef(""); // Text before voice started
-  const accumulatedFinalRef = useRef(""); // Only finalized accurate text (exact words)
-  const currentInterimRef = useRef(""); // Temporary preview (may change)
+  const startIdeaRef = useRef("");
+  const accumulatedFinalRef = useRef(""); // Only exact finalized words
+  const currentInterimRef = useRef(""); // Temporary preview only
   const lastSpeechTimeRef = useRef<number>(Date.now());
-  const pendingResultsRef = useRef<string[]>([]); // Buffer for accuracy verification
   const { toast } = useToast();
   
   const selectedLang = languages.find((l) => l.id === selectedLanguage);
@@ -62,7 +59,7 @@ const UnifiedInput = ({
       if (recognitionRef.current) {
         try { recognitionRef.current.abort(); } catch {}
       }
-      if (silenceCheckIntervalRef.current) clearInterval(silenceCheckIntervalRef.current);
+      if (silenceTimeoutRef.current) clearTimeout(silenceTimeoutRef.current);
       if (finalizeTimeoutRef.current) clearTimeout(finalizeTimeoutRef.current);
     };
   }, []);
@@ -79,15 +76,14 @@ const UnifiedInput = ({
         title: "Files Attached",
         description: `Selected: ${fileNames}`,
       });
-      console.log("Files selected:", files);
     }
     e.target.value = "";
   };
 
   const clearTimers = () => {
-    if (silenceCheckIntervalRef.current) {
-      clearInterval(silenceCheckIntervalRef.current);
-      silenceCheckIntervalRef.current = null;
+    if (silenceTimeoutRef.current) {
+      clearTimeout(silenceTimeoutRef.current);
+      silenceTimeoutRef.current = null;
     }
     if (finalizeTimeoutRef.current) {
       clearTimeout(finalizeTimeoutRef.current);
@@ -95,52 +91,61 @@ const UnifiedInput = ({
     }
   };
 
-  // Update display: shows finalized text + interim preview (interim shown slightly different)
-  const updateDisplayText = (showInterim: boolean = true) => {
+  // Reset silence timer - called on every speech activity
+  const resetSilenceTimer = () => {
+    if (silenceTimeoutRef.current) {
+      clearTimeout(silenceTimeoutRef.current);
+    }
+    
+    // Auto-finalize after 5 seconds of continuous silence
+    silenceTimeoutRef.current = setTimeout(() => {
+      if (isRecordingRef.current) {
+        finishRecording();
+      }
+    }, 5000);
+  };
+
+  // Update display: shows finalized + interim preview
+  const updateDisplayText = () => {
     const base = startIdeaRef.current.trim();
     const final = accumulatedFinalRef.current.trim();
-    const interim = showInterim ? currentInterimRef.current.trim() : "";
+    const interim = currentInterimRef.current.trim();
     
-    // Build display: base + final + interim preview
-    let parts: string[] = [];
+    // Build display: base + finalized + interim preview
+    const parts: string[] = [];
     if (base) parts.push(base);
     if (final) parts.push(final);
     if (interim) parts.push(interim);
     
-    const combined = parts.join(" ");
-    setDisplayText(combined);
-    
-    // Only update idea with finalized text (not interim)
-    const finalOnly = [base, final].filter(Boolean).join(" ");
-    // Don't call onIdeaChange here - wait for finalization
+    setDisplayText(parts.join(" "));
   };
 
-  const finishRecording = (showToast: boolean, reason: string) => {
-    if (!isRecordingRef.current && !isAutoStopping) return;
+  const finishRecording = () => {
+    if (!isRecordingRef.current) return;
     
     isRecordingRef.current = false;
-    setIsAutoStopping(true);
-    setIsAnalyzing(true);
+    clearTimers();
     
-    // Stop recognition to trigger final analysis
+    // Stop recognition to trigger final results
     if (recognitionRef.current) {
       try { 
-        recognitionRef.current.stop(); // stop() allows final results to come through
+        recognitionRef.current.stop();
       } catch {}
     }
     
-    // Wait for speech engine to finalize and analyze (longer delay for accuracy)
+    // Wait for speech engine to complete final analysis
     finalizeTimeoutRef.current = setTimeout(() => {
-      // Commit only the fully analyzed, accurate final text
+      // Commit ONLY the exact finalized words - no interim, no guessing
       const base = startIdeaRef.current.trim();
       const final = accumulatedFinalRef.current.trim();
       
-      // Clear interim - only commit verified final transcription
-      currentInterimRef.current = "";
-      
       // Build final text from exact spoken words only
-      const finalText = [base, final].filter(Boolean).join(" ");
+      const parts: string[] = [];
+      if (base) parts.push(base);
+      if (final) parts.push(final);
+      const finalText = parts.join(" ");
       
+      // Update state with exact transcription
       onIdeaChange(finalText);
       setDisplayText(finalText);
       
@@ -150,23 +155,10 @@ const UnifiedInput = ({
         recognitionRef.current = null;
       }
       
-      clearTimers();
-      
-      if (showToast && final) {
-        toast({
-          title: "✓ Transcription Complete",
-          description: "Exact words captured and finalized.",
-        });
-      }
-      
-      // Reset state
       setIsRecording(false);
-      setIsAutoStopping(false);
-      setIsAnalyzing(false);
       accumulatedFinalRef.current = "";
       currentInterimRef.current = "";
-      pendingResultsRef.current = [];
-    }, 400); // Longer delay to allow speech engine to finalize properly
+    }, 500); // Allow engine to finalize analysis
   };
 
   const handleVoice = async () => {
@@ -179,9 +171,9 @@ const UnifiedInput = ({
       return;
     }
 
-    // Toggle off if already recording (manual stop)
+    // Toggle off if already recording
     if (isRecordingRef.current) {
-      finishRecording(true, "Stopped manually");
+      finishRecording();
       return;
     }
 
@@ -189,128 +181,84 @@ const UnifiedInput = ({
     startIdeaRef.current = idea;
     accumulatedFinalRef.current = "";
     currentInterimRef.current = "";
-    pendingResultsRef.current = [];
     lastSpeechTimeRef.current = Date.now();
     isRecordingRef.current = true;
 
     setIsRecording(true);
-    setIsAutoStopping(false);
-    setIsAnalyzing(false);
     setDisplayText(idea);
-    
-    toast({
-      title: "🎙️ Listening...",
-      description: "Speak clearly. Exact words will be captured.",
-    });
 
-    // Silence detection: check every 500ms for faster response
-    silenceCheckIntervalRef.current = setInterval(() => {
-      if (!isRecordingRef.current) return;
-      
-      const silenceMs = Date.now() - lastSpeechTimeRef.current;
-      if (silenceMs >= 5000) {
-        finishRecording(true, "Auto-stopped after silence");
-      }
-    }, 500);
+    // Start 5-second silence timer
+    resetSilenceTimer();
 
     const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
     const recognition = new SpeechRecognition();
     recognitionRef.current = recognition;
     
-    // ACCURACY-OPTIMIZED CONFIGURATION
+    // STRICT ACCURACY CONFIGURATION
     recognition.lang = "en-US";
-    recognition.interimResults = true; // Show preview while speaking
-    recognition.continuous = true; // Don't stop between sentences
-    recognition.maxAlternatives = 3; // Get multiple alternatives for better accuracy selection
+    recognition.interimResults = true; // Preview only
+    recognition.continuous = true;
+    recognition.maxAlternatives = 1; // Use highest confidence result
 
     recognition.onresult = (event: any) => {
       if (!isRecordingRef.current) return;
       
-      // Mark speech activity for silence detection
+      // Reset silence timer on any speech activity
       lastSpeechTimeRef.current = Date.now();
+      resetSilenceTimer();
       
-      // Process results with accuracy priority
+      // Process results with strict accuracy
       for (let i = event.resultIndex; i < event.results.length; i++) {
         const result = event.results[i];
         
         if (result.isFinal) {
-          // FINAL RESULT: This is the speech engine's analyzed, accurate transcription
-          // Get the highest confidence result (first alternative is best)
-          const bestTranscript = result[0].transcript;
-          
-          // Log alternatives for debugging if needed
-          if (result.length > 1) {
-            console.log("Speech alternatives:", 
-              Array.from({ length: result.length }, (_, j) => 
-                `${j}: "${result[j].transcript}" (${(result[j].confidence * 100).toFixed(1)}%)`
-              )
-            );
-          }
-          
-          // Accumulate only finalized, analyzed text (exact words)
-          accumulatedFinalRef.current += bestTranscript + " ";
-          
-          // Clear interim since this segment is now finalized
-          currentInterimRef.current = "";
+          // FINAL: Exact analyzed transcription from speech engine
+          // This is the accurate, analyzed result - use as-is
+          const exactTranscript = result[0].transcript;
+          accumulatedFinalRef.current += exactTranscript;
+          currentInterimRef.current = ""; // Clear interim
         } else {
-          // INTERIM RESULT: Preview only - may change, don't commit
-          // Show for user feedback but don't treat as accurate
+          // INTERIM: Temporary preview - never committed
+          // Shows user something is happening but doesn't affect final text
           currentInterimRef.current = result[0].transcript;
         }
       }
       
-      // Update display with finalized + interim preview
-      updateDisplayText(true);
+      updateDisplayText();
     };
 
     recognition.onspeechstart = () => {
       lastSpeechTimeRef.current = Date.now();
+      resetSilenceTimer();
     };
 
     recognition.onspeechend = () => {
-      // Allow natural pauses - silence timer handles auto-stop
-    };
-
-    recognition.onaudioend = () => {
-      // Audio ended - if still recording, this helps trigger final analysis
-      if (isRecordingRef.current) {
-        lastSpeechTimeRef.current = Date.now();
-      }
+      // Speech ended - silence timer will handle finalization
     };
 
     recognition.onerror = (event: any) => {
-      console.error("Speech recognition error:", event.error);
-      
-      // Handle recoverable errors
-      if (event.error === 'no-speech') {
-        // No speech detected - this is normal, just continue listening
-        return;
+      if (event.error === 'no-speech' || event.error === 'aborted') {
+        return; // Normal, continue
       }
       
-      if (event.error === 'aborted') {
-        // Intentionally stopped - no error toast needed
-        return;
-      }
-      
-      // Show error for other issues
       toast({
         title: "Voice Error",
-        description: `Error: ${event.error}. Please try again.`,
+        description: `Error: ${event.error}`,
         variant: "destructive",
       });
       
-      finishRecording(false, "");
+      isRecordingRef.current = false;
+      setIsRecording(false);
+      clearTimers();
     };
 
     recognition.onend = () => {
-      // If we're still supposed to be recording, restart recognition
-      // (browser may stop recognition after ~60 seconds or on various events)
+      // Restart if still recording (browser may stop after ~60s)
       if (isRecordingRef.current && recognitionRef.current === recognition) {
         try {
           recognition.start();
-        } catch (e) {
-          // If restart fails, finish recording gracefully
-          finishRecording(true, "Recording completed");
+        } catch {
+          finishRecording();
         }
       }
     };
@@ -318,11 +266,12 @@ const UnifiedInput = ({
     try {
       recognition.start();
     } catch (e) {
-      console.error("Failed to start recognition:", e);
-      finishRecording(false, "");
+      isRecordingRef.current = false;
+      setIsRecording(false);
+      clearTimers();
       toast({
         title: "Voice Error",
-        description: "Failed to start voice recognition. Please try again.",
+        description: "Failed to start voice recognition.",
         variant: "destructive",
       });
     }
@@ -330,10 +279,10 @@ const UnifiedInput = ({
 
   // Sync displayText with idea when not recording
   useEffect(() => {
-    if (!isRecording && !isAutoStopping) {
+    if (!isRecording) {
       setDisplayText(idea);
     }
-  }, [idea, isRecording, isAutoStopping]);
+  }, [idea, isRecording]);
 
   return (
     <div className="w-full max-w-2xl mx-auto">
@@ -364,7 +313,7 @@ const UnifiedInput = ({
           value={displayText}
           onChange={(e) => {
             // Only allow manual editing when not recording
-            if (!isRecording && !isAutoStopping) {
+            if (!isRecording) {
               onIdeaChange(e.target.value);
             }
           }}
@@ -456,35 +405,30 @@ const UnifiedInput = ({
               <Paperclip className="w-5 h-5" />
             </button>
 
-            {/* Voice Button - Clean minimal feedback on button only */}
+            {/* Voice Button - Closed default, Open with floating animation when active */}
             <div className="relative">
               <button
                 onClick={handleVoice}
-                disabled={isAutoStopping}
                 className={`
                   relative p-2.5 rounded-xl 
-                  transition-all duration-300 active:scale-95 disabled:opacity-60 disabled:cursor-not-allowed
-                  ${(isRecording || isAutoStopping)
-                    ? "bg-primary/20 text-primary shadow-[0_0_12px_rgba(59,130,246,0.4)]"
+                  transition-all duration-300 active:scale-95
+                  ${isRecording
+                    ? "bg-primary/20 text-primary animate-[float_2s_ease-in-out_infinite]"
                     : "text-muted-foreground hover:text-foreground hover:bg-secondary/60"
                   }
                 `}
                 title={isRecording ? "Click to stop" : "Voice input"}
               >
-                {(isRecording || isAutoStopping) ? (
-                  <MicOff className="w-5 h-5" />
-                ) : (
-                  <Mic className="w-5 h-5" />
-                )}
+                <Mic className="w-5 h-5" />
               </button>
               
-              {/* Subtle pulsing glow ring when recording - uses theme colors */}
-              {(isRecording || isAutoStopping) && (
+              {/* Subtle glow ring when recording - theme colors only */}
+              {isRecording && (
                 <span 
                   className="
                     absolute inset-0 rounded-xl 
-                    border-2 border-primary/60
-                    animate-[pulse_1.5s_ease-in-out_infinite]
+                    border-2 border-primary/50
+                    animate-[pulse_2s_ease-in-out_infinite]
                     pointer-events-none
                   " 
                 />

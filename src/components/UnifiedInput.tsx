@@ -330,49 +330,7 @@ const UnifiedInput = ({
           "
         />
 
-        {/* Live voice transcript indicator */}
-        {(isRecording || isAutoStopping) && interimTranscript && (
-          <div className="px-1 py-2 text-sm text-primary/80 italic border-l-2 border-primary/40 pl-2 bg-primary/5 rounded-r">
-            <span className="animate-pulse">"{interimTranscript}"</span>
-            <span className="text-muted-foreground ml-1">(listening...)</span>
-          </div>
-        )}
-
-        {/* Recording status bar with duration */}
-        {(isRecording || isAutoStopping) && (
-          <div
-            className={`flex items-center justify-between px-2 py-2.5 mt-2 rounded-lg transition-all duration-300 ${
-              isAutoStopping 
-                ? "bg-green-500/10 border border-green-500/30" 
-                : "bg-destructive/10 border border-destructive/30"
-            }`}
-          >
-            <div className="flex items-center gap-2">
-              <span className="relative flex h-2.5 w-2.5">
-                <span className={`animate-ping absolute inline-flex h-full w-full rounded-full opacity-75 ${
-                  isAutoStopping ? "bg-green-500" : "bg-destructive"
-                }`}></span>
-                <span className={`relative inline-flex rounded-full h-2.5 w-2.5 ${
-                  isAutoStopping ? "bg-green-500" : "bg-destructive"
-                }`}></span>
-              </span>
-              <span className={`font-medium text-sm ${
-                isAutoStopping ? "text-green-600 dark:text-green-400" : "text-destructive"
-              }`}>
-                {isAutoStopping ? "✓ Finalizing transcript..." : "🎙️ Listening... Speak naturally"}
-              </span>
-            </div>
-            
-            {!isAutoStopping && (
-              <div className="flex items-center gap-3 text-xs text-muted-foreground">
-                <span className="font-mono bg-background/50 px-2 py-1 rounded">
-                  {formatDuration(recordingDuration)}
-                </span>
-                <span className="hidden sm:inline">Click mic to stop</span>
-              </div>
-            )}
-          </div>
-        )}
+        {/* Voice transcript is now shown inline via the textarea value - no overlay needed */}
 
         {/* Bottom bar - Language left, Icons right */}
         <div className="flex items-center justify-between mt-4 pt-4 border-t border-border/30">
@@ -446,26 +404,20 @@ const UnifiedInput = ({
               <Paperclip className="w-5 h-5" />
             </button>
 
-            {/* Voice Button with Visual Indicator */}
+            {/* Voice Button - Clean minimal feedback on button only */}
             <div className="relative">
               <button
                 onClick={handleVoice}
                 disabled={isAutoStopping}
                 className={`
-                  p-2.5 rounded-xl 
-                  transition-all duration-200 active:scale-95 disabled:opacity-60 disabled:cursor-not-allowed
+                  relative p-2.5 rounded-xl 
+                  transition-all duration-300 active:scale-95 disabled:opacity-60 disabled:cursor-not-allowed
                   ${(isRecording || isAutoStopping)
-                    ? "bg-destructive/20 text-destructive"
+                    ? "bg-primary/20 text-primary shadow-[0_0_12px_rgba(59,130,246,0.4)]"
                     : "text-muted-foreground hover:text-foreground hover:bg-secondary/60"
                   }
                 `}
-                title={
-                  isAutoStopping
-                    ? "Finishing speech recognition..."
-                    : isRecording
-                      ? "Click to stop recording"
-                      : "Voice input"
-                }
+                title={isRecording ? "Click to stop" : "Voice input"}
               >
                 {(isRecording || isAutoStopping) ? (
                   <MicOff className="w-5 h-5" />
@@ -474,12 +426,16 @@ const UnifiedInput = ({
                 )}
               </button>
               
-              {/* Pulsing ring indicator when recording */}
+              {/* Subtle pulsing glow ring when recording - uses theme colors */}
               {(isRecording || isAutoStopping) && (
-                <>
-                  <span className="absolute inset-0 rounded-xl border-2 border-destructive animate-ping opacity-75" />
-                  <span className="absolute -top-1 -right-1 w-3 h-3 bg-destructive rounded-full animate-pulse" />
-                </>
+                <span 
+                  className="
+                    absolute inset-0 rounded-xl 
+                    border-2 border-primary/60
+                    animate-[pulse_1.5s_ease-in-out_infinite]
+                    pointer-events-none
+                  " 
+                />
               )}
             </div>
 

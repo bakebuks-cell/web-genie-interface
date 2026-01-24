@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { Paperclip, Mic, Zap, ChevronDown, Check, MicOff } from "lucide-react";
 import {
   DropdownMenu,
@@ -35,11 +35,26 @@ const UnifiedInput = ({
 }: UnifiedInputProps) => {
   const [isFocused, setIsFocused] = useState(false);
   const [isRecording, setIsRecording] = useState(false);
+  const [interimTranscript, setInterimTranscript] = useState("");
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const recognitionRef = useRef<any>(null);
+  const silenceTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const { toast } = useToast();
   
   const selectedLang = languages.find((l) => l.id === selectedLanguage);
   const isGenerateEnabled = selectedLanguage && idea.trim().length > 0;
+
+  // Cleanup on unmount
+  useEffect(() => {
+    return () => {
+      if (recognitionRef.current) {
+        recognitionRef.current.stop();
+      }
+      if (silenceTimeoutRef.current) {
+        clearTimeout(silenceTimeoutRef.current);
+      }
+    };
+  }, []);
 
   const handleAttach = () => {
     fileInputRef.current?.click();
@@ -58,6 +73,35 @@ const UnifiedInput = ({
     e.target.value = "";
   };
 
+  const stopRecording = () => {
+    if (recognitionRef.current) {
+      recognitionRef.current.stop();
+      recognitionRef.current = null;
+    }
+    if (silenceTimeoutRef.current) {
+      clearTimeout(silenceTimeoutRef.current);
+      silenceTimeoutRef.current = null;
+    }
+    setIsRecording(false);
+    setInterimTranscript("");
+  };
+
+  const resetSilenceTimeout = () => {
+    if (silenceTimeoutRef.current) {
+      clearTimeout(silenceTimeoutRef.current);
+    }
+    // Auto-stop after 2.5 seconds of silence
+    silenceTimeoutRef.current = setTimeout(() => {
+      if (isRecording) {
+        toast({
+          title: "Voice Input Complete",
+          description: "Stopped listening due to silence",
+        });
+        stopRecording();
+      }
+    }, 2500);
+  };
+
   const handleVoice = async () => {
     if (!("webkitSpeechRecognition" in window) && !("SpeechRecognition" in window)) {
       toast({
@@ -68,52 +112,96 @@ const UnifiedInput = ({
       return;
     }
 
+    // Toggle off if already recording
     if (isRecording) {
-      setIsRecording(false);
       toast({
-        title: "Recording Stopped",
-        description: "Voice input cancelled",
+        title: "Voice Input Stopped",
+        description: "Recording manually stopped",
       });
+      stopRecording();
       return;
     }
 
+    // Start new recording session
     setIsRecording(true);
+    setInterimTranscript("");
+    
     toast({
-      title: "Listening...",
-      description: "Speak now to describe your application",
+      title: "🎙️ Listening...",
+      description: "Speak naturally. I'll stop after 2-3 seconds of silence.",
     });
 
     const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
     const recognition = new SpeechRecognition();
+    recognitionRef.current = recognition;
+    
     recognition.lang = "en-US";
-    recognition.interimResults = false;
+    recognition.interimResults = true; // Enable interim results for live feedback
+    recognition.continuous = true; // Keep listening continuously
     recognition.maxAlternatives = 1;
 
+    let finalTranscript = "";
+
     recognition.onresult = (event: any) => {
-      const transcript = event.results[0][0].transcript;
-      onIdeaChange(idea ? `${idea} ${transcript}` : transcript);
-      toast({
-        title: "Voice Captured",
-        description: "Your speech has been added to the input",
-      });
-      setIsRecording(false);
+      // Reset silence timeout on any speech detection
+      resetSilenceTimeout();
+      
+      let interim = "";
+      
+      for (let i = event.resultIndex; i < event.results.length; i++) {
+        const transcript = event.results[i][0].transcript;
+        if (event.results[i].isFinal) {
+          finalTranscript += transcript + " ";
+          // Update the input with the final transcript
+          onIdeaChange(idea ? `${idea} ${finalTranscript.trim()}` : finalTranscript.trim());
+        } else {
+          interim = transcript;
+        }
+      }
+      
+      setInterimTranscript(interim);
     };
 
     recognition.onerror = (event: any) => {
       console.error("Speech recognition error:", event.error);
-      toast({
-        title: "Voice Error",
-        description: "Couldn't capture your voice. Please try again.",
-        variant: "destructive",
-      });
-      setIsRecording(false);
+      if (event.error !== 'no-speech' && event.error !== 'aborted') {
+        toast({
+          title: "Voice Error",
+          description: `Error: ${event.error}. Please try again.`,
+          variant: "destructive",
+        });
+      }
+      stopRecording();
     };
 
     recognition.onend = () => {
-      setIsRecording(false);
+      // Only restart if we're still supposed to be recording
+      // This handles cases where the browser stops recognition unexpectedly
+      if (isRecording && recognitionRef.current) {
+        try {
+          recognition.start();
+        } catch (e) {
+          // Recognition already started or stopped
+          stopRecording();
+        }
+      }
     };
 
-    recognition.start();
+    recognition.onspeechstart = () => {
+      resetSilenceTimeout();
+    };
+
+    recognition.onspeechend = () => {
+      resetSilenceTimeout();
+    };
+
+    try {
+      recognition.start();
+      resetSilenceTimeout();
+    } catch (e) {
+      console.error("Failed to start recognition:", e);
+      stopRecording();
+    }
   };
 
   return (
@@ -157,6 +245,24 @@ const UnifiedInput = ({
             scrollbar-hide
           "
         />
+
+        {/* Live voice transcript indicator */}
+        {isRecording && interimTranscript && (
+          <div className="px-1 py-2 text-sm text-muted-foreground italic animate-pulse">
+            "{interimTranscript}..."
+          </div>
+        )}
+
+        {/* Recording status bar */}
+        {isRecording && (
+          <div className="flex items-center gap-2 px-1 py-2 text-sm text-destructive">
+            <span className="relative flex h-2 w-2">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-destructive opacity-75"></span>
+              <span className="relative inline-flex rounded-full h-2 w-2 bg-destructive"></span>
+            </span>
+            <span className="font-medium">Listening... Click mic to stop</span>
+          </div>
+        )}
 
         {/* Bottom bar - Language left, Icons right */}
         <div className="flex items-center justify-between mt-4 pt-4 border-t border-border/30">
@@ -230,21 +336,31 @@ const UnifiedInput = ({
               <Paperclip className="w-5 h-5" />
             </button>
 
-            {/* Voice Button */}
-            <button
-              onClick={handleVoice}
-              className={`
-                p-2.5 rounded-xl 
-                transition-all duration-200 active:scale-95
-                ${isRecording 
-                  ? "bg-destructive/20 text-destructive animate-pulse" 
-                  : "text-muted-foreground hover:text-foreground hover:bg-secondary/60"
-                }
-              `}
-              title={isRecording ? "Stop recording" : "Voice input"}
-            >
-              {isRecording ? <MicOff className="w-5 h-5" /> : <Mic className="w-5 h-5" />}
-            </button>
+            {/* Voice Button with Visual Indicator */}
+            <div className="relative">
+              <button
+                onClick={handleVoice}
+                className={`
+                  p-2.5 rounded-xl 
+                  transition-all duration-200 active:scale-95
+                  ${isRecording 
+                    ? "bg-destructive/20 text-destructive" 
+                    : "text-muted-foreground hover:text-foreground hover:bg-secondary/60"
+                  }
+                `}
+                title={isRecording ? "Click to stop recording" : "Voice input"}
+              >
+                {isRecording ? <MicOff className="w-5 h-5" /> : <Mic className="w-5 h-5" />}
+              </button>
+              
+              {/* Pulsing ring indicator when recording */}
+              {isRecording && (
+                <>
+                  <span className="absolute inset-0 rounded-xl border-2 border-destructive animate-ping opacity-75" />
+                  <span className="absolute -top-1 -right-1 w-3 h-3 bg-destructive rounded-full animate-pulse" />
+                </>
+              )}
+            </div>
 
             {/* Generate Button - Primary action */}
             <button

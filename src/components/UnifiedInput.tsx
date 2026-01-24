@@ -36,17 +36,16 @@ const UnifiedInput = ({
   const [isFocused, setIsFocused] = useState(false);
   const [isRecording, setIsRecording] = useState(false);
   const [isAutoStopping, setIsAutoStopping] = useState(false);
-  const [interimTranscript, setInterimTranscript] = useState("");
-  const [recordingDuration, setRecordingDuration] = useState(0);
+  const [displayText, setDisplayText] = useState(""); // Combined final + interim for display
   const fileInputRef = useRef<HTMLInputElement>(null);
   const recognitionRef = useRef<any>(null);
-  const silenceTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const durationIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const silenceCheckIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   // Refs to avoid stale state inside SpeechRecognition callbacks
   const isRecordingRef = useRef(false);
-  const startIdeaRef = useRef("");
-  const accumulatedFinalRef = useRef(""); // All finalized text segments
+  const startIdeaRef = useRef(""); // Text before voice started
+  const accumulatedFinalRef = useRef(""); // Finalized accurate text
+  const currentInterimRef = useRef(""); // Current interim (fast but may change)
   const lastSpeechTimeRef = useRef<number>(Date.now());
   const { toast } = useToast();
   
@@ -60,8 +59,7 @@ const UnifiedInput = ({
       if (recognitionRef.current) {
         try { recognitionRef.current.abort(); } catch {}
       }
-      if (silenceTimeoutRef.current) clearTimeout(silenceTimeoutRef.current);
-      if (durationIntervalRef.current) clearInterval(durationIntervalRef.current);
+      if (silenceCheckIntervalRef.current) clearInterval(silenceCheckIntervalRef.current);
     };
   }, []);
 
@@ -82,69 +80,73 @@ const UnifiedInput = ({
     e.target.value = "";
   };
 
-  const clearAllTimers = () => {
-    if (silenceTimeoutRef.current) {
-      clearTimeout(silenceTimeoutRef.current);
-      silenceTimeoutRef.current = null;
-    }
-    if (durationIntervalRef.current) {
-      clearInterval(durationIntervalRef.current);
-      durationIntervalRef.current = null;
+  const clearTimers = () => {
+    if (silenceCheckIntervalRef.current) {
+      clearInterval(silenceCheckIntervalRef.current);
+      silenceCheckIntervalRef.current = null;
     }
   };
 
-  const updateIdeaWithTranscript = (finalText: string, interimText: string = "") => {
+  // Update display in real-time: shows finalized + interim together
+  const updateDisplayText = () => {
     const base = startIdeaRef.current.trim();
-    const combined = `${finalText} ${interimText}`.trim();
-    if (!combined) return;
+    const final = accumulatedFinalRef.current.trim();
+    const interim = currentInterimRef.current.trim();
     
-    const newIdea = base ? `${base} ${combined}` : combined;
-    onIdeaChange(newIdea);
+    // Combine: base text + finalized speech + interim (in italics effect via state)
+    let combined = base;
+    if (final) combined = combined ? `${combined} ${final}` : final;
+    if (interim) combined = combined ? `${combined} ${interim}` : interim;
+    
+    setDisplayText(combined);
+    onIdeaChange(combined);
   };
 
   const finishRecording = (showToast: boolean, reason: string) => {
+    if (!isRecordingRef.current && !isAutoStopping) return;
+    
     isRecordingRef.current = false;
-    
-    // Finalize with accumulated text
-    const finalText = accumulatedFinalRef.current.trim();
-    if (finalText) {
-      updateIdeaWithTranscript(finalText);
-    }
-    
-    // Stop recognition
-    if (recognitionRef.current) {
-      try { recognitionRef.current.abort(); } catch {}
-      recognitionRef.current = null;
-    }
-    
-    clearAllTimers();
-    
-    if (showToast) {
-      toast({
-        title: "✓ Voice Input Complete",
-        description: reason,
-      });
-    }
-    
-    // Reset UI state with smooth transition
     setIsAutoStopping(true);
+    
+    // Stop recognition first to get final results
+    if (recognitionRef.current) {
+      try { 
+        recognitionRef.current.stop(); // Use stop() instead of abort() to get final results
+      } catch {}
+    }
+    
+    // Small delay to allow final results to come through
     setTimeout(() => {
+      // Finalize: use accumulated final text (most accurate)
+      const base = startIdeaRef.current.trim();
+      const final = accumulatedFinalRef.current.trim();
+      
+      // Set final text without interim (interim was just for preview)
+      const finalText = base ? (final ? `${base} ${final}` : base) : final;
+      onIdeaChange(finalText);
+      setDisplayText(finalText);
+      
+      // Cleanup
+      if (recognitionRef.current) {
+        try { recognitionRef.current.abort(); } catch {}
+        recognitionRef.current = null;
+      }
+      
+      clearTimers();
+      
+      if (showToast && final) {
+        toast({
+          title: "✓ Voice Input Complete",
+          description: reason,
+        });
+      }
+      
+      // Reset state
       setIsRecording(false);
       setIsAutoStopping(false);
-      setInterimTranscript("");
-      setRecordingDuration(0);
       accumulatedFinalRef.current = "";
-    }, 300);
-  };
-
-  const checkSilenceAndStop = () => {
-    const now = Date.now();
-    const silenceDuration = now - lastSpeechTimeRef.current;
-    
-    // Stop after 5 seconds of continuous silence
-    if (silenceDuration >= 5000 && isRecordingRef.current) {
-      finishRecording(true, "Stopped after 5 seconds of silence");
-    }
+      currentInterimRef.current = "";
+    }, 150);
   };
 
   const handleVoice = async () => {
@@ -159,67 +161,79 @@ const UnifiedInput = ({
 
     // Toggle off if already recording (manual stop)
     if (isRecordingRef.current) {
-      finishRecording(true, "Recording stopped manually");
+      finishRecording(true, "Stopped manually");
       return;
     }
 
     // Initialize recording state
     startIdeaRef.current = idea;
     accumulatedFinalRef.current = "";
+    currentInterimRef.current = "";
     lastSpeechTimeRef.current = Date.now();
     isRecordingRef.current = true;
 
     setIsRecording(true);
     setIsAutoStopping(false);
-    setInterimTranscript("");
-    setRecordingDuration(0);
+    setDisplayText(idea);
     
     toast({
       title: "🎙️ Listening...",
-      description: "Speak naturally. Auto-stops after 5 seconds of silence.",
+      description: "Speak naturally. Words appear as you speak.",
     });
 
-    // Start duration counter
-    durationIntervalRef.current = setInterval(() => {
-      setRecordingDuration(prev => prev + 1);
-      checkSilenceAndStop();
-    }, 1000);
+    // Silence detection: check every 500ms for faster response
+    silenceCheckIntervalRef.current = setInterval(() => {
+      if (!isRecordingRef.current) return;
+      
+      const silenceMs = Date.now() - lastSpeechTimeRef.current;
+      if (silenceMs >= 5000) {
+        finishRecording(true, "Auto-stopped after silence");
+      }
+    }, 500);
 
     const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
     const recognition = new SpeechRecognition();
     recognitionRef.current = recognition;
     
-    // High-accuracy configuration
+    // Optimized for accuracy + speed
     recognition.lang = "en-US";
-    recognition.interimResults = true;
-    recognition.continuous = true;
-    recognition.maxAlternatives = 3; // Get multiple alternatives for better accuracy
+    recognition.interimResults = true; // Show words as spoken (fast feedback)
+    recognition.continuous = true; // Don't stop between sentences
+    recognition.maxAlternatives = 1; // Fastest processing (1 is enough for most cases)
 
     recognition.onresult = (event: any) => {
-      // Mark speech activity
+      if (!isRecordingRef.current) return;
+      
+      // Mark speech activity for silence detection
       lastSpeechTimeRef.current = Date.now();
       
-      let currentInterim = "";
+      // Process results efficiently
+      let newFinal = "";
+      let newInterim = "";
       
-      // Process all results from the current result index
       for (let i = event.resultIndex; i < event.results.length; i++) {
         const result = event.results[i];
-        // Get the most confident transcript
         const transcript = result[0].transcript;
         
         if (result.isFinal) {
-          // Append finalized text (this is accurate and won't change)
-          accumulatedFinalRef.current += transcript + " ";
-          
-          // Update input immediately with finalized text
-          updateIdeaWithTranscript(accumulatedFinalRef.current.trim());
+          // Final results are accurate - accumulate them
+          newFinal += transcript + " ";
         } else {
-          // Show interim (not yet finalized) text as preview
-          currentInterim = transcript;
+          // Interim results show instantly but may change
+          newInterim = transcript;
         }
       }
       
-      setInterimTranscript(currentInterim);
+      // Update accumulated final text
+      if (newFinal) {
+        accumulatedFinalRef.current += newFinal;
+      }
+      
+      // Update interim (replaces previous interim)
+      currentInterimRef.current = newInterim;
+      
+      // Update display immediately for real-time feedback
+      updateDisplayText();
     };
 
     recognition.onspeechstart = () => {
@@ -281,12 +295,12 @@ const UnifiedInput = ({
     }
   };
 
-  // Format duration as MM:SS
-  const formatDuration = (seconds: number) => {
-    const mins = Math.floor(seconds / 60);
-    const secs = seconds % 60;
-    return `${mins}:${secs.toString().padStart(2, '0')}`;
-  };
+  // Sync displayText with idea when not recording
+  useEffect(() => {
+    if (!isRecording && !isAutoStopping) {
+      setDisplayText(idea);
+    }
+  }, [idea, isRecording, isAutoStopping]);
 
   return (
     <div className="w-full max-w-2xl mx-auto">
@@ -312,10 +326,15 @@ const UnifiedInput = ({
           className="hidden"
         />
 
-        {/* Textarea - Text starts top-left, reduced height */}
+        {/* Textarea - Shows real-time speech or editable text */}
         <textarea
-          value={idea}
-          onChange={(e) => onIdeaChange(e.target.value)}
+          value={displayText}
+          onChange={(e) => {
+            // Only allow manual editing when not recording
+            if (!isRecording && !isAutoStopping) {
+              onIdeaChange(e.target.value);
+            }
+          }}
           onFocus={() => setIsFocused(true)}
           onBlur={() => setIsFocused(false)}
           placeholder="Describe your application idea..."

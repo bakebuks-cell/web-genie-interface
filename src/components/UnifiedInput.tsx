@@ -37,16 +37,17 @@ const UnifiedInput = ({
   const [isRecording, setIsRecording] = useState(false);
   const [isAutoStopping, setIsAutoStopping] = useState(false);
   const [interimTranscript, setInterimTranscript] = useState("");
+  const [recordingDuration, setRecordingDuration] = useState(0);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const recognitionRef = useRef<any>(null);
   const silenceTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const durationIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   // Refs to avoid stale state inside SpeechRecognition callbacks
   const isRecordingRef = useRef(false);
   const startIdeaRef = useRef("");
-  const finalTranscriptRef = useRef("");
-  const interimTranscriptRef = useRef("");
-  const finalizeOnEndRef = useRef(false);
+  const accumulatedFinalRef = useRef(""); // All finalized text segments
+  const lastSpeechTimeRef = useRef<number>(Date.now());
   const { toast } = useToast();
   
   const selectedLang = languages.find((l) => l.id === selectedLanguage);
@@ -56,13 +57,11 @@ const UnifiedInput = ({
   useEffect(() => {
     return () => {
       isRecordingRef.current = false;
-      finalizeOnEndRef.current = false;
       if (recognitionRef.current) {
-        recognitionRef.current.stop();
+        try { recognitionRef.current.abort(); } catch {}
       }
-      if (silenceTimeoutRef.current) {
-        clearTimeout(silenceTimeoutRef.current);
-      }
+      if (silenceTimeoutRef.current) clearTimeout(silenceTimeoutRef.current);
+      if (durationIntervalRef.current) clearInterval(durationIntervalRef.current);
     };
   }, []);
 
@@ -83,66 +82,69 @@ const UnifiedInput = ({
     e.target.value = "";
   };
 
-  const clearSilenceTimer = () => {
+  const clearAllTimers = () => {
     if (silenceTimeoutRef.current) {
       clearTimeout(silenceTimeoutRef.current);
       silenceTimeoutRef.current = null;
     }
+    if (durationIntervalRef.current) {
+      clearInterval(durationIntervalRef.current);
+      durationIntervalRef.current = null;
+    }
   };
 
-  const finalizeTranscriptToIdea = () => {
-    const combined = `${finalTranscriptRef.current} ${interimTranscriptRef.current}`.trim();
-    if (!combined) return;
-
+  const updateIdeaWithTranscript = (finalText: string, interimText: string = "") => {
     const base = startIdeaRef.current.trim();
-    const next = base ? `${base} ${combined}` : combined;
-    onIdeaChange(next);
+    const combined = `${finalText} ${interimText}`.trim();
+    if (!combined) return;
+    
+    const newIdea = base ? `${base} ${combined}` : combined;
+    onIdeaChange(newIdea);
   };
 
-  const cleanupRecognition = () => {
-    clearSilenceTimer();
-    recognitionRef.current = null;
-    setInterimTranscript("");
-    interimTranscriptRef.current = "";
-    finalTranscriptRef.current = "";
-    setIsAutoStopping(false);
-  };
-
-  const requestStop = (reason: "manual" | "silence") => {
-    if (!recognitionRef.current) {
-      isRecordingRef.current = false;
+  const finishRecording = (showToast: boolean, reason: string) => {
+    isRecordingRef.current = false;
+    
+    // Finalize with accumulated text
+    const finalText = accumulatedFinalRef.current.trim();
+    if (finalText) {
+      updateIdeaWithTranscript(finalText);
+    }
+    
+    // Stop recognition
+    if (recognitionRef.current) {
+      try { recognitionRef.current.abort(); } catch {}
+      recognitionRef.current = null;
+    }
+    
+    clearAllTimers();
+    
+    if (showToast) {
+      toast({
+        title: "✓ Voice Input Complete",
+        description: reason,
+      });
+    }
+    
+    // Reset UI state with smooth transition
+    setIsAutoStopping(true);
+    setTimeout(() => {
       setIsRecording(false);
       setIsAutoStopping(false);
-      cleanupRecognition();
-      return;
-    }
-
-    // UI should stop immediately; recognition will finalize on `onend`.
-    isRecordingRef.current = false;
-    setIsRecording(false);
-    setIsAutoStopping(reason === "silence");
-    finalizeOnEndRef.current = true;
-    clearSilenceTimer();
-
-    try {
-      recognitionRef.current.stop();
-    } catch {
-      // ignore
-    }
+      setInterimTranscript("");
+      setRecordingDuration(0);
+      accumulatedFinalRef.current = "";
+    }, 300);
   };
 
-  const resetSilenceTimeout = () => {
-    clearSilenceTimer();
-    // Auto-stop after ~3.5s of continuous silence (target 3–4 seconds)
-    silenceTimeoutRef.current = setTimeout(() => {
-      if (!isRecordingRef.current) return;
-
-      toast({
-        title: "Voice Input Complete",
-        description: "Stopped listening due to silence",
-      });
-      requestStop("silence");
-    }, 3500);
+  const checkSilenceAndStop = () => {
+    const now = Date.now();
+    const silenceDuration = now - lastSpeechTimeRef.current;
+    
+    // Stop after 5 seconds of continuous silence
+    if (silenceDuration >= 5000 && isRecordingRef.current) {
+      finishRecording(true, "Stopped after 5 seconds of silence");
+    }
   };
 
   const handleVoice = async () => {
@@ -155,120 +157,135 @@ const UnifiedInput = ({
       return;
     }
 
-    // Toggle off if already recording
+    // Toggle off if already recording (manual stop)
     if (isRecordingRef.current) {
-      toast({
-        title: "Voice Input Stopped",
-        description: "Recording manually stopped",
-      });
-      requestStop("manual");
+      finishRecording(true, "Recording stopped manually");
       return;
     }
 
-    // Start new recording session
+    // Initialize recording state
     startIdeaRef.current = idea;
-    finalTranscriptRef.current = "";
-    interimTranscriptRef.current = "";
-    finalizeOnEndRef.current = false;
+    accumulatedFinalRef.current = "";
+    lastSpeechTimeRef.current = Date.now();
     isRecordingRef.current = true;
 
     setIsRecording(true);
+    setIsAutoStopping(false);
     setInterimTranscript("");
+    setRecordingDuration(0);
     
     toast({
       title: "🎙️ Listening...",
-      description: "Speak naturally. I'll stop after 2-3 seconds of silence.",
+      description: "Speak naturally. Auto-stops after 5 seconds of silence.",
     });
+
+    // Start duration counter
+    durationIntervalRef.current = setInterval(() => {
+      setRecordingDuration(prev => prev + 1);
+      checkSilenceAndStop();
+    }, 1000);
 
     const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
     const recognition = new SpeechRecognition();
     recognitionRef.current = recognition;
     
+    // High-accuracy configuration
     recognition.lang = "en-US";
-    recognition.interimResults = true; // Enable interim results for live feedback
-    recognition.continuous = true; // Keep listening continuously
-    recognition.maxAlternatives = 1;
+    recognition.interimResults = true;
+    recognition.continuous = true;
+    recognition.maxAlternatives = 3; // Get multiple alternatives for better accuracy
 
     recognition.onresult = (event: any) => {
-      // Reset silence timeout on any speech detection
-      resetSilenceTimeout();
+      // Mark speech activity
+      lastSpeechTimeRef.current = Date.now();
       
-      let interim = "";
+      let currentInterim = "";
       
+      // Process all results from the current result index
       for (let i = event.resultIndex; i < event.results.length; i++) {
-        const transcript = event.results[i][0].transcript;
-        if (event.results[i].isFinal) {
-          finalTranscriptRef.current += transcript + " ";
-          interimTranscriptRef.current = "";
-          // Update the input live with the finalized portion so far
-          const finalSoFar = finalTranscriptRef.current.trim();
-          const base = startIdeaRef.current.trim();
-          onIdeaChange(base ? `${base} ${finalSoFar}` : finalSoFar);
+        const result = event.results[i];
+        // Get the most confident transcript
+        const transcript = result[0].transcript;
+        
+        if (result.isFinal) {
+          // Append finalized text (this is accurate and won't change)
+          accumulatedFinalRef.current += transcript + " ";
+          
+          // Update input immediately with finalized text
+          updateIdeaWithTranscript(accumulatedFinalRef.current.trim());
         } else {
-          interim = transcript;
+          // Show interim (not yet finalized) text as preview
+          currentInterim = transcript;
         }
       }
+      
+      setInterimTranscript(currentInterim);
+    };
 
-      interimTranscriptRef.current = interim;
-      setInterimTranscript(interim);
+    recognition.onspeechstart = () => {
+      lastSpeechTimeRef.current = Date.now();
+    };
+
+    recognition.onspeechend = () => {
+      // Don't immediately stop - just note the time and let the interval check handle it
+      // This allows for natural pauses between sentences
     };
 
     recognition.onerror = (event: any) => {
       console.error("Speech recognition error:", event.error);
-      if (event.error !== 'no-speech' && event.error !== 'aborted') {
-        toast({
-          title: "Voice Error",
-          description: `Error: ${event.error}. Please try again.`,
-          variant: "destructive",
-        });
+      
+      // Handle recoverable errors
+      if (event.error === 'no-speech') {
+        // No speech detected - this is normal, just continue listening
+        return;
       }
-      isRecordingRef.current = false;
-      setIsRecording(false);
-      cleanupRecognition();
+      
+      if (event.error === 'aborted') {
+        // Intentionally stopped - no error toast needed
+        return;
+      }
+      
+      // Show error for other issues
+      toast({
+        title: "Voice Error",
+        description: `Error: ${event.error}. Please try again.`,
+        variant: "destructive",
+      });
+      
+      finishRecording(false, "");
     };
 
     recognition.onend = () => {
-      // If we intentionally stopped (manual or silence), finalize and cleanup.
-      if (finalizeOnEndRef.current) {
-        finalizeOnEndRef.current = false;
-        finalizeTranscriptToIdea();
-        cleanupRecognition();
-        return;
-      }
-
-      // Browser sometimes ends recognition unexpectedly; restart if user still wants it.
-      if (isRecordingRef.current && recognitionRef.current) {
+      // If we're still supposed to be recording, restart recognition
+      // (browser may stop recognition after ~60 seconds or on various events)
+      if (isRecordingRef.current && recognitionRef.current === recognition) {
         try {
           recognition.start();
-          resetSilenceTimeout();
-        } catch {
-          isRecordingRef.current = false;
-          setIsRecording(false);
-          cleanupRecognition();
+        } catch (e) {
+          // If restart fails, finish recording gracefully
+          finishRecording(true, "Recording completed");
         }
-        return;
       }
-
-      cleanupRecognition();
-    };
-
-    recognition.onspeechstart = () => {
-      resetSilenceTimeout();
-    };
-
-    recognition.onspeechend = () => {
-      resetSilenceTimeout();
     };
 
     try {
       recognition.start();
-      resetSilenceTimeout();
     } catch (e) {
       console.error("Failed to start recognition:", e);
-      isRecordingRef.current = false;
-      setIsRecording(false);
-      cleanupRecognition();
+      finishRecording(false, "");
+      toast({
+        title: "Voice Error",
+        description: "Failed to start voice recognition. Please try again.",
+        variant: "destructive",
+      });
     }
+  };
+
+  // Format duration as MM:SS
+  const formatDuration = (seconds: number) => {
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return `${mins}:${secs.toString().padStart(2, '0')}`;
   };
 
   return (
@@ -314,26 +331,46 @@ const UnifiedInput = ({
         />
 
         {/* Live voice transcript indicator */}
-        {isRecording && interimTranscript && (
-          <div className="px-1 py-2 text-sm text-muted-foreground italic animate-pulse">
-            "{interimTranscript}..."
+        {(isRecording || isAutoStopping) && interimTranscript && (
+          <div className="px-1 py-2 text-sm text-primary/80 italic border-l-2 border-primary/40 pl-2 bg-primary/5 rounded-r">
+            <span className="animate-pulse">"{interimTranscript}"</span>
+            <span className="text-muted-foreground ml-1">(listening...)</span>
           </div>
         )}
 
-        {/* Recording status bar */}
+        {/* Recording status bar with duration */}
         {(isRecording || isAutoStopping) && (
           <div
-            className={`flex items-center gap-2 px-1 py-2 text-sm transition-opacity duration-200 ${
-              isAutoStopping ? "opacity-80" : "opacity-100"
+            className={`flex items-center justify-between px-2 py-2.5 mt-2 rounded-lg transition-all duration-300 ${
+              isAutoStopping 
+                ? "bg-green-500/10 border border-green-500/30" 
+                : "bg-destructive/10 border border-destructive/30"
             }`}
           >
-            <span className="relative flex h-2 w-2">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-destructive opacity-75"></span>
-              <span className="relative inline-flex rounded-full h-2 w-2 bg-destructive"></span>
-            </span>
-            <span className="font-medium text-destructive">
-              {isAutoStopping ? "Finishing..." : "Listening... Click mic to stop"}
-            </span>
+            <div className="flex items-center gap-2">
+              <span className="relative flex h-2.5 w-2.5">
+                <span className={`animate-ping absolute inline-flex h-full w-full rounded-full opacity-75 ${
+                  isAutoStopping ? "bg-green-500" : "bg-destructive"
+                }`}></span>
+                <span className={`relative inline-flex rounded-full h-2.5 w-2.5 ${
+                  isAutoStopping ? "bg-green-500" : "bg-destructive"
+                }`}></span>
+              </span>
+              <span className={`font-medium text-sm ${
+                isAutoStopping ? "text-green-600 dark:text-green-400" : "text-destructive"
+              }`}>
+                {isAutoStopping ? "✓ Finalizing transcript..." : "🎙️ Listening... Speak naturally"}
+              </span>
+            </div>
+            
+            {!isAutoStopping && (
+              <div className="flex items-center gap-3 text-xs text-muted-foreground">
+                <span className="font-mono bg-background/50 px-2 py-1 rounded">
+                  {formatDuration(recordingDuration)}
+                </span>
+                <span className="hidden sm:inline">Click mic to stop</span>
+              </div>
+            )}
           </div>
         )}
 

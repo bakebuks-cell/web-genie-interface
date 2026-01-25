@@ -28,6 +28,13 @@ const GenerationPage = () => {
   
   // State for health check status
   const [healthCheckStatus, setHealthCheckStatus] = useState<HealthCheckStatus | undefined>(undefined);
+  
+  // State for Visual Edit Mode
+  const [visualEditMode, setVisualEditMode] = useState(false);
+  const [selectedElementId, setSelectedElementId] = useState<string | null>(null);
+  
+  // State for project ID (received from initial build)
+  const [projectId, setProjectId] = useState<string | null>(null);
 
   // Get user initial from profile or email
   const userInitial = profile?.display_name?.charAt(0) || user?.email?.charAt(0) || "b";
@@ -47,12 +54,23 @@ const GenerationPage = () => {
     window.open(urlToOpen, "_blank");
   };
 
-  const handleGeneratedUrl = (url: string) => {
+  const handleGeneratedUrl = (url: string, newProjectId?: string) => {
     setGeneratedUrl(url);
+    if (newProjectId) {
+      setProjectId(newProjectId);
+    }
   };
 
   const handleHealthCheckStatus = (status: HealthCheckStatus) => {
     setHealthCheckStatus(status);
+  };
+
+  const handleElementSelect = (elementId: string | null) => {
+    setSelectedElementId(elementId);
+  };
+
+  const clearSelectedElement = () => {
+    setSelectedElementId(null);
   };
 
   return (
@@ -77,6 +95,9 @@ const GenerationPage = () => {
             initialPrompt={idea}
             onGeneratedUrl={handleGeneratedUrl}
             onHealthCheckStatus={handleHealthCheckStatus}
+            projectId={projectId}
+            selectedElementId={selectedElementId}
+            onClearElement={clearSelectedElement}
           />
         </div>
         
@@ -90,6 +111,10 @@ const GenerationPage = () => {
             generatedUrl={generatedUrl}
             healthCheckStatus={healthCheckStatus}
             onRefresh={handleRefresh}
+            visualEditMode={visualEditMode}
+            onVisualEditModeChange={setVisualEditMode}
+            onElementSelect={handleElementSelect}
+            selectedElementId={selectedElementId}
           />
         </div>
       </div>

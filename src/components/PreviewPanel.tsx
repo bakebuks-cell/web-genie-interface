@@ -1,6 +1,8 @@
-import { useState, useEffect } from "react";
-import { ExternalLink, RefreshCw } from "lucide-react";
+import { useState, useEffect, useRef, useCallback } from "react";
+import { ExternalLink, RefreshCw, MousePointer2 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import { Switch } from "@/components/ui/switch";
+import { Label } from "@/components/ui/label";
 
 interface HealthCheckStatus {
   isChecking: boolean;
@@ -9,7 +11,8 @@ interface HealthCheckStatus {
   error?: string;
 }
 
-interface PreviewPanelProps {
+// Props interface for PreviewPanel component
+export interface PreviewPanelProps {
   language: string;
   idea: string;
   currentRoute?: string;
@@ -17,6 +20,10 @@ interface PreviewPanelProps {
   generatedUrl?: string;
   healthCheckStatus?: HealthCheckStatus;
   onRefresh?: () => void;
+  visualEditMode?: boolean;
+  onVisualEditModeChange?: (enabled: boolean) => void;
+  onElementSelect?: (elementId: string | null) => void;
+  selectedElementId?: string | null;
 }
 
 // Mock content for different routes
@@ -48,10 +55,159 @@ const PreviewPanel = ({
   viewMode = "desktop",
   generatedUrl,
   healthCheckStatus,
-  onRefresh
+  onRefresh,
+  visualEditMode = false,
+  onVisualEditModeChange,
+  onElementSelect,
+  selectedElementId
 }: PreviewPanelProps) => {
   const [isLoading, setIsLoading] = useState(true);
   const [progress, setProgress] = useState(0);
+  const iframeRef = useRef<HTMLIFrameElement>(null);
+
+  // Inject click-to-select script into iframe when visual edit mode is enabled
+  const injectVisualEditScript = useCallback(() => {
+    const iframe = iframeRef.current;
+    if (!iframe || !iframe.contentWindow || !iframe.contentDocument) return;
+
+    try {
+      const doc = iframe.contentDocument;
+      
+      // Remove existing script if any
+      const existingScript = doc.getElementById('visual-edit-script');
+      if (existingScript) {
+        existingScript.remove();
+      }
+      
+      // Remove existing styles if any
+      const existingStyle = doc.getElementById('visual-edit-style');
+      if (existingStyle) {
+        existingStyle.remove();
+      }
+
+      if (visualEditMode) {
+        // Inject styles for highlighting
+        const style = doc.createElement('style');
+        style.id = 'visual-edit-style';
+        style.textContent = `
+          .visual-edit-hover {
+            outline: 2px dashed hsl(var(--primary, 221.2 83.2% 53.3%)) !important;
+            outline-offset: 2px !important;
+            cursor: crosshair !important;
+          }
+          .visual-edit-selected {
+            outline: 3px solid hsl(var(--primary, 221.2 83.2% 53.3%)) !important;
+            outline-offset: 2px !important;
+            background-color: hsla(var(--primary, 221.2 83.2% 53.3%), 0.1) !important;
+          }
+        `;
+        doc.head.appendChild(style);
+
+        // Inject script for click detection
+        const script = doc.createElement('script');
+        script.id = 'visual-edit-script';
+        script.textContent = `
+          (function() {
+            let hoveredElement = null;
+            let selectedElement = null;
+
+            document.addEventListener('mouseover', function(e) {
+              if (hoveredElement) {
+                hoveredElement.classList.remove('visual-edit-hover');
+              }
+              hoveredElement = e.target;
+              if (hoveredElement && !hoveredElement.classList.contains('visual-edit-selected')) {
+                hoveredElement.classList.add('visual-edit-hover');
+              }
+            }, true);
+
+            document.addEventListener('mouseout', function(e) {
+              if (hoveredElement) {
+                hoveredElement.classList.remove('visual-edit-hover');
+              }
+            }, true);
+
+            document.addEventListener('click', function(e) {
+              e.preventDefault();
+              e.stopPropagation();
+              
+              // Remove previous selection
+              if (selectedElement) {
+                selectedElement.classList.remove('visual-edit-selected');
+              }
+              
+              selectedElement = e.target;
+              selectedElement.classList.add('visual-edit-selected');
+              selectedElement.classList.remove('visual-edit-hover');
+              
+              // Get element identifier (id, or generate a path)
+              let elementId = selectedElement.id;
+              if (!elementId) {
+                // Generate a CSS selector path
+                let path = [];
+                let el = selectedElement;
+                while (el && el.tagName) {
+                  let selector = el.tagName.toLowerCase();
+                  if (el.id) {
+                    selector = '#' + el.id;
+                    path.unshift(selector);
+                    break;
+                  } else if (el.className && typeof el.className === 'string') {
+                    selector += '.' + el.className.trim().split(/\\s+/).join('.');
+                  }
+                  path.unshift(selector);
+                  el = el.parentElement;
+                }
+                elementId = path.join(' > ');
+              }
+              
+              // Send message to parent
+              window.parent.postMessage({ 
+                type: 'VISUAL_EDIT_SELECT', 
+                elementId: elementId 
+              }, '*');
+            }, true);
+          })();
+        `;
+        doc.body.appendChild(script);
+      }
+    } catch (error) {
+      console.warn('[PreviewPanel] Could not inject visual edit script (cross-origin):', error);
+    }
+  }, [visualEditMode]);
+
+  // Listen for messages from iframe
+  useEffect(() => {
+    const handleMessage = (event: MessageEvent) => {
+      if (event.data?.type === 'VISUAL_EDIT_SELECT' && event.data?.elementId) {
+        onElementSelect?.(event.data.elementId);
+      }
+    };
+
+    window.addEventListener('message', handleMessage);
+    return () => window.removeEventListener('message', handleMessage);
+  }, [onElementSelect]);
+
+  // Re-inject script when iframe loads or visual edit mode changes
+  useEffect(() => {
+    const iframe = iframeRef.current;
+    if (!iframe) return;
+
+    const handleLoad = () => {
+      // Small delay to ensure content is ready
+      setTimeout(injectVisualEditScript, 100);
+    };
+
+    iframe.addEventListener('load', handleLoad);
+    return () => iframe.removeEventListener('load', handleLoad);
+  }, [injectVisualEditScript]);
+
+  // Also inject when visualEditMode changes
+  useEffect(() => {
+    if (generatedUrl && healthCheckStatus?.isReady) {
+      setTimeout(injectVisualEditScript, 100);
+    }
+  }, [visualEditMode, generatedUrl, healthCheckStatus?.isReady, injectVisualEditScript]);
 
   useEffect(() => {
     // If we have a generated URL and health check says ready, skip loading
@@ -170,6 +326,28 @@ const PreviewPanel = ({
         </div>
       )}
 
+      {/* Visual Edit Mode Toggle - Only show when project is ready */}
+      {showReadyState && (
+        <div className="px-4 py-3 border-b border-border bg-card/50 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <MousePointer2 className={`w-4 h-4 ${visualEditMode ? 'text-primary' : 'text-muted-foreground'}`} />
+            <div className="flex flex-col">
+              <Label htmlFor="visual-edit-mode" className="text-sm font-medium cursor-pointer">
+                Visual Edit Mode
+              </Label>
+              <span className="text-xs text-muted-foreground">
+                Click elements in the preview to target them
+              </span>
+            </div>
+          </div>
+          <Switch
+            id="visual-edit-mode"
+            checked={visualEditMode}
+            onCheckedChange={(checked) => onVisualEditModeChange?.(checked)}
+          />
+        </div>
+      )}
+
       <div className="flex-1 p-4 overflow-auto flex items-start justify-center">
         <div className={`${getPreviewWidth()} h-full mx-auto transition-all duration-300`}>
           {isLoading && !generatedUrl ? (
@@ -223,8 +401,9 @@ const PreviewPanel = ({
               {/* Iframe */}
               <div className="flex-1 relative">
                 <iframe
+                  ref={iframeRef}
                   src={generatedUrl}
-                  className="absolute inset-0 w-full h-full border-0"
+                  className={`absolute inset-0 w-full h-full border-0 ${visualEditMode ? 'cursor-crosshair' : ''}`}
                   title="Generated Application Preview"
                   sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-modals"
                 />

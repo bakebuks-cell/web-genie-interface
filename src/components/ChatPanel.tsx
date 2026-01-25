@@ -14,6 +14,8 @@ import {
   RefreshCw,
   Mic,
   MicOff,
+  Target,
+  X,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useNavigate } from "react-router-dom";
@@ -21,6 +23,7 @@ import { CreditsDisplay } from "./CreditsDisplay";
 import { UpgradePrompt } from "./UpgradePrompt";
 import { useAuth } from "@/contexts/AuthContext";
 import { useGuestCredits } from "@/hooks/useCredits";
+import { Badge } from "@/components/ui/badge";
 
 // Extend Window interface for Speech Recognition
 interface SpeechRecognitionEvent extends Event {
@@ -117,11 +120,22 @@ export interface HealthCheckStatus {
 export interface ChatPanelProps {
   selectedStack?: string;
   initialPrompt?: string;
-  onGeneratedUrl?: (url: string) => void;
+  onGeneratedUrl?: (url: string, projectId?: string) => void;
   onHealthCheckStatus?: (status: HealthCheckStatus) => void;
+  projectId?: string | null;
+  selectedElementId?: string | null;
+  onClearElement?: () => void;
 }
 
-const ChatPanel = ({ selectedStack = "react", initialPrompt = "", onGeneratedUrl, onHealthCheckStatus }: ChatPanelProps) => {
+const ChatPanel = ({ 
+  selectedStack = "react", 
+  initialPrompt = "", 
+  onGeneratedUrl, 
+  onHealthCheckStatus,
+  projectId,
+  selectedElementId,
+  onClearElement
+}: ChatPanelProps) => {
   const navigate = useNavigate();
   const { user, profile, deductCredit: authDeductCredit } = useAuth();
   const { credits: guestCredits, hasCredits: guestHasCredits, deductCredit: guestDeductCredit } = useGuestCredits();
@@ -136,6 +150,7 @@ const ChatPanel = ({ selectedStack = "react", initialPrompt = "", onGeneratedUrl
   const [value, setValue] = useState("");
   const [attachments, setAttachments] = useState<string[]>([]);
   const [isTyping, setIsTyping] = useState(false);
+  const [isModifying, setIsModifying] = useState(false); // Track if we're in modify mode for loading message
   const [isPending, startTransition] = useTransition();
   const [activeSuggestion, setActiveSuggestion] = useState<number>(-1);
   const [showCommandPalette, setShowCommandPalette] = useState(false);
@@ -309,6 +324,68 @@ const ChatPanel = ({ selectedStack = "react", initialPrompt = "", onGeneratedUrl
     }
   };
 
+  // Helper function to make fetch request for modification
+  const fetchModify = async (
+    prompt: string, 
+    stack: string, 
+    projectIdToModify: string, 
+    elementId: string | null
+  ): Promise<{ success: boolean; data?: any; error?: string }> => {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 600000); // 10 minutes timeout
+
+    console.log("[fetchModify] Sending modification request...", { 
+      projectId: projectIdToModify, 
+      stack, 
+      prompt, 
+      elementId 
+    });
+
+    try {
+      const response = await fetch("http://localhost:3000/modify", {
+        method: "POST",
+        headers: { 
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+        },
+        body: JSON.stringify({ 
+          projectId: projectIdToModify,
+          stack, 
+          prompt, 
+          elementId 
+        }),
+        signal: controller.signal,
+      });
+
+      clearTimeout(timeoutId);
+
+      console.log("[fetchModify] Response status:", response.status);
+      
+      if (!response.ok) {
+        console.error("[fetchModify] Response not OK:", response.status, response.statusText);
+        return { success: false, error: 'server_error' };
+      }
+
+      const rawText = await response.text();
+      console.log("[fetchModify] Raw response from backend:", rawText);
+
+      const data = JSON.parse(rawText);
+      console.log("[fetchModify] Parsed response:", data);
+
+      return { success: true, data };
+    } catch (error: any) {
+      clearTimeout(timeoutId);
+
+      if (error.name === 'AbortError') {
+        console.error("[fetchModify] Request timed out after 10 minutes");
+        return { success: false, error: 'timeout' };
+      } else {
+        console.error("[fetchModify] API error:", error.message || error);
+        return { success: false, error: 'network' };
+      }
+    }
+  };
+
   // No more polling - backend now waits synchronously. Just mark as ready immediately.
   const markAsReady = (url: string) => {
     console.log("[markAsReady] Backend returned URL, marking as ready:", url);
@@ -468,6 +545,7 @@ const ChatPanel = ({ selectedStack = "react", initialPrompt = "", onGeneratedUrl
     if (value.trim()) {
       const promptText = value;
       const selectedLanguage = selectedStack;
+      const isModifyMode = !!projectId;
 
       // Check credits before sending
       let canProceed = false;
@@ -495,36 +573,59 @@ const ChatPanel = ({ selectedStack = "react", initialPrompt = "", onGeneratedUrl
         return;
       }
 
+      // Show element context in message if targeting
+      const messageContent = selectedElementId 
+        ? `${promptText}\n\n🎯 Targeting: ${selectedElementId}`
+        : promptText;
+
       const newMessage: Message = {
         id: Date.now().toString(),
         role: "user",
-        content: promptText,
+        content: messageContent,
       };
       setMessages((prev) => [...prev, newMessage]);
 
       setIsTyping(true);
+      setIsModifying(isModifyMode);
       setValue("");
       setAttachments([]);
       adjustHeight(true);
 
+      // Show appropriate loading message
+      const loadingMessage = isModifyMode ? "Refining Code..." : "Generating...";
+
       try {
-        const result = await fetchBuild(promptText, selectedLanguage);
+        let result;
+        
+        if (isModifyMode) {
+          // Use modify endpoint when we have a project
+          result = await fetchModify(promptText, selectedLanguage, projectId!, selectedElementId);
+          
+          // Clear selected element after sending
+          onClearElement?.();
+        } else {
+          // Use build endpoint for initial generation
+          result = await fetchBuild(promptText, selectedLanguage);
+        }
 
         if (result.success && result.data) {
           const data = result.data;
-        if (data.success && data.url) {
-          onGeneratedUrl?.(data.url);
-          setMessages((prev) => [
-            ...prev,
-            {
-              id: (Date.now() + 2).toString(),
-              role: "assistant",
-              content: `🚀 Your app is ready!\n\nURL: ${data.url}`,
-            },
-          ]);
-          
-          // Mark as ready immediately - no more polling
-          markAsReady(data.url);
+          if (data.success && data.url) {
+            // Pass projectId if available from response
+            onGeneratedUrl?.(data.url, data.projectId);
+            setMessages((prev) => [
+              ...prev,
+              {
+                id: (Date.now() + 2).toString(),
+                role: "assistant",
+                content: isModifyMode 
+                  ? `✅ Code updated successfully!\n\nURL: ${data.url}`
+                  : `🚀 Your app is ready!\n\nURL: ${data.url}`,
+              },
+            ]);
+            
+            // Mark as ready immediately
+            markAsReady(data.url);
           } else {
             setMessages((prev) => [
               ...prev,
@@ -628,7 +729,7 @@ const ChatPanel = ({ selectedStack = "react", initialPrompt = "", onGeneratedUrl
           </motion.div>
         ))}
 
-        {/* Typing indicator */}
+        {/* Typing indicator with dynamic message */}
         <AnimatePresence>
           {isTyping && (
             <motion.div
@@ -640,22 +741,27 @@ const ChatPanel = ({ selectedStack = "react", initialPrompt = "", onGeneratedUrl
               <div className="w-8 h-8 rounded-full bg-secondary flex items-center justify-center">
                 <Bot className="w-4 h-4 text-foreground" />
               </div>
-              <div className="bg-secondary p-3 rounded-2xl flex items-center gap-1">
-                {[1, 2, 3].map((dot) => (
-                  <motion.div
-                    key={dot}
-                    className="w-2 h-2 bg-muted-foreground rounded-full"
-                    animate={{
-                      opacity: [0.3, 1, 0.3],
-                      scale: [0.85, 1.1, 0.85],
-                    }}
-                    transition={{
-                      duration: 1.2,
-                      repeat: Infinity,
-                      delay: dot * 0.15,
-                    }}
-                  />
-                ))}
+              <div className="bg-secondary p-3 rounded-2xl flex items-center gap-2">
+                <span className="text-sm text-muted-foreground">
+                  {isModifying ? "Refining Code..." : "Generating..."}
+                </span>
+                <div className="flex items-center gap-1">
+                  {[1, 2, 3].map((dot) => (
+                    <motion.div
+                      key={dot}
+                      className="w-2 h-2 bg-muted-foreground rounded-full"
+                      animate={{
+                        opacity: [0.3, 1, 0.3],
+                        scale: [0.85, 1.1, 0.85],
+                      }}
+                      transition={{
+                        duration: 1.2,
+                        repeat: Infinity,
+                        delay: dot * 0.15,
+                      }}
+                    />
+                  ))}
+                </div>
               </div>
             </motion.div>
           )}
@@ -665,6 +771,34 @@ const ChatPanel = ({ selectedStack = "react", initialPrompt = "", onGeneratedUrl
 
       {/* Input Area */}
       <div className="p-3 border-t border-border">
+        {/* Element Targeting Badge */}
+        <AnimatePresence>
+          {selectedElementId && (
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+              className="mb-2"
+            >
+              <Badge 
+                variant="secondary" 
+                className="inline-flex items-center gap-2 px-3 py-1.5 bg-primary/10 text-primary border border-primary/30"
+              >
+                <Target className="w-3.5 h-3.5" />
+                <span className="text-xs font-medium">
+                  Targeting: <code className="bg-primary/20 px-1 py-0.5 rounded text-xs">{selectedElementId}</code>
+                </span>
+                <button
+                  onClick={() => onClearElement?.()}
+                  className="ml-1 hover:bg-primary/20 rounded p-0.5 transition-colors"
+                >
+                  <X className="w-3 h-3" />
+                </button>
+              </Badge>
+            </motion.div>
+          )}
+        </AnimatePresence>
+        
         <div className="relative">
           {/* Command Palette */}
           <AnimatePresence>

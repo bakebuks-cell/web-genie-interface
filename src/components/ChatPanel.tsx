@@ -24,6 +24,7 @@ import { UpgradePrompt } from "./UpgradePrompt";
 import { useAuth } from "@/contexts/AuthContext";
 import { useGuestCredits } from "@/hooks/useCredits";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 
 // Extend Window interface for Speech Recognition
 interface SpeechRecognitionEvent extends Event {
@@ -137,7 +138,7 @@ const ChatPanel = ({
   onClearElement
 }: ChatPanelProps) => {
   const navigate = useNavigate();
-  const { user, profile, deductCredit: authDeductCredit } = useAuth();
+  const { user, profile, userCredits, deductCredit: authDeductCredit } = useAuth();
   const { credits: guestCredits, hasCredits: guestHasCredits, deductCredit: guestDeductCredit } = useGuestCredits();
   
   const [messages, setMessages] = useState<Message[]>([
@@ -168,7 +169,8 @@ const ChatPanel = ({
   // Determine if user has credits
   const isAuthenticated = !!user;
   const isUnlimited = profile?.plan === 'pro' || profile?.plan === 'enterprise';
-  const hasCredits = isAuthenticated ? (isUnlimited || (profile?.plan === 'free')) : guestHasCredits;
+  const currentCredits = isAuthenticated ? (userCredits?.credits_remaining ?? 0) : guestCredits;
+  const hasCredits = isUnlimited || currentCredits > 0;
 
   const commandSuggestions: CommandSuggestion[] = [
     {
@@ -684,15 +686,69 @@ const ChatPanel = ({
   return (
     <div className="h-full flex flex-col bg-card/50 backdrop-blur-xl border-r border-border">
       {/* Header with Credits */}
-      <div className="p-4 border-b border-border space-y-3">
-        <div>
-          <h2 className="font-semibold text-foreground flex items-center gap-2">
+      <div className="p-4 border-b border-border">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
             <Bot className="w-5 h-5 text-primary" />
-            AI Assistant
-          </h2>
-          <p className="text-sm text-muted-foreground">Edit your application with natural language</p>
+            <div>
+              {isUnlimited ? (
+                <h2 className="font-semibold text-amber-500 flex items-center gap-1.5">
+                  <Zap className="w-4 h-4" />
+                  Unlimited Credits
+                </h2>
+              ) : (
+                <h2 className="font-semibold text-foreground">
+                  <span className={hasCredits ? 'text-primary' : 'text-destructive'}>
+                    {currentCredits}
+                  </span>
+                  <span className="text-muted-foreground"> / 5 Credits</span>
+                </h2>
+              )}
+              <p className="text-xs text-muted-foreground">
+                {hasCredits ? 'Each generation uses 1 credit' : 'Credits exhausted'}
+              </p>
+            </div>
+          </div>
+          
+          {!isAuthenticated && (
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              onClick={() => navigate('/login')}
+              className="text-xs text-primary hover:text-primary"
+            >
+              Sign In
+            </Button>
+          )}
+          
+          {isAuthenticated && !isUnlimited && !hasCredits && (
+            <Button 
+              size="sm" 
+              onClick={() => navigate('/pricing')}
+              className="text-xs bg-primary hover:bg-primary/90"
+            >
+              Upgrade
+            </Button>
+          )}
         </div>
-        <CreditsDisplay onUpgradeClick={() => navigate('/pricing')} />
+        
+        {/* Credits Progress Bar */}
+        {!isUnlimited && (
+          <div className="mt-3 h-1.5 bg-secondary rounded-full overflow-hidden">
+            <motion.div
+              className={`h-full rounded-full ${
+                currentCredits > 2 
+                  ? 'bg-gradient-to-r from-primary to-accent-purple' 
+                  : currentCredits > 0 
+                    ? 'bg-amber-500' 
+                    : 'bg-destructive'
+              }`}
+              initial={{ width: 0 }}
+              animate={{ width: `${(currentCredits / 5) * 100}%` }}
+              transition={{ duration: 0.3 }}
+            />
+          </div>
+        )}
       </div>
 
       {/* Messages */}

@@ -16,6 +16,7 @@ import {
   MicOff,
   Target,
   X,
+  Lock,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useNavigate } from "react-router-dom";
@@ -25,6 +26,9 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useGuestCredits } from "@/hooks/useCredits";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 
 // Extend Window interface for Speech Recognition
 interface SpeechRecognitionEvent extends Event {
@@ -165,6 +169,8 @@ const ChatPanel = ({
   const commandPaletteRef = useRef<HTMLDivElement>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const recognitionRef = useRef<SpeechRecognition | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [isUploading, setIsUploading] = useState(false);
 
   // Determine if user has credits
   const isAuthenticated = !!user;
@@ -669,8 +675,51 @@ const ChatPanel = ({
   };
 
   const handleAttachFile = () => {
-    const mockFileName = `file-${Math.floor(Math.random() * 1000)}.pdf`;
-    setAttachments((prev) => [...prev, mockFileName]);
+    if (!isAuthenticated) {
+      toast.error("Please sign in to attach files");
+      return;
+    }
+    fileInputRef.current?.click();
+  };
+
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files || files.length === 0 || !user) return;
+
+    setIsUploading(true);
+    
+    try {
+      for (const file of Array.from(files)) {
+        // Validate file size (max 10MB)
+        if (file.size > 10 * 1024 * 1024) {
+          toast.error(`${file.name} is too large. Max size is 10MB.`);
+          continue;
+        }
+
+        const fileName = `${user.id}/${Date.now()}-${file.name}`;
+        
+        const { error } = await supabase.storage
+          .from('chat-attachments')
+          .upload(fileName, file);
+
+        if (error) {
+          toast.error(`Failed to upload ${file.name}`);
+          console.error('Upload error:', error);
+        } else {
+          setAttachments((prev) => [...prev, file.name]);
+          toast.success(`${file.name} uploaded`);
+        }
+      }
+    } catch (err) {
+      console.error('Upload error:', err);
+      toast.error('Failed to upload files');
+    } finally {
+      setIsUploading(false);
+      // Reset file input
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
+      }
+    }
   };
 
   const removeAttachment = (index: number) => {
@@ -926,17 +975,49 @@ const ChatPanel = ({
             )}
           </AnimatePresence>
 
+          {/* Hidden file input */}
+          <input
+            ref={fileInputRef}
+            type="file"
+            multiple
+            accept="image/*,.pdf,.doc,.docx,.txt,.csv,.json"
+            onChange={handleFileChange}
+            className="hidden"
+          />
+
           {/* Input container */}
           <div className="flex items-end gap-2 bg-secondary/50 rounded-xl p-2 border border-border focus-within:border-primary/50 transition-colors">
             <div className="flex items-center gap-1">
-              <motion.button
-                type="button"
-                onClick={handleAttachFile}
-                whileTap={{ scale: 0.94 }}
-                className="p-2 text-muted-foreground hover:text-foreground rounded-lg transition-colors"
-              >
-                <Paperclip className="w-4 h-4" />
-              </motion.button>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <motion.button
+                    type="button"
+                    onClick={handleAttachFile}
+                    disabled={!isAuthenticated || isUploading}
+                    whileTap={isAuthenticated ? { scale: 0.94 } : undefined}
+                    className={cn(
+                      "p-2 rounded-lg transition-colors relative",
+                      isAuthenticated 
+                        ? "text-muted-foreground hover:text-foreground" 
+                        : "text-muted-foreground/40 cursor-not-allowed"
+                    )}
+                  >
+                    {isUploading ? (
+                      <LoaderIcon className="w-4 h-4 animate-spin" />
+                    ) : (
+                      <>
+                        <Paperclip className="w-4 h-4" />
+                        {!isAuthenticated && (
+                          <Lock className="w-2.5 h-2.5 absolute -bottom-0.5 -right-0.5 text-muted-foreground/60" />
+                        )}
+                      </>
+                    )}
+                  </motion.button>
+                </TooltipTrigger>
+                <TooltipContent side="top">
+                  {isAuthenticated ? "Attach files" : "Sign in to attach files"}
+                </TooltipContent>
+              </Tooltip>
               <motion.button
                 type="button"
                 data-command-button

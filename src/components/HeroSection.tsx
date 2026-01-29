@@ -7,6 +7,7 @@ import { useToast } from "@/hooks/use-toast";
 
 // Language mapping for display names
 const languageNames: Record<string, string> = {
+  "html": "Plain HTML/CSS/JS",
   "php": "PHP",
   "nodejs": "Node/TS",
   "python": "Python",

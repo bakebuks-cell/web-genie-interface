@@ -104,6 +104,63 @@ const technologies = [
     ],
     projectTypes: "APIs, Automation scripts, Data pipelines, Backend services",
   },
+  {
+    name: "HTML",
+    icon: "📄",
+    description: "The foundational markup language for creating and structuring web pages and applications.",
+    color: "from-orange-500/20 to-orange-600/10",
+    glowColor: "group-hover:shadow-orange-500/20",
+    borderColor: "group-hover:border-orange-500/50",
+    useCases: [
+      "Web page structure & layout",
+      "Semantic document markup",
+      "Accessible content structure",
+    ],
+    benefits: [
+      "Universal browser support",
+      "Easy to learn & implement",
+      "SEO-friendly structure",
+    ],
+    projectTypes: "Landing pages, Static websites, Email templates, Documentation",
+  },
+  {
+    name: "CSS",
+    icon: "🎨",
+    description: "A styling language for designing beautiful, responsive, and visually engaging web interfaces.",
+    color: "from-blue-400/20 to-indigo-500/10",
+    glowColor: "group-hover:shadow-blue-400/20",
+    borderColor: "group-hover:border-blue-400/50",
+    useCases: [
+      "Responsive web design",
+      "Custom UI styling & theming",
+      "Animations & transitions",
+    ],
+    benefits: [
+      "Separation of concerns",
+      "Powerful layout systems (Flexbox, Grid)",
+      "Cross-browser compatibility",
+    ],
+    projectTypes: "UI themes, Design systems, Responsive layouts, Animated interfaces",
+  },
+  {
+    name: "JavaScript",
+    icon: "🟨",
+    description: "The dynamic programming language of the web, enabling interactive and feature-rich applications.",
+    color: "from-yellow-400/20 to-amber-500/10",
+    glowColor: "group-hover:shadow-yellow-400/20",
+    borderColor: "group-hover:border-yellow-400/50",
+    useCases: [
+      "Interactive web applications",
+      "DOM manipulation & events",
+      "Browser-based functionality",
+    ],
+    benefits: [
+      "Runs in all browsers",
+      "Event-driven programming",
+      "Vast ecosystem & libraries",
+    ],
+    projectTypes: "Interactive sites, Browser tools, Form validation, Client-side apps",
+  },
 ];
 
 const buildFeatures = [

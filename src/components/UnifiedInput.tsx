@@ -1,22 +1,24 @@
 import { useState, useRef, useEffect } from "react";
-import { Paperclip, Mic, Zap, ChevronDown, Check } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
+import { Paperclip, Mic, Sparkles, ChevronDown, Check, X, Zap } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { useToast } from "@/hooks/use-toast";
 
 interface UnifiedInputProps {
   selectedLanguage: string | null;
   onLanguageSelect: (language: string) => void;
   idea: string;
-  onIdeaChange: (value: string) => void;
+  onIdeaChange: (idea: string) => void;
   onGenerate: () => void;
 }
 
 const languages = [
+  { id: "html", name: "Plain HTML/CSS/JS", icon: "🌐" },
   { id: "php", name: "PHP", icon: "🐘" },
   { id: "nodejs", name: "Node/TS", icon: "🟢" },
   { id: "python", name: "Python", icon: "🐍" },
@@ -24,9 +26,6 @@ const languages = [
   { id: "react", name: "React", icon: "⚛️" },
   { id: "java", name: "Java (Enterprise)", icon: "☕" },
   { id: "csharp", name: "ASP.NET (C#)", icon: "🔷" },
-  { id: "html", name: "HTML", icon: "📄" },
-  { id: "css", name: "CSS", icon: "🎨" },
-  { id: "javascript", name: "JavaScript", icon: "🟨" },
 ];
 
 const UnifiedInput = ({

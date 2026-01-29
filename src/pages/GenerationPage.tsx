@@ -6,6 +6,7 @@ import GenerateToolbar from "@/components/GenerateToolbar";
 import { useAuth } from "@/contexts/AuthContext";
 
 const languageNames: Record<string, string> = {
+  html: "Plain HTML/CSS/JS",
   php: "PHP",
   nodejs: "Node/TS",
   python: "Python",

@@ -24,6 +24,9 @@ const languages = [
   { id: "react", name: "React", icon: "⚛️" },
   { id: "java", name: "Java (Enterprise)", icon: "☕" },
   { id: "csharp", name: "ASP.NET (C#)", icon: "🔷" },
+  { id: "html", name: "HTML", icon: "📄" },
+  { id: "css", name: "CSS", icon: "🎨" },
+  { id: "javascript", name: "JavaScript", icon: "🟨" },
 ];
 
 const UnifiedInput = ({

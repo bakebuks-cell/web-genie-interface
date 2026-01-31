@@ -5,163 +5,10 @@ import {
   Bot, 
   BarChart3, 
   Shield, 
-  Globe 
+  Globe,
+  Loader2 
 } from "lucide-react";
-
-const technologies = [
-  {
-    name: "React",
-    icon: "⚛️",
-    description: "A powerful JavaScript library for building dynamic, interactive user interfaces with component-based architecture.",
-    color: "from-cyan-500/20 to-cyan-600/10",
-    glowColor: "group-hover:shadow-cyan-500/20",
-    borderColor: "group-hover:border-cyan-500/50",
-    useCases: [
-      "Single Page Applications (SPAs)",
-      "Progressive Web Apps (PWAs)",
-      "Interactive dashboards & data visualization",
-    ],
-    benefits: [
-      "Component reusability",
-      "Virtual DOM for performance",
-      "Rich ecosystem & community",
-    ],
-    projectTypes: "Web apps, Admin panels, E-commerce frontends, SaaS dashboards",
-  },
-  {
-    name: "Node/TS",
-    icon: "🟢",
-    description: "Server-side JavaScript runtime with TypeScript for building fast, scalable, and type-safe backend applications.",
-    color: "from-green-500/20 to-green-600/10",
-    glowColor: "group-hover:shadow-green-500/20",
-    borderColor: "group-hover:border-green-500/50",
-    useCases: [
-      "RESTful & GraphQL APIs",
-      "Real-time applications (WebSockets)",
-      "Microservices architecture",
-    ],
-    benefits: [
-      "Type safety with TypeScript",
-      "Non-blocking I/O for scalability",
-      "Full-stack JavaScript ecosystem",
-    ],
-    projectTypes: "APIs, Real-time apps, Backend services, Serverless functions",
-  },
-  {
-    name: "PHP",
-    icon: "🐘",
-    description: "A versatile server-side scripting language optimized for web development and rapid application building.",
-    color: "from-blue-500/20 to-blue-600/10",
-    glowColor: "group-hover:shadow-blue-500/20",
-    borderColor: "group-hover:border-blue-500/50",
-    useCases: [
-      "Dynamic web applications",
-      "Content management systems",
-      "E-commerce platforms",
-    ],
-    benefits: [
-      "Easy deployment & hosting",
-      "Mature ecosystem & libraries",
-      "Cost-effective development",
-    ],
-    projectTypes: "Websites, CMS, E-commerce, Custom web apps, APIs",
-  },
-  {
-    name: "Golang",
-    icon: "🐹",
-    description: "A statically typed, compiled language designed for simplicity, performance, and building reliable concurrent systems.",
-    color: "from-sky-500/20 to-sky-600/10",
-    glowColor: "group-hover:shadow-sky-500/20",
-    borderColor: "group-hover:border-sky-500/50",
-    useCases: [
-      "High-performance APIs & services",
-      "Cloud-native applications",
-      "CLI tools & DevOps automation",
-    ],
-    benefits: [
-      "Exceptional performance",
-      "Built-in concurrency",
-      "Simple & clean syntax",
-    ],
-    projectTypes: "Microservices, CLI tools, Cloud infrastructure, APIs",
-  },
-  {
-    name: "Python",
-    icon: "🐍",
-    description: "A versatile, readable programming language ideal for rapid development, automation, and data-driven applications.",
-    color: "from-yellow-500/20 to-yellow-600/10",
-    glowColor: "group-hover:shadow-yellow-500/20",
-    borderColor: "group-hover:border-yellow-500/50",
-    useCases: [
-      "API development & backends",
-      "Data processing & automation",
-      "Scripting & task automation",
-    ],
-    benefits: [
-      "Readable & maintainable code",
-      "Extensive standard library",
-      "Rapid prototyping",
-    ],
-    projectTypes: "APIs, Automation scripts, Data pipelines, Backend services",
-  },
-  {
-    name: "HTML",
-    icon: "📄",
-    description: "The foundational markup language for creating and structuring web pages and applications.",
-    color: "from-orange-500/20 to-orange-600/10",
-    glowColor: "group-hover:shadow-orange-500/20",
-    borderColor: "group-hover:border-orange-500/50",
-    useCases: [
-      "Web page structure & layout",
-      "Semantic document markup",
-      "Accessible content structure",
-    ],
-    benefits: [
-      "Universal browser support",
-      "Easy to learn & implement",
-      "SEO-friendly structure",
-    ],
-    projectTypes: "Landing pages, Static websites, Email templates, Documentation",
-  },
-  {
-    name: "CSS",
-    icon: "🎨",
-    description: "A styling language for designing beautiful, responsive, and visually engaging web interfaces.",
-    color: "from-blue-400/20 to-indigo-500/10",
-    glowColor: "group-hover:shadow-blue-400/20",
-    borderColor: "group-hover:border-blue-400/50",
-    useCases: [
-      "Responsive web design",
-      "Custom UI styling & theming",
-      "Animations & transitions",
-    ],
-    benefits: [
-      "Separation of concerns",
-      "Powerful layout systems (Flexbox, Grid)",
-      "Cross-browser compatibility",
-    ],
-    projectTypes: "UI themes, Design systems, Responsive layouts, Animated interfaces",
-  },
-  {
-    name: "JavaScript",
-    icon: "🟨",
-    description: "The dynamic programming language of the web, enabling interactive and feature-rich applications.",
-    color: "from-yellow-400/20 to-amber-500/10",
-    glowColor: "group-hover:shadow-yellow-400/20",
-    borderColor: "group-hover:border-yellow-400/50",
-    useCases: [
-      "Interactive web applications",
-      "DOM manipulation & events",
-      "Browser-based functionality",
-    ],
-    benefits: [
-      "Runs in all browsers",
-      "Event-driven programming",
-      "Vast ecosystem & libraries",
-    ],
-    projectTypes: "Interactive sites, Browser tools, Form validation, Client-side apps",
-  },
-];
+import { useTechnologiesWithStyles } from "@/hooks/useTechnologies";
 
 const buildFeatures = [
   {
@@ -241,7 +88,21 @@ const cardVariants = {
   },
 };
 
-const TechCard = ({ tech }: { tech: typeof technologies[0] }) => {
+interface TechCardProps {
+  tech: {
+    name: string;
+    icon: string | null;
+    description: string | null;
+    color: string;
+    glowColor: string;
+    borderColor: string;
+    useCases: string[];
+    benefits: string[];
+    projectTypes: string;
+  };
+}
+
+const TechCard = ({ tech }: TechCardProps) => {
   return (
     <motion.div
       variants={cardVariants}
@@ -364,6 +225,8 @@ const BuildFeatureCard = ({ feature }: { feature: typeof buildFeatures[0] }) => 
 };
 
 const Technologies = () => {
+  const { technologies, isLoading } = useTechnologiesWithStyles();
+
   return (
     <div className="min-h-screen bg-black relative overflow-hidden">
       {/* Dot grid background */}
@@ -403,16 +266,22 @@ const Technologies = () => {
           </motion.div>
 
           {/* Technology Cards Grid */}
-          <motion.div 
-            className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-24"
-            variants={containerVariants}
-            initial="hidden"
-            animate="visible"
-          >
-            {technologies.map((tech) => (
-              <TechCard key={tech.name} tech={tech} />
-            ))}
-          </motion.div>
+          {isLoading ? (
+            <div className="flex items-center justify-center py-20">
+              <Loader2 className="w-8 h-8 text-white/40 animate-spin" />
+            </div>
+          ) : (
+            <motion.div 
+              className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-24"
+              variants={containerVariants}
+              initial="hidden"
+              animate="visible"
+            >
+              {technologies?.map((tech) => (
+                <TechCard key={tech.name} tech={tech} />
+              ))}
+            </motion.div>
+          )}
 
           {/* What You Can Build Section */}
           <motion.div

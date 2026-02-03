@@ -1,8 +1,8 @@
 import { useState } from "react";
-import { useLocation, useNavigate } from "react-router-dom";
+import { useLocation } from "react-router-dom";
 import ChatPanel, { HealthCheckStatus } from "@/components/ChatPanel";
+import PreviewPanel from "@/components/PreviewPanel";
 import GenerateToolbar from "@/components/GenerateToolbar";
-import { GenerationDashboard } from "@/components/generation";
 import { useAuth } from "@/contexts/AuthContext";
 
 const languageNames: Record<string, string> = {
@@ -16,7 +16,6 @@ const languageNames: Record<string, string> = {
 
 const GenerationPage = () => {
   const location = useLocation();
-  const navigate = useNavigate();
   const { user, profile } = useAuth();
   const { language, idea } = location.state || { language: "react", idea: "" };
   const languageDisplay = languageNames[language] || language;
@@ -37,14 +36,12 @@ const GenerationPage = () => {
   
   // State for project ID (received from initial build)
   const [projectId, setProjectId] = useState<string | null>(null);
-  
-  // State for generation status
-  const [isGenerating, setIsGenerating] = useState(true);
 
   // Get user initial from profile or email
   const userInitial = profile?.display_name?.charAt(0) || user?.email?.charAt(0) || "b";
 
   const handleRefresh = () => {
+    // Refresh the iframe by resetting and setting the URL again
     if (generatedUrl) {
       const currentUrl = generatedUrl;
       setGeneratedUrl(undefined);
@@ -53,13 +50,13 @@ const GenerationPage = () => {
   };
 
   const handleOpenExternal = () => {
+    // Open generated URL or fallback
     const urlToOpen = generatedUrl || `https://preview.example.com${currentPath}`;
     window.open(urlToOpen, "_blank");
   };
 
   const handleGeneratedUrl = (url: string, newProjectId?: string) => {
     setGeneratedUrl(url);
-    setIsGenerating(false);
     if (newProjectId) {
       setProjectId(newProjectId);
     }
@@ -75,14 +72,6 @@ const GenerationPage = () => {
 
   const clearSelectedElement = () => {
     setSelectedElementId(null);
-  };
-
-  const handleCancelGeneration = () => {
-    setIsGenerating(false);
-  };
-
-  const handleGenerateAnother = () => {
-    navigate("/");
   };
 
   return (
@@ -113,14 +102,20 @@ const GenerationPage = () => {
           />
         </div>
         
-        {/* Right Panel - Futuristic AI Dashboard */}
-        <div className="flex-1">
-          <GenerationDashboard
-            idea={idea}
-            isGenerating={isGenerating}
+        {/* Right Panel - Preview */}
+        <div className="flex-1 bg-muted/20">
+          <PreviewPanel 
+            language={languageDisplay} 
+            idea={idea} 
+            currentRoute={currentPath}
+            viewMode={selectedDevice}
             generatedUrl={generatedUrl}
-            onCancel={handleCancelGeneration}
-            onGenerateAnother={handleGenerateAnother}
+            healthCheckStatus={healthCheckStatus}
+            onRefresh={handleRefresh}
+            visualEditMode={visualEditMode}
+            onVisualEditModeChange={setVisualEditMode}
+            onElementSelect={handleElementSelect}
+            selectedElementId={selectedElementId}
           />
         </div>
       </div>

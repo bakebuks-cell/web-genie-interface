@@ -3,7 +3,7 @@ import { ExternalLink, RefreshCw, MousePointer2 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
-import GenerationProgress from "@/components/GenerationProgress";
+import GenerationDashboard from "@/components/GenerationDashboard";
 import { useNavigate } from "react-router-dom";
 
 interface HealthCheckStatus {
@@ -331,12 +331,11 @@ const PreviewPanel = ({
       <div className="flex-1 p-4 overflow-auto flex items-start justify-center">
         <div className={`${getPreviewWidth()} h-full mx-auto transition-all duration-300`}>
           {!generatedUrl ? (
-            <GenerationProgress
+            <GenerationDashboard
               language={language}
               idea={idea}
               onComplete={() => setGenerationComplete(true)}
               onOpenApp={() => {
-                // For now, navigate to a placeholder or just log
                 console.log("Open app clicked - waiting for backend URL");
               }}
               onGenerateAgain={() => {

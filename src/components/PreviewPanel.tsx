@@ -335,12 +335,6 @@ const PreviewPanel = ({
               language={language}
               idea={idea}
               onComplete={() => setGenerationComplete(true)}
-              onOpenApp={() => {
-                console.log("Open app clicked - waiting for backend URL");
-              }}
-              onGenerateAgain={() => {
-                navigate("/");
-              }}
             />
           ) : (
             // Always display iframe immediately; overlay health-check UI on top while polling.

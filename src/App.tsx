@@ -7,6 +7,7 @@ import { AuthProvider } from "@/contexts/AuthContext";
 import { Layout } from "./components/Layout";
 import Index from "./pages/Index";
 import GenerationPage from "./pages/GenerationPage";
+import Preview from "./pages/Preview";
 import About from "./pages/About";
 import Technologies from "./pages/Technologies";
 import Pricing from "./pages/Pricing";
@@ -27,6 +28,7 @@ const App = () => (
           <Routes>
             {/* Generate page without Layout */}
             <Route path="/generate" element={<GenerationPage />} />
+            <Route path="/preview" element={<Preview />} />
             
             {/* All other pages with Layout */}
             <Route path="/" element={<Layout><Index /></Layout>} />

@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
-import { supabase } from '@/integrations/supabase/client';
+import { supabase } from '@/lib/supabase';
 import { User, Session } from '@supabase/supabase-js';
 import { clearGuestSession, getGuestSessionData } from '@/hooks/useCredits';
 
@@ -181,10 +181,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const signUp = async (email: string, password: string, displayName?: string) => {
-    // Debug: log Supabase URL domain
-    console.log('Supabase URL domain:', import.meta.env.VITE_SUPABASE_URL?.split('//')[1]?.split('/')[0]);
-    
-    const { data, error } = await supabase.auth.signUp({
+    const { error } = await supabase.auth.signUp({
       email,
       password,
       options: {
@@ -195,23 +192,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       },
     });
     
-    // Debug: log signup response
-    console.log('Supabase signup response:', { data, error });
-    
     return { error: error as Error | null };
   };
 
   const signIn = async (email: string, password: string) => {
-    // Debug: log Supabase URL domain
-    console.log('Supabase URL domain:', import.meta.env.VITE_SUPABASE_URL?.split('//')[1]?.split('/')[0]);
-    
-    const { data, error } = await supabase.auth.signInWithPassword({
+    const { error } = await supabase.auth.signInWithPassword({
       email,
       password,
     });
-    
-    // Debug: log login response
-    console.log('Supabase login response:', { data, error });
     
     return { error: error as Error | null };
   };

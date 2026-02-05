@@ -6,6 +6,7 @@ import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { Eye, EyeOff } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
+import { sanitizeAuthError } from "@/lib/auth-errors";
 
 const SignUp = () => {
   const [name, setName] = useState("");
@@ -55,7 +56,7 @@ const SignUp = () => {
     if (error) {
       toast({
         title: "Sign Up Failed",
-        description: error.message,
+        description: sanitizeAuthError(error),
         variant: "destructive",
       });
       setIsLoading(false);

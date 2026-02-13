@@ -1,28 +1,33 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { motion, AnimatePresence } from "framer-motion";
-import { Paperclip, Mic, Zap, ChevronDown, Check } from "lucide-react";
+import { motion } from "framer-motion";
+import UnifiedInput from "./UnifiedInput";
+import { HeroBackground } from "./HeroBackground";
 import { useToast } from "@/hooks/use-toast";
 
-const languages = [
-  { id: "javascript", name: "JavaScript" },
-  { id: "python", name: "Python" },
-  { id: "typescript", name: "TypeScript" },
-  { id: "java", name: "Java" },
-  { id: "csharp", name: "C#" },
-  { id: "php", name: "PHP" },
-  { id: "ruby", name: "Ruby on Rails" },
-  { id: "django", name: "Django" },
-];
+// Language mapping for display names
+const languageNames: Record<string, string> = {
+  "html": "Plain HTML/CSS/JS",
+  "php": "PHP",
+  "nodejs": "Node/TS",
+  "python": "Python",
+  "golang": "Golang",
+  "react": "React",
+};
 
 export const HeroSection = () => {
   const [selectedLanguage, setSelectedLanguage] = useState<string | null>(null);
   const [idea, setIdea] = useState("");
-  const [dropdownOpen, setDropdownOpen] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
 
-  const selectedLang = languages.find((l) => l.id === selectedLanguage);
+  const handleLanguageSelect = (language: string) => {
+    setSelectedLanguage(language);
+    toast({
+      title: "Language Selected",
+      description: `You selected ${languageNames[language] || language}`,
+    });
+  };
 
   const handleGenerate = () => {
     if (!selectedLanguage) {
@@ -33,6 +38,7 @@ export const HeroSection = () => {
       });
       return;
     }
+    
     if (!idea.trim()) {
       toast({
         title: "Describe Your Application",
@@ -41,253 +47,115 @@ export const HeroSection = () => {
       });
       return;
     }
+
+    // Navigate to generation page with state
     navigate("/generate", { state: { language: selectedLanguage, idea } });
   };
 
   return (
-    <section className="relative min-h-screen flex flex-col items-center justify-center px-4">
-      <div className="text-center mb-8 max-w-2xl mx-auto">
-        {/* Headline */}
-        <motion.h1
-          className="text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight text-white leading-tight"
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6 }}
-        >
-          Build fast.
-        </motion.h1>
-        <motion.h1
-          className="text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight leading-tight"
-          style={{ color: "hsl(0 0% 55%)" }}
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.15 }}
-        >
-          Ship lean.
-        </motion.h1>
+    <section className="relative pt-20 pb-8 md:pt-24 md:pb-12 overflow-hidden min-h-screen flex flex-col justify-center">
+      {/* Premium background effects */}
+      <HeroBackground />
 
-        {/* Subtext */}
-        <motion.p
-          className="mt-4 text-sm md:text-base font-light tracking-wide"
-          style={{ color: "hsl(0 0% 50%)" }}
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.5, duration: 0.8 }}
-        >
-          Turn ideas into production-ready apps using AI.
-        </motion.p>
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+        {/* Centered Quote with animations */}
+        <div className="text-center mb-8 md:mb-10">
+          {/* Main headline - stacked with animation */}
+          <motion.h1 
+            className="text-3xl md:text-4xl lg:text-5xl font-bold tracking-tight leading-tight text-foreground"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, ease: "easeOut" }}
+          >
+            Build fast.
+          </motion.h1>
+          <motion.h1 
+            className="text-3xl md:text-4xl lg:text-5xl font-bold tracking-tight leading-tight text-muted-foreground"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.15, ease: "easeOut" }}
+          >
+            Ship lean.
+          </motion.h1>
 
-        {/* Pills */}
-        <motion.div
-          className="flex justify-center gap-3 mt-5"
-          initial={{ opacity: 0, y: 15 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.7 }}
-        >
-          {["AI-Powered", "Production-Ready"].map((badge) => (
-            <span
-              key={badge}
-              className="px-3 py-1 text-xs font-medium rounded-full border"
-              style={{
-                color: "#00F5D4",
-                backgroundColor: "rgba(0, 245, 212, 0.1)",
-                borderColor: "rgba(0, 245, 212, 0.25)",
+          {/* Animated decorative line */}
+          <motion.div 
+            className="flex justify-center mt-6 mb-4"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.8 }}
+          >
+            <motion.div
+              className="h-px w-24 bg-gradient-to-r from-transparent via-primary to-transparent"
+              animate={{ 
+                scaleX: [0, 1, 1, 0],
+                opacity: [0, 1, 1, 0],
               }}
+              transition={{ 
+                duration: 3,
+                repeat: Infinity,
+                ease: "easeInOut",
+              }}
+            />
+          </motion.div>
+          
+          {/* Supporting Quote with typewriter-like effect */}
+          <motion.p 
+            className="text-muted-foreground text-sm md:text-base font-light tracking-wide max-w-lg mx-auto"
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.8, duration: 0.8 }}
+          >
+            <motion.span
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 1, duration: 1.5 }}
             >
-              {badge}
-            </span>
-          ))}
+              "Bringing clarity, speed, and precision to prompt-driven development"
+            </motion.span>
+          </motion.p>
+
+          {/* Floating accent badges */}
+          <motion.div 
+            className="flex justify-center gap-3 mt-6"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 1.2 }}
+          >
+            {["AI-Powered", "Multi-Stack", "Production Ready"].map((badge, i) => (
+              <motion.span
+                key={badge}
+                className="px-3 py-1 text-xs font-medium text-primary/80 bg-primary/10 rounded-full border border-primary/20"
+                initial={{ opacity: 0, scale: 0.8 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ delay: 1.3 + i * 0.1 }}
+                whileHover={{ 
+                  scale: 1.05, 
+                  backgroundColor: "hsl(var(--primary) / 0.2)",
+                  transition: { duration: 0.2 }
+                }}
+              >
+                {badge}
+              </motion.span>
+            ))}
+          </motion.div>
+        </div>
+
+        {/* Unified Input Container */}
+        <motion.div 
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.5, duration: 0.6, ease: "easeOut" }}
+        >
+          <UnifiedInput
+            selectedLanguage={selectedLanguage}
+            onLanguageSelect={handleLanguageSelect}
+            idea={idea}
+            onIdeaChange={setIdea}
+            onGenerate={handleGenerate}
+          />
         </motion.div>
       </div>
-
-      {/* Glassmorphism Input Card */}
-      <motion.div
-        className="w-full max-w-2xl mx-auto"
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.4, duration: 0.6 }}
-      >
-        <div
-          className="relative flex flex-col p-5 rounded-2xl border"
-          style={{
-            background: "hsl(0 0% 4% / 0.7)",
-            backdropFilter: "blur(24px)",
-            borderColor: "rgba(0, 245, 212, 0.6)",
-            boxShadow:
-              "0 0 20px rgba(0, 245, 212, 0.25), inset 0 0 15px rgba(0, 245, 212, 0.08)",
-          }}
-        >
-          {/* Textarea */}
-          <textarea
-            value={idea}
-            onChange={(e) => setIdea(e.target.value)}
-            placeholder="Describe your application idea…"
-            rows={3}
-            className="w-full bg-transparent text-white placeholder:text-white/30 focus:outline-none text-sm leading-relaxed resize-none"
-          />
-
-          {/* Bottom bar */}
-          <div className="flex items-center justify-between mt-4 pt-4 border-t border-white/10">
-            {/* Language Dropdown */}
-            <div className="relative">
-              <button
-                onClick={() => setDropdownOpen(!dropdownOpen)}
-                className="flex items-center gap-2 px-3 py-2 rounded-lg border text-sm transition-all duration-200"
-                style={{
-                  borderColor: selectedLanguage
-                    ? "rgba(0, 245, 212, 0.4)"
-                    : "hsl(0 0% 20%)",
-                  backgroundColor: selectedLanguage
-                    ? "rgba(0, 245, 212, 0.1)"
-                    : "hsl(0 0% 8%)",
-                  color: selectedLanguage ? "hsl(0 0% 90%)" : "hsl(0 0% 50%)",
-                }}
-              >
-                <span className="font-medium">
-                  {selectedLang ? selectedLang.name : "Select Language"}
-                </span>
-                <ChevronDown
-                  className={`w-4 h-4 opacity-60 transition-transform duration-200 ${dropdownOpen ? "rotate-180" : ""}`}
-                />
-              </button>
-
-              <AnimatePresence>
-                {dropdownOpen && (
-                  <motion.div
-                    initial={{ opacity: 0, y: -5, scale: 0.97 }}
-                    animate={{ opacity: 1, y: 0, scale: 1 }}
-                    exit={{ opacity: 0, y: -5, scale: 0.97 }}
-                    transition={{ duration: 0.15 }}
-                    className="absolute left-0 bottom-full mb-2 w-56 rounded-xl border overflow-hidden z-50"
-                    style={{
-                      background: "hsl(0 0% 6%)",
-                      borderColor: "hsl(0 0% 15%)",
-                      boxShadow: "0 8px 32px rgba(0,0,0,0.6)",
-                    }}
-                  >
-                    <div className="py-1">
-                      {languages.map((lang) => (
-                        <button
-                          key={lang.id}
-                          onClick={() => {
-                            setSelectedLanguage(lang.id);
-                            setDropdownOpen(false);
-                            toast({
-                              title: "Language Selected",
-                              description: `You selected ${lang.name}`,
-                            });
-                          }}
-                          className="w-full flex items-center justify-between px-4 py-2.5 text-sm transition-colors duration-100"
-                          style={{
-                            color:
-                              selectedLanguage === lang.id
-                                ? "#00F5D4"
-                                : "hsl(0 0% 75%)",
-                            backgroundColor:
-                              selectedLanguage === lang.id
-                                ? "rgba(0, 245, 212, 0.1)"
-                                : "transparent",
-                          }}
-                          onMouseEnter={(e) => {
-                            if (selectedLanguage !== lang.id) {
-                              e.currentTarget.style.backgroundColor =
-                                "hsl(0 0% 10%)";
-                            }
-                          }}
-                          onMouseLeave={(e) => {
-                            if (selectedLanguage !== lang.id) {
-                              e.currentTarget.style.backgroundColor =
-                                "transparent";
-                            }
-                          }}
-                        >
-                          <span>{lang.name}</span>
-                          {selectedLanguage === lang.id && (
-                            <Check className="w-4 h-4" />
-                          )}
-                        </button>
-                      ))}
-                    </div>
-                    {/* Multiple Programs option */}
-                    <div
-                      className="border-t px-4 py-2.5 flex items-center gap-2 text-sm cursor-pointer transition-colors"
-                      style={{
-                        borderColor: "hsl(0 0% 15%)",
-                        color: "hsl(45 100% 65%)",
-                        backgroundColor: "hsl(45 80% 50% / 0.05)",
-                      }}
-                      onMouseEnter={(e) => {
-                        e.currentTarget.style.backgroundColor =
-                          "hsl(45 80% 50% / 0.1)";
-                      }}
-                      onMouseLeave={(e) => {
-                        e.currentTarget.style.backgroundColor =
-                          "hsl(45 80% 50% / 0.05)";
-                      }}
-                      onClick={() => {
-                        setDropdownOpen(false);
-                        toast({
-                          title: "Multiple Programs",
-                          description: "Generate across multiple stacks",
-                        });
-                      }}
-                    >
-                      <Zap className="w-4 h-4" />
-                      <span className="font-medium">Multiple Programs</span>
-                    </div>
-                  </motion.div>
-                )}
-              </AnimatePresence>
-            </div>
-
-            {/* Action Icons */}
-            <div className="flex items-center gap-2">
-              <button
-                className="p-2.5 rounded-xl transition-all duration-200"
-                style={{ color: "rgba(0, 245, 212, 0.75)" }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.color = "#00FFC6";
-                  e.currentTarget.style.backgroundColor = "rgba(0, 245, 212, 0.08)";
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.color = "rgba(0, 245, 212, 0.75)";
-                  e.currentTarget.style.backgroundColor = "transparent";
-                }}
-                title="Attach file"
-              >
-                <Paperclip className="w-5 h-5" />
-              </button>
-              <button
-                className="p-2.5 rounded-xl transition-all duration-200"
-                style={{ color: "rgba(0, 245, 212, 0.75)" }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.color = "#00FFC6";
-                  e.currentTarget.style.backgroundColor = "rgba(0, 245, 212, 0.08)";
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.color = "rgba(0, 245, 212, 0.75)";
-                  e.currentTarget.style.backgroundColor = "transparent";
-                }}
-                title="Voice input"
-              >
-                <Mic className="w-5 h-5" />
-              </button>
-              <button
-                onClick={handleGenerate}
-                className="flex items-center gap-2 px-4 py-2.5 rounded-xl font-medium text-sm text-black transition-all duration-300 active:scale-95"
-                style={{
-                  background: "linear-gradient(90deg, rgba(0,245,212,0.9), rgba(0,255,198,0.75))",
-                  boxShadow: "0 0 20px rgba(0, 245, 212, 0.35)",
-                  animation: "pulseGlow 3s ease-in-out infinite",
-                }}
-              >
-                <Zap className="w-4 h-4" />
-                <span>Generate</span>
-              </button>
-            </div>
-          </div>
-        </div>
-      </motion.div>
     </section>
   );
 };

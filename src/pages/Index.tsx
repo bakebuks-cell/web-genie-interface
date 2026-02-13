@@ -1,13 +1,15 @@
+import { Navbar } from "@/components/Navbar";
 import { HeroSection } from "@/components/HeroSection";
-import { ParticleBackground } from "@/components/ParticleBackground";
+import { Footer } from "@/components/Footer";
 
 const Index = () => {
   return (
-    <div className="min-h-screen w-full relative">
-      <ParticleBackground />
+    <div className="min-h-screen w-full bg-background">
+      <Navbar />
       <main>
         <HeroSection />
       </main>
+      <Footer />
     </div>
   );
 };

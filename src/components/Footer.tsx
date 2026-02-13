@@ -44,7 +44,7 @@ export const Footer = () => {
           {/* Brand */}
           <div className="lg:col-span-1">
             <Link to="/" className="inline-block mb-4 font-bold text-lg text-foreground hover:text-primary transition-colors">
-              MyCodex
+              DataBuks Studio
             </Link>
             <p className="text-sm text-muted-foreground leading-relaxed">
               Transform your ideas into production-ready web applications using the power of artificial intelligence.
@@ -93,7 +93,7 @@ export const Footer = () => {
         {/* Bottom */}
         <div className="pt-8 border-t border-border flex flex-col sm:flex-row items-center justify-between gap-4">
           <p className="text-sm text-muted-foreground">
-            © 2026 MyCodex. All rights reserved.
+            © 2026 DataBuks Studio. All rights reserved.
           </p>
           <div className="flex items-center gap-6">
             <a href="#" className="text-muted-foreground hover:text-foreground transition-colors" aria-label="Twitter">

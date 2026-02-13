@@ -13,7 +13,7 @@ interface OnboardingModalProps {
 const steps = [
   {
     icon: Sparkles,
-    title: 'Welcome to MyCodex',
+    title: 'Welcome to DataBuks Studio',
     description: 'Generate production-ready web applications with AI-powered code generation.',
   },
   {

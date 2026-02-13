@@ -291,7 +291,7 @@ const Technologies = () => {
           >
             <div className="text-center mb-12">
               <h2 className="text-2xl md:text-3xl font-bold text-white mb-3">
-                What You Can Build with DataBuks Studio
+                What You Can Build with MyCodex
               </h2>
               <p className="text-white/40 text-sm max-w-md mx-auto">
                 From simple apps to enterprise systems — powered by your choice of technology.

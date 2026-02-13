@@ -65,7 +65,7 @@ const SignUp = () => {
     
     toast({
       title: "Account Created",
-      description: "Welcome to DataBuks Studio!",
+      description: "Welcome to MyCodex!",
     });
     
     setIsLoading(false);
@@ -78,7 +78,7 @@ const SignUp = () => {
         <div className="w-full max-w-md animate-fade-in-up">
           {/* Brand Name */}
           <div className="flex items-center justify-center mb-8">
-            <span className="font-bold text-2xl text-foreground">DataBuks Studio</span>
+            <span className="font-bold text-2xl text-foreground">MyCodex</span>
           </div>
 
           {/* Sign Up Card */}

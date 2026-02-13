@@ -23,7 +23,7 @@ export const Navbar = () => {
     navigate("/signup");
   };
 
-  const brandText = "DataBuks Studio";
+  const brandText = "MyCodex";
 
   return (
     <nav className="fixed top-4 left-0 right-0 z-50 px-4 sm:px-6 lg:px-8">

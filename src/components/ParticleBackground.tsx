@@ -70,7 +70,7 @@ export const ParticleBackground = () => {
         const alpha = s.opacity * twinkle;
         // Color: bright stars are slightly blue/white, others are warm white
         if (s.brightness > 0) {
-          ctx.fillStyle = `rgba(200, 210, 255, ${alpha})`;
+          ctx.fillStyle = `rgba(0, 245, 212, ${alpha})`;
         } else {
           ctx.fillStyle = `rgba(255, 255, 255, ${alpha})`;
         }
@@ -79,7 +79,7 @@ export const ParticleBackground = () => {
         ctx.fill();
         // Glow for bright stars
         if (s.brightness > 0 && s.size > 1) {
-          ctx.fillStyle = `rgba(180, 160, 255, ${alpha * 0.3})`;
+          ctx.fillStyle = `rgba(0, 245, 212, ${alpha * 0.3})`;
           ctx.beginPath();
           ctx.arc(s.x, s.y, s.size * 3, 0, Math.PI * 2);
           ctx.fill();
@@ -105,11 +105,11 @@ export const ParticleBackground = () => {
         className="absolute inset-0"
         style={{
           background: `
-            radial-gradient(ellipse 80% 60% at 70% 50%, hsla(270, 60%, 25%, 0.5) 0%, transparent 70%),
-            radial-gradient(ellipse 60% 50% at 50% 40%, hsla(260, 50%, 20%, 0.4) 0%, transparent 60%),
-            radial-gradient(ellipse 50% 40% at 30% 60%, hsla(280, 40%, 15%, 0.3) 0%, transparent 50%),
-            radial-gradient(ellipse 90% 70% at 80% 50%, hsla(265, 70%, 30%, 0.25) 0%, transparent 60%),
-            linear-gradient(180deg, hsl(260, 20%, 4%) 0%, hsl(270, 15%, 2%) 100%)
+            radial-gradient(ellipse 80% 60% at 70% 50%, hsla(168, 60%, 15%, 0.4) 0%, transparent 70%),
+            radial-gradient(ellipse 60% 50% at 50% 40%, hsla(170, 50%, 12%, 0.3) 0%, transparent 60%),
+            radial-gradient(ellipse 50% 40% at 30% 60%, hsla(175, 40%, 10%, 0.2) 0%, transparent 50%),
+            radial-gradient(ellipse 90% 70% at 80% 50%, hsla(168, 70%, 20%, 0.2) 0%, transparent 60%),
+            linear-gradient(180deg, hsl(170, 20%, 3%) 0%, hsl(175, 15%, 1%) 100%)
           `,
         }}
       />
@@ -118,8 +118,8 @@ export const ParticleBackground = () => {
         className="absolute inset-0"
         style={{
           background: `
-            radial-gradient(ellipse 40% 35% at 75% 45%, hsla(280, 80%, 40%, 0.15) 0%, transparent 100%),
-            radial-gradient(ellipse 30% 30% at 65% 55%, hsla(260, 70%, 50%, 0.1) 0%, transparent 100%)
+            radial-gradient(ellipse 40% 35% at 75% 45%, rgba(0, 245, 212, 0.1) 0%, transparent 100%),
+            radial-gradient(ellipse 30% 30% at 65% 55%, rgba(0, 245, 212, 0.06) 0%, transparent 100%)
           `,
         }}
       />

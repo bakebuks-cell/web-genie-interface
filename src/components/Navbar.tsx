@@ -84,10 +84,11 @@ export const Navbar = () => {
             <Button
               size="sm"
               onClick={handleSignUp}
-              className="rounded-full px-4 h-8 text-sm text-white border-0"
+              className="rounded-full px-4 h-8 text-sm text-black border-0"
               style={{
-                background: "hsl(250 83% 60%)",
-                boxShadow: "0 0 12px hsl(250 83% 60% / 0.3)",
+                background: "linear-gradient(90deg, rgba(0,245,212,0.9), rgba(0,255,198,0.75))",
+                boxShadow: "0 0 12px rgba(0, 245, 212, 0.3)",
+                color: "#000",
               }}
             >
               Sign Up
@@ -135,7 +136,7 @@ export const Navbar = () => {
                 <Button variant="ghost" size="sm" onClick={handleLogin} className="justify-start" style={{ color: "hsl(0 0% 60%)" }}>
                   Login
                 </Button>
-                <Button size="sm" onClick={handleSignUp} className="text-white" style={{ background: "hsl(250 83% 60%)" }}>
+                <Button size="sm" onClick={handleSignUp} className="text-black" style={{ background: "linear-gradient(90deg, rgba(0,245,212,0.9), rgba(0,255,198,0.75))" }}>
                   Sign Up
                 </Button>
               </div>

@@ -23,14 +23,14 @@ export const Navbar = () => {
     navigate("/signup");
   };
 
-  const brandText = "MyCodex";
+  const brandText = "MyCodex.Dev";
 
   return (
     <nav className="fixed top-4 left-0 right-0 z-50 px-4 sm:px-6 lg:px-8">
       <div className="flex items-center justify-between">
         {/* Brand Name */}
         <Link to="/" className="group relative">
-          <span className="font-bold text-lg sm:text-xl text-foreground transition-all duration-300 group-hover:drop-shadow-[0_0_8px_rgba(0,230,210,0.5)]">
+          <span className="font-bold text-lg sm:text-xl text-primary transition-all duration-300 group-hover:drop-shadow-[0_0_8px_rgba(0,230,210,0.5)]">
             {brandText}
           </span>
           <span className="absolute -bottom-0.5 left-0 w-full h-px bg-primary/50" />

@@ -178,7 +178,7 @@ const About = () => {
             
             <div className="space-y-5">
               <p className="text-lg md:text-xl text-white/60 leading-relaxed">
-                MyCodex is an AI-powered prompt-to-application platform that converts ideas into full web applications. It allows users to choose their preferred technology stack and generate scalable, production-ready code.
+                MyCodex.Dev is an AI-powered prompt-to-application platform that converts ideas into full web applications. It allows users to choose their preferred technology stack and generate scalable, production-ready code.
               </p>
               <p className="text-lg md:text-xl text-white/50 leading-relaxed">
                 The platform is built to reduce development friction, accelerate workflows, and maintain clean architecture — enabling developers and teams to ship faster without compromising on quality.
@@ -206,7 +206,7 @@ const About = () => {
                 Capabilities
               </span>
               <h2 className="text-2xl md:text-3xl font-bold text-white">
-                What MyCodex Provides
+                What MyCodex.Dev Provides
               </h2>
             </div>
 
@@ -233,7 +233,7 @@ const About = () => {
                 Advantages
               </span>
               <h2 className="text-2xl md:text-3xl font-bold text-white mb-8">
-                Why Choose MyCodex
+                Why Choose MyCodex.Dev
               </h2>
             </div>
 
@@ -245,7 +245,7 @@ const About = () => {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.5, delay: 0.7 }}
               >
-                Unlike generic AI tools that produce fragmented or boilerplate code, MyCodex is purpose-built for real-world software development. Every output is structured around clean architecture principles — separating concerns, enforcing modularity, and ensuring that generated applications are maintainable from the first line of code.
+                Unlike generic AI tools that produce fragmented or boilerplate code, MyCodex.Dev is purpose-built for real-world software development. Every output is structured around clean architecture principles — separating concerns, enforcing modularity, and ensuring that generated applications are maintainable from the first line of code.
               </motion.p>
               
               <motion.p 
@@ -254,7 +254,7 @@ const About = () => {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.5, delay: 0.85 }}
               >
-                The platform offers genuine multi-technology support across React, Node.js/TypeScript, PHP, Golang, and Python. This means developers can choose the stack that fits their project requirements without compromising on code quality or architectural consistency. Whether you're building enterprise backends or modern frontends, MyCodex adapts to your workflow.
+                The platform offers genuine multi-technology support across React, Node.js/TypeScript, PHP, Golang, and Python. This means developers can choose the stack that fits their project requirements without compromising on code quality or architectural consistency. Whether you're building enterprise backends or modern frontends, MyCodex.Dev adapts to your workflow.
               </motion.p>
               
               <motion.p 

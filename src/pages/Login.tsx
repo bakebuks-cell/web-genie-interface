@@ -45,7 +45,7 @@ const Login = () => {
     
     toast({
       title: "Login Successful",
-      description: "Welcome back to MyCodex!",
+      description: "Welcome back to MyCodex.Dev!",
     });
     
     setIsLoading(false);
@@ -58,7 +58,7 @@ const Login = () => {
         <div className="w-full max-w-md animate-fade-in-up">
           {/* Brand Name */}
           <div className="flex items-center justify-center mb-8">
-            <span className="font-bold text-2xl text-foreground">MyCodex</span>
+            <span className="font-bold text-2xl text-primary">MyCodex.Dev</span>
           </div>
 
           {/* Login Card */}

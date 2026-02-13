@@ -28,24 +28,22 @@ export const Navbar = () => {
   return (
     <nav className="fixed top-4 left-0 right-0 z-50 px-4 sm:px-6 lg:px-8">
       <div className="flex items-center justify-between">
-        {/* Brand Name - Left side with subtle effect */}
+        {/* Brand Name */}
         <Link to="/" className="group relative">
-          <span className="font-bold text-lg sm:text-xl text-foreground transition-all duration-300 group-hover:drop-shadow-[0_0_8px_rgba(255,255,255,0.5)]">
+          <span className="font-bold text-lg sm:text-xl text-foreground transition-all duration-300 group-hover:drop-shadow-[0_0_8px_rgba(0,230,210,0.5)]">
             {brandText}
           </span>
-          
-          {/* Permanent underline */}
-          <span className="absolute -bottom-0.5 left-0 w-full h-px bg-foreground" />
+          <span className="absolute -bottom-0.5 left-0 w-full h-px bg-primary/50" />
         </Link>
 
-        {/* Pill-style navigation container - Right side */}
+        {/* Pill-style navigation container */}
         <motion.div 
           className="
             flex items-center gap-1 sm:gap-2
             px-3 sm:px-5 py-2.5
             bg-background/40 backdrop-blur-2xl 
-            border border-white/10 rounded-full
-            shadow-[0_8px_32px_rgba(0,0,0,0.4),inset_0_1px_0_rgba(255,255,255,0.05)]
+            border border-primary/15 rounded-full
+            shadow-[0_8px_32px_rgba(0,0,0,0.4),inset_0_1px_0_rgba(0,230,210,0.05)]
           "
           initial={{ opacity: 0, x: 20 }}
           animate={{ opacity: 1, x: 0 }}
@@ -59,8 +57,8 @@ export const Navbar = () => {
                 to={item.href}
                 className="
                   px-3 py-1.5 rounded-full
-                  text-muted-foreground hover:text-foreground 
-                  hover:bg-white/5
+                  text-muted-foreground hover:text-primary 
+                  hover:bg-primary/5
                   transition-all duration-200 
                   text-sm font-medium
                 "
@@ -71,30 +69,32 @@ export const Navbar = () => {
           </div>
 
           {/* Divider */}
-          <div className="hidden md:block w-px h-5 bg-white/10 mx-2" />
+          <div className="hidden md:block w-px h-5 bg-primary/15 mx-2" />
 
-          {/* Auth Buttons - Desktop */}
+          {/* Auth Buttons */}
           <div className="hidden md:flex items-center gap-2">
             <Button
               variant="ghost"
               size="sm"
               onClick={handleLogin}
-              className="text-muted-foreground hover:text-foreground hover:bg-white/5 rounded-full px-4 h-8 text-sm"
+              className="text-muted-foreground hover:text-foreground hover:bg-primary/5 rounded-full px-4 h-8 text-sm"
             >
               Login
             </Button>
-            <Button
-              size="sm"
+            <button
               onClick={handleSignUp}
-              className="bg-primary hover:bg-primary/90 text-primary-foreground rounded-full px-4 h-8 text-sm shadow-lg shadow-primary/20"
+              className="rounded-full px-4 h-8 text-sm font-medium text-primary-foreground shadow-[0_0_15px_rgba(0,255,200,0.25)] transition-all duration-300 hover:shadow-[0_0_25px_rgba(0,255,200,0.4)] hover:opacity-90"
+              style={{
+                background: "linear-gradient(90deg, #00f0ff, #00c8a0)",
+              }}
             >
               Sign Up
-            </Button>
+            </button>
           </div>
 
           {/* Mobile Menu Button */}
           <button
-            className="md:hidden p-1.5 text-muted-foreground hover:text-foreground transition-colors rounded-full hover:bg-white/5"
+            className="md:hidden p-1.5 text-muted-foreground hover:text-foreground transition-colors rounded-full hover:bg-primary/5"
             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
           >
             {isMobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
@@ -108,7 +108,7 @@ export const Navbar = () => {
           <motion.div 
             className="
               bg-background/60 backdrop-blur-2xl 
-              border border-white/10 rounded-2xl
+              border border-primary/15 rounded-2xl
               p-4 w-64
               shadow-[0_8px_32px_rgba(0,0,0,0.4)]
             "
@@ -121,28 +121,30 @@ export const Navbar = () => {
                 <Link
                   key={item.label}
                   to={item.href}
-                  className="text-muted-foreground hover:text-foreground transition-colors duration-200 text-sm font-medium px-3 py-2 rounded-lg hover:bg-white/5"
+                  className="text-muted-foreground hover:text-primary transition-colors duration-200 text-sm font-medium px-3 py-2 rounded-lg hover:bg-primary/5"
                   onClick={() => setIsMobileMenuOpen(false)}
                 >
                   {item.label}
                 </Link>
               ))}
-              <div className="flex flex-col gap-2 pt-3 border-t border-white/10 mt-2">
+              <div className="flex flex-col gap-2 pt-3 border-t border-primary/15 mt-2">
                 <Button
                   variant="ghost"
                   size="sm"
                   onClick={handleLogin}
-                  className="justify-start text-muted-foreground hover:bg-white/5 rounded-lg"
+                  className="justify-start text-muted-foreground hover:bg-primary/5 rounded-lg"
                 >
                   Login
                 </Button>
-                <Button
-                  size="sm"
+                <button
                   onClick={handleSignUp}
-                  className="bg-primary text-primary-foreground rounded-lg"
+                  className="rounded-lg px-4 h-9 text-sm font-medium text-primary-foreground"
+                  style={{
+                    background: "linear-gradient(90deg, #00f0ff, #00c8a0)",
+                  }}
                 >
                   Sign Up
-                </Button>
+                </button>
               </div>
             </div>
           </motion.div>

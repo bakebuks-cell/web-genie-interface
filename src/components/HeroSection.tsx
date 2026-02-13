@@ -89,9 +89,9 @@ export const HeroSection = () => {
               key={badge}
               className="px-3 py-1 text-xs font-medium rounded-full border"
               style={{
-                color: "hsl(250 83% 70%)",
-                backgroundColor: "hsl(250 83% 60% / 0.1)",
-                borderColor: "hsl(250 83% 60% / 0.25)",
+                color: "#00F5D4",
+                backgroundColor: "rgba(0, 245, 212, 0.1)",
+                borderColor: "rgba(0, 245, 212, 0.25)",
               }}
             >
               {badge}
@@ -112,9 +112,9 @@ export const HeroSection = () => {
           style={{
             background: "hsl(0 0% 4% / 0.7)",
             backdropFilter: "blur(24px)",
-            borderColor: "hsl(250 83% 60% / 0.35)",
+            borderColor: "rgba(0, 245, 212, 0.6)",
             boxShadow:
-              "0 0 30px hsl(250 83% 60% / 0.12), 0 0 60px hsl(270 70% 50% / 0.06)",
+              "0 0 20px rgba(0, 245, 212, 0.25), inset 0 0 15px rgba(0, 245, 212, 0.08)",
           }}
         >
           {/* Textarea */}
@@ -135,10 +135,10 @@ export const HeroSection = () => {
                 className="flex items-center gap-2 px-3 py-2 rounded-lg border text-sm transition-all duration-200"
                 style={{
                   borderColor: selectedLanguage
-                    ? "hsl(250 83% 60% / 0.4)"
+                    ? "rgba(0, 245, 212, 0.4)"
                     : "hsl(0 0% 20%)",
                   backgroundColor: selectedLanguage
-                    ? "hsl(250 83% 60% / 0.1)"
+                    ? "rgba(0, 245, 212, 0.1)"
                     : "hsl(0 0% 8%)",
                   color: selectedLanguage ? "hsl(0 0% 90%)" : "hsl(0 0% 50%)",
                 }}
@@ -181,11 +181,11 @@ export const HeroSection = () => {
                           style={{
                             color:
                               selectedLanguage === lang.id
-                                ? "hsl(250 83% 70%)"
+                                ? "#00F5D4"
                                 : "hsl(0 0% 75%)",
                             backgroundColor:
                               selectedLanguage === lang.id
-                                ? "hsl(250 83% 60% / 0.1)"
+                                ? "rgba(0, 245, 212, 0.1)"
                                 : "transparent",
                           }}
                           onMouseEnter={(e) => {
@@ -244,13 +244,13 @@ export const HeroSection = () => {
             <div className="flex items-center gap-2">
               <button
                 className="p-2.5 rounded-xl transition-all duration-200"
-                style={{ color: "hsl(0 0% 45%)" }}
+                style={{ color: "rgba(0, 245, 212, 0.75)" }}
                 onMouseEnter={(e) => {
-                  e.currentTarget.style.color = "hsl(0 0% 80%)";
-                  e.currentTarget.style.backgroundColor = "hsl(0 0% 10%)";
+                  e.currentTarget.style.color = "#00FFC6";
+                  e.currentTarget.style.backgroundColor = "rgba(0, 245, 212, 0.08)";
                 }}
                 onMouseLeave={(e) => {
-                  e.currentTarget.style.color = "hsl(0 0% 45%)";
+                  e.currentTarget.style.color = "rgba(0, 245, 212, 0.75)";
                   e.currentTarget.style.backgroundColor = "transparent";
                 }}
                 title="Attach file"
@@ -259,13 +259,13 @@ export const HeroSection = () => {
               </button>
               <button
                 className="p-2.5 rounded-xl transition-all duration-200"
-                style={{ color: "hsl(0 0% 45%)" }}
+                style={{ color: "rgba(0, 245, 212, 0.75)" }}
                 onMouseEnter={(e) => {
-                  e.currentTarget.style.color = "hsl(0 0% 80%)";
-                  e.currentTarget.style.backgroundColor = "hsl(0 0% 10%)";
+                  e.currentTarget.style.color = "#00FFC6";
+                  e.currentTarget.style.backgroundColor = "rgba(0, 245, 212, 0.08)";
                 }}
                 onMouseLeave={(e) => {
-                  e.currentTarget.style.color = "hsl(0 0% 45%)";
+                  e.currentTarget.style.color = "rgba(0, 245, 212, 0.75)";
                   e.currentTarget.style.backgroundColor = "transparent";
                 }}
                 title="Voice input"
@@ -274,10 +274,10 @@ export const HeroSection = () => {
               </button>
               <button
                 onClick={handleGenerate}
-                className="flex items-center gap-2 px-4 py-2.5 rounded-xl font-medium text-sm text-white transition-all duration-300 active:scale-95"
+                className="flex items-center gap-2 px-4 py-2.5 rounded-xl font-medium text-sm text-black transition-all duration-300 active:scale-95"
                 style={{
-                  background: "hsl(250 83% 60%)",
-                  boxShadow: "0 0 20px hsl(250 83% 60% / 0.3)",
+                  background: "linear-gradient(90deg, rgba(0,245,212,0.9), rgba(0,255,198,0.75))",
+                  boxShadow: "0 0 20px rgba(0, 245, 212, 0.35)",
                   animation: "pulseGlow 3s ease-in-out infinite",
                 }}
               >

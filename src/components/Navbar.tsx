@@ -23,33 +23,28 @@ export const Navbar = () => {
     navigate("/signup");
   };
 
-  const brandText = "DataBuks Studio";
-
   return (
-    <nav className="fixed top-4 left-0 right-0 z-50 px-4 sm:px-6 lg:px-8">
+    <nav className="fixed top-0 left-0 right-0 z-50 px-6 lg:px-10 py-4">
       <div className="flex items-center justify-between">
-        {/* Brand Name - Left side with subtle effect */}
-        <Link to="/" className="group relative">
-          <span className="font-bold text-lg sm:text-xl text-foreground transition-all duration-300 group-hover:drop-shadow-[0_0_8px_rgba(255,255,255,0.5)]">
-            {brandText}
+        {/* Brand Name - Left */}
+        <Link to="/" className="relative">
+          <span className="font-bold text-lg text-white tracking-wide">
+            MyCodex
           </span>
-          
-          {/* Permanent underline */}
-          <span className="absolute -bottom-0.5 left-0 w-full h-px bg-foreground" />
+          <span className="absolute -bottom-0.5 left-0 w-full h-px bg-white/80" />
         </Link>
 
-        {/* Pill-style navigation container - Right side */}
-        <motion.div 
-          className="
-            flex items-center gap-1 sm:gap-2
-            px-3 sm:px-5 py-2.5
-            bg-background/40 backdrop-blur-2xl 
-            border border-white/10 rounded-full
-            shadow-[0_8px_32px_rgba(0,0,0,0.4),inset_0_1px_0_rgba(255,255,255,0.05)]
-          "
+        {/* Right side nav */}
+        <motion.div
+          className="flex items-center gap-1 sm:gap-2 px-4 py-2.5 rounded-full border"
+          style={{
+            background: "hsl(0 0% 0% / 0.3)",
+            backdropFilter: "blur(16px)",
+            borderColor: "hsl(0 0% 100% / 0.08)",
+          }}
           initial={{ opacity: 0, x: 20 }}
           animate={{ opacity: 1, x: 0 }}
-          transition={{ duration: 0.5, delay: 0.1, ease: "easeOut" }}
+          transition={{ duration: 0.5, delay: 0.1 }}
         >
           {/* Desktop Navigation */}
           <div className="hidden md:flex items-center gap-1">
@@ -57,36 +52,43 @@ export const Navbar = () => {
               <Link
                 key={item.label}
                 to={item.href}
-                className="
-                  px-3 py-1.5 rounded-full
-                  text-muted-foreground hover:text-foreground 
-                  hover:bg-white/5
-                  transition-all duration-200 
-                  text-sm font-medium
-                "
+                className="px-3 py-1.5 rounded-full text-sm font-medium transition-all duration-200"
+                style={{ color: "hsl(0 0% 60%)" }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.color = "hsl(0 0% 90%)";
+                  e.currentTarget.style.backgroundColor = "hsl(0 0% 100% / 0.05)";
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.color = "hsl(0 0% 60%)";
+                  e.currentTarget.style.backgroundColor = "transparent";
+                }}
               >
                 {item.label}
               </Link>
             ))}
           </div>
 
-          {/* Divider */}
-          <div className="hidden md:block w-px h-5 bg-white/10 mx-2" />
+          <div className="hidden md:block w-px h-5 mx-2" style={{ background: "hsl(0 0% 100% / 0.1)" }} />
 
-          {/* Auth Buttons - Desktop */}
+          {/* Auth Buttons */}
           <div className="hidden md:flex items-center gap-2">
             <Button
               variant="ghost"
               size="sm"
               onClick={handleLogin}
-              className="text-muted-foreground hover:text-foreground hover:bg-white/5 rounded-full px-4 h-8 text-sm"
+              className="rounded-full px-4 h-8 text-sm"
+              style={{ color: "hsl(0 0% 60%)" }}
             >
               Login
             </Button>
             <Button
               size="sm"
               onClick={handleSignUp}
-              className="bg-primary hover:bg-primary/90 text-primary-foreground rounded-full px-4 h-8 text-sm shadow-lg shadow-primary/20"
+              className="rounded-full px-4 h-8 text-sm text-white border-0"
+              style={{
+                background: "hsl(250 83% 60%)",
+                boxShadow: "0 0 12px hsl(250 83% 60% / 0.3)",
+              }}
             >
               Sign Up
             </Button>
@@ -94,7 +96,8 @@ export const Navbar = () => {
 
           {/* Mobile Menu Button */}
           <button
-            className="md:hidden p-1.5 text-muted-foreground hover:text-foreground transition-colors rounded-full hover:bg-white/5"
+            className="md:hidden p-1.5 rounded-full transition-colors"
+            style={{ color: "hsl(0 0% 60%)" }}
             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
           >
             {isMobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
@@ -105,13 +108,13 @@ export const Navbar = () => {
       {/* Mobile Menu */}
       {isMobileMenuOpen && (
         <div className="md:hidden mt-2 flex justify-end">
-          <motion.div 
-            className="
-              bg-background/60 backdrop-blur-2xl 
-              border border-white/10 rounded-2xl
-              p-4 w-64
-              shadow-[0_8px_32px_rgba(0,0,0,0.4)]
-            "
+          <motion.div
+            className="p-4 w-64 rounded-2xl border"
+            style={{
+              background: "hsl(0 0% 4% / 0.9)",
+              backdropFilter: "blur(24px)",
+              borderColor: "hsl(0 0% 100% / 0.08)",
+            }}
             initial={{ opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.2 }}
@@ -121,26 +124,18 @@ export const Navbar = () => {
                 <Link
                   key={item.label}
                   to={item.href}
-                  className="text-muted-foreground hover:text-foreground transition-colors duration-200 text-sm font-medium px-3 py-2 rounded-lg hover:bg-white/5"
+                  className="text-sm font-medium px-3 py-2 rounded-lg transition-colors"
+                  style={{ color: "hsl(0 0% 60%)" }}
                   onClick={() => setIsMobileMenuOpen(false)}
                 >
                   {item.label}
                 </Link>
               ))}
-              <div className="flex flex-col gap-2 pt-3 border-t border-white/10 mt-2">
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={handleLogin}
-                  className="justify-start text-muted-foreground hover:bg-white/5 rounded-lg"
-                >
+              <div className="flex flex-col gap-2 pt-3 mt-2 border-t" style={{ borderColor: "hsl(0 0% 100% / 0.1)" }}>
+                <Button variant="ghost" size="sm" onClick={handleLogin} className="justify-start" style={{ color: "hsl(0 0% 60%)" }}>
                   Login
                 </Button>
-                <Button
-                  size="sm"
-                  onClick={handleSignUp}
-                  className="bg-primary text-primary-foreground rounded-lg"
-                >
+                <Button size="sm" onClick={handleSignUp} className="text-white" style={{ background: "hsl(250 83% 60%)" }}>
                   Sign Up
                 </Button>
               </div>

@@ -46,8 +46,8 @@ const UnifiedInput = ({
   // Refs for speech state
   const isRecordingRef = useRef(false);
   const startIdeaRef = useRef("");
-  const accumulatedFinalRef = useRef(""); // Only exact finalized words
-  const currentInterimRef = useRef(""); // Temporary preview only
+  const accumulatedFinalRef = useRef("");
+  const currentInterimRef = useRef("");
   const lastSpeechTimeRef = useRef<number>(Date.now());
   const { toast } = useToast();
   
@@ -93,13 +93,10 @@ const UnifiedInput = ({
     }
   };
 
-  // Reset silence timer - called on every speech activity
   const resetSilenceTimer = () => {
     if (silenceTimeoutRef.current) {
       clearTimeout(silenceTimeoutRef.current);
     }
-    
-    // Auto-finalize after 5 seconds of continuous silence
     silenceTimeoutRef.current = setTimeout(() => {
       if (isRecordingRef.current) {
         finishRecording();
@@ -107,198 +104,128 @@ const UnifiedInput = ({
     }, 5000);
   };
 
-  // Update display: shows finalized + interim preview
   const updateDisplayText = () => {
     const base = startIdeaRef.current.trim();
     const final = accumulatedFinalRef.current.trim();
     const interim = currentInterimRef.current.trim();
-    
-    // Build display: base + finalized + interim preview
     const parts: string[] = [];
     if (base) parts.push(base);
     if (final) parts.push(final);
     if (interim) parts.push(interim);
-    
     setDisplayText(parts.join(" "));
   };
 
   const finishRecording = () => {
     if (!isRecordingRef.current) return;
-    
     isRecordingRef.current = false;
     clearTimers();
-    
-    // Stop recognition to trigger final results
     if (recognitionRef.current) {
-      try { 
-        recognitionRef.current.stop();
-      } catch {}
+      try { recognitionRef.current.stop(); } catch {}
     }
-    
-    // Wait for speech engine to complete final analysis
     finalizeTimeoutRef.current = setTimeout(() => {
-      // Commit ONLY the exact finalized words - no interim, no guessing
       const base = startIdeaRef.current.trim();
       const final = accumulatedFinalRef.current.trim();
-      
-      // Build final text from exact spoken words only
       const parts: string[] = [];
       if (base) parts.push(base);
       if (final) parts.push(final);
       const finalText = parts.join(" ");
-      
-      // Update state with exact transcription
       onIdeaChange(finalText);
       setDisplayText(finalText);
-      
-      // Cleanup
       if (recognitionRef.current) {
         try { recognitionRef.current.abort(); } catch {}
         recognitionRef.current = null;
       }
-      
       setIsRecording(false);
       accumulatedFinalRef.current = "";
       currentInterimRef.current = "";
-    }, 500); // Allow engine to finalize analysis
+    }, 500);
   };
 
   const handleVoice = async () => {
     if (!("webkitSpeechRecognition" in window) && !("SpeechRecognition" in window)) {
-      toast({
-        title: "Voice Not Supported",
-        description: "Your browser doesn't support voice input. Try Chrome or Edge.",
-        variant: "destructive",
-      });
+      toast({ title: "Voice Not Supported", description: "Your browser doesn't support voice input. Try Chrome or Edge.", variant: "destructive" });
       return;
     }
+    if (isRecordingRef.current) { finishRecording(); return; }
 
-    // Toggle off if already recording
-    if (isRecordingRef.current) {
-      finishRecording();
-      return;
-    }
-
-    // Initialize recording state
     startIdeaRef.current = idea;
     accumulatedFinalRef.current = "";
     currentInterimRef.current = "";
     lastSpeechTimeRef.current = Date.now();
     isRecordingRef.current = true;
-
     setIsRecording(true);
     setDisplayText(idea);
-
-    // Start 5-second silence timer
     resetSilenceTimer();
 
     const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
     const recognition = new SpeechRecognition();
     recognitionRef.current = recognition;
-    
-    // STRICT ACCURACY CONFIGURATION
     recognition.lang = "en-US";
-    recognition.interimResults = true; // Preview only
+    recognition.interimResults = true;
     recognition.continuous = true;
-    recognition.maxAlternatives = 1; // Use highest confidence result
+    recognition.maxAlternatives = 1;
 
     recognition.onresult = (event: any) => {
       if (!isRecordingRef.current) return;
-      
-      // Reset silence timer on any speech activity
       lastSpeechTimeRef.current = Date.now();
       resetSilenceTimer();
-      
-      // Process results with strict accuracy
       for (let i = event.resultIndex; i < event.results.length; i++) {
         const result = event.results[i];
-        
         if (result.isFinal) {
-          // FINAL: Exact analyzed transcription from speech engine
-          // This is the accurate, analyzed result - use as-is
-          const exactTranscript = result[0].transcript;
-          accumulatedFinalRef.current += exactTranscript;
-          currentInterimRef.current = ""; // Clear interim
+          accumulatedFinalRef.current += result[0].transcript;
+          currentInterimRef.current = "";
         } else {
-          // INTERIM: Temporary preview - never committed
-          // Shows user something is happening but doesn't affect final text
           currentInterimRef.current = result[0].transcript;
         }
       }
-      
       updateDisplayText();
     };
 
-    recognition.onspeechstart = () => {
-      lastSpeechTimeRef.current = Date.now();
-      resetSilenceTimer();
-    };
-
-    recognition.onspeechend = () => {
-      // Speech ended - silence timer will handle finalization
-    };
-
+    recognition.onspeechstart = () => { lastSpeechTimeRef.current = Date.now(); resetSilenceTimer(); };
+    recognition.onspeechend = () => {};
     recognition.onerror = (event: any) => {
-      if (event.error === 'no-speech' || event.error === 'aborted') {
-        return; // Normal, continue
-      }
-      
-      toast({
-        title: "Voice Error",
-        description: `Error: ${event.error}`,
-        variant: "destructive",
-      });
-      
+      if (event.error === 'no-speech' || event.error === 'aborted') return;
+      toast({ title: "Voice Error", description: `Error: ${event.error}`, variant: "destructive" });
       isRecordingRef.current = false;
       setIsRecording(false);
       clearTimers();
     };
-
     recognition.onend = () => {
-      // Restart if still recording (browser may stop after ~60s)
       if (isRecordingRef.current && recognitionRef.current === recognition) {
-        try {
-          recognition.start();
-        } catch {
-          finishRecording();
-        }
+        try { recognition.start(); } catch { finishRecording(); }
       }
     };
 
-    try {
-      recognition.start();
-    } catch (e) {
+    try { recognition.start(); } catch (e) {
       isRecordingRef.current = false;
       setIsRecording(false);
       clearTimers();
-      toast({
-        title: "Voice Error",
-        description: "Failed to start voice recognition.",
-        variant: "destructive",
-      });
+      toast({ title: "Voice Error", description: "Failed to start voice recognition.", variant: "destructive" });
     }
   };
 
-  // Sync displayText with idea when not recording
   useEffect(() => {
-    if (!isRecording) {
-      setDisplayText(idea);
-    }
+    if (!isRecording) { setDisplayText(idea); }
   }, [idea, isRecording]);
 
   return (
     <div className="w-full max-w-2xl mx-auto">
-      {/* Main unified container - Medium size with constant blue glow */}
+      {/* Main unified container - futuristic teal glow */}
       <div
-        className="
+        className={`
           relative flex flex-col p-4
-          bg-card/80 backdrop-blur-xl 
-          border border-primary/40 rounded-xl
-          shadow-[0_0_25px_rgba(59,130,246,0.15),0_0_50px_rgba(59,130,246,0.08)]
+          rounded-2xl
+          backdrop-blur-lg
           transition-all duration-300 ease-out
-          hover:shadow-[0_0_30px_rgba(59,130,246,0.2),0_0_60px_rgba(59,130,246,0.12)]
-          hover:border-primary/50
-        "
+          ${isFocused 
+            ? "shadow-[0_0_50px_rgba(0,255,200,0.35),0_0_80px_rgba(0,255,200,0.15),inset_0_0_30px_rgba(0,255,200,0.05)]" 
+            : "shadow-[0_0_40px_rgba(0,255,200,0.2),0_0_60px_rgba(0,255,200,0.08)]"
+          }
+        `}
+        style={{
+          background: "rgba(30, 30, 30, 0.6)",
+          border: "1px solid rgba(0, 230, 210, 0.25)",
+        }}
       >
         {/* Hidden file input */}
         <input
@@ -310,15 +237,10 @@ const UnifiedInput = ({
           className="hidden"
         />
 
-        {/* Textarea - Shows real-time speech or editable text */}
+        {/* Textarea */}
         <textarea
           value={displayText}
-          onChange={(e) => {
-            // Only allow manual editing when not recording
-            if (!isRecording) {
-              onIdeaChange(e.target.value);
-            }
-          }}
+          onChange={(e) => { if (!isRecording) { onIdeaChange(e.target.value); } }}
           onFocus={() => setIsFocused(true)}
           onBlur={() => setIsFocused(false)}
           placeholder="Describe your application idea..."
@@ -333,11 +255,9 @@ const UnifiedInput = ({
           "
         />
 
-        {/* Voice transcript is now shown inline via the textarea value - no overlay needed */}
-
-        {/* Bottom bar - Language left, Icons right */}
+        {/* Bottom bar */}
         <div className="flex items-center justify-between mt-4 pt-4 border-t border-border/30">
-          {/* Language Dropdown - Bottom Left (subtle & compact) */}
+          {/* Language Dropdown */}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <button
@@ -377,7 +297,7 @@ const UnifiedInput = ({
                     transition-colors duration-150
                     ${selectedLanguage === lang.id 
                       ? "bg-primary/10 text-primary" 
-                      : "hover:bg-accent"
+                      : "hover:bg-accent/10"
                     }
                   `}
                 >
@@ -391,23 +311,16 @@ const UnifiedInput = ({
             </DropdownMenuContent>
           </DropdownMenu>
 
-          {/* Action Icons - Right side, grouped & center-aligned */}
+          {/* Action Icons */}
           <div className="flex items-center gap-2">
-            {/* Attach Button */}
             <button
               onClick={handleAttach}
-              className="
-                p-2.5 rounded-xl 
-                text-muted-foreground hover:text-foreground 
-                hover:bg-secondary/60 active:scale-95
-                transition-all duration-200
-              "
+              className="p-2.5 rounded-xl text-muted-foreground hover:text-foreground hover:bg-secondary/60 active:scale-95 transition-all duration-200"
               title="Attach file"
             >
               <Paperclip className="w-5 h-5" />
             </button>
 
-            {/* Voice Button - Closed default, Open with floating animation when active */}
             <div className="relative">
               <button
                 onClick={handleVoice}
@@ -423,21 +336,12 @@ const UnifiedInput = ({
               >
                 <Mic className="w-5 h-5" />
               </button>
-              
-              {/* Subtle glow ring when recording - theme colors only */}
               {isRecording && (
-                <span 
-                  className="
-                    absolute inset-0 rounded-xl 
-                    border-2 border-primary/50
-                    animate-[pulse_2s_ease-in-out_infinite]
-                    pointer-events-none
-                  " 
-                />
+                <span className="absolute inset-0 rounded-xl border-2 border-primary/50 animate-[pulse_2s_ease-in-out_infinite] pointer-events-none" />
               )}
             </div>
 
-            {/* Generate Button - Primary action */}
+            {/* Generate Button - teal neon gradient */}
             <button
               onClick={onGenerate}
               disabled={!isGenerateEnabled}
@@ -446,10 +350,13 @@ const UnifiedInput = ({
                 font-medium text-sm
                 transition-all duration-300 active:scale-95
                 ${isGenerateEnabled
-                  ? "bg-primary text-primary-foreground hover:opacity-90 shadow-lg shadow-primary/25"
+                  ? "text-primary-foreground hover:opacity-90 shadow-[0_0_20px_rgba(0,255,200,0.3)]"
                   : "bg-muted text-muted-foreground cursor-not-allowed opacity-50"
                 }
               `}
+              style={isGenerateEnabled ? {
+                background: "linear-gradient(90deg, #00f0ff, #00c8a0)",
+              } : undefined}
               title={isGenerateEnabled ? "Generate Application" : "Select language and describe your idea first"}
             >
               <Zap className="w-4 h-4" />
@@ -458,7 +365,6 @@ const UnifiedInput = ({
           </div>
         </div>
       </div>
-
     </div>
   );
 };

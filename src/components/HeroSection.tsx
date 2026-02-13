@@ -125,7 +125,7 @@ export const HeroSection = () => {
             {["AI-Powered", "Multi-Stack", "Production Ready"].map((badge, i) => (
               <motion.span
                 key={badge}
-                className="px-3 py-1 text-xs font-medium text-primary/80 bg-primary/10 rounded-full border border-primary/20"
+                className="px-3 py-1 text-xs font-medium text-primary bg-primary/10 rounded-full border border-primary/20"
                 initial={{ opacity: 0, scale: 0.8 }}
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{ delay: 1.3 + i * 0.1 }}

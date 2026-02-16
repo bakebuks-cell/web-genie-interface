@@ -19,14 +19,14 @@ interface UnifiedInputProps {
 }
 
 const languages = [
-  { id: "html", name: "Plain HTML/CSS/JS", icon: "🌐" },
-  { id: "php", name: "PHP", icon: "🐘" },
-  { id: "nodejs", name: "Node/TS", icon: "🟢" },
-  { id: "python", name: "Python", icon: "🐍" },
-  { id: "golang", name: "Golang", icon: "🐹" },
-  { id: "react", name: "React", icon: "⚛️" },
-  { id: "java", name: "Java (Enterprise)", icon: "☕" },
-  { id: "csharp", name: "ASP.NET (C#)", icon: "🔷" },
+  { id: "html", name: "Plain HTML/CSS/JS" },
+  { id: "php", name: "PHP" },
+  { id: "nodejs", name: "Node/TS" },
+  { id: "python", name: "Python" },
+  { id: "golang", name: "Golang" },
+  { id: "react", name: "React" },
+  { id: "java", name: "Java (Enterprise)" },
+  { id: "csharp", name: "ASP.NET (C#)" },
 ];
 
 const UnifiedInput = ({
@@ -301,15 +301,8 @@ const UnifiedInput = ({
                       ${attentionPulse ? "animate-[pulse_0.5s_ease-in-out_2] border-primary shadow-[0_0_16px_rgba(0,230,210,0.5)]" : ""}
                     `}
                   >
-                    <span className="flex items-center gap-2 font-medium">
-                      {selectedLang ? (
-                        <>
-                          <span className="text-base">{selectedLang.icon}</span>
-                          <span>{selectedLang.name}</span>
-                        </>
-                      ) : (
-                        "Select Language"
-                      )}
+                    <span className="font-medium">
+                      {selectedLang ? selectedLang.name : "Select Language"}
                     </span>
                     <ChevronDown className="w-4 h-4 opacity-50" />
                   </button>
@@ -331,7 +324,6 @@ const UnifiedInput = ({
                         }
                       `}
                     >
-                      <span className="text-lg">{lang.icon}</span>
                       <span className="font-medium">{lang.name}</span>
                       {selectedLanguage === lang.id && (
                         <Check className="w-4 h-4 ml-auto text-primary" />

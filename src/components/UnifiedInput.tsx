@@ -260,7 +260,8 @@ const UnifiedInput = ({
 
         {/* Bottom bar */}
         <div className="flex items-center justify-between mt-4 pt-4 border-t border-border/30">
-          {/* Language Dropdown */}
+          {/* Language Dropdown + Multi-Program in same row */}
+          <div className="flex items-center gap-2 flex-wrap">
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <button
@@ -334,6 +335,7 @@ const UnifiedInput = ({
               }
             </span>
           </button>
+          </div>
 
           {/* Action Icons */}
           <div className="flex items-center gap-2">

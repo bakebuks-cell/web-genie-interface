@@ -14,29 +14,29 @@ const stackSections = [
   {
     label: "Frontend Stack",
     items: [
-      { id: "react", name: "React", icon: "⚛️" },
-      { id: "vue", name: "Vue.js", icon: "💚" },
-      { id: "angular", name: "Angular", icon: "🅰️" },
-      { id: "nextjs", name: "Next.js", icon: "▲" },
+      { id: "react", name: "React" },
+      { id: "vue", name: "Vue.js" },
+      { id: "angular", name: "Angular" },
+      { id: "nextjs", name: "Next.js" },
     ],
   },
   {
     label: "Backend Stack",
     items: [
-      { id: "nodejs", name: "Node.js", icon: "🟢" },
-      { id: "django", name: "Django", icon: "🐍" },
-      { id: "springboot", name: "Spring Boot", icon: "🍃" },
-      { id: "aspnet", name: "ASP.NET", icon: "🔷" },
-      { id: "laravel", name: "PHP (Laravel)", icon: "🐘" },
+      { id: "nodejs", name: "Node.js" },
+      { id: "django", name: "Django" },
+      { id: "springboot", name: "Spring Boot" },
+      { id: "aspnet", name: "ASP.NET" },
+      { id: "laravel", name: "PHP (Laravel)" },
     ],
   },
   {
     label: "Database",
     items: [
-      { id: "postgresql", name: "PostgreSQL", icon: "🐘" },
-      { id: "mysql", name: "MySQL", icon: "🐬" },
-      { id: "mongodb", name: "MongoDB", icon: "🍃" },
-      { id: "supabase", name: "Supabase", icon: "⚡" },
+      { id: "postgresql", name: "PostgreSQL" },
+      { id: "mysql", name: "MySQL" },
+      { id: "mongodb", name: "MongoDB" },
+      { id: "supabase", name: "Supabase" },
     ],
   },
 ];
@@ -158,7 +158,6 @@ const MultiProgramModal = ({ open, onClose, selectedStacks, onApply }: MultiProg
                             }
                           `}
                         >
-                          <span className="text-base">{item.icon}</span>
                           <span>{item.name}</span>
                           {isSelected && <Check className="w-3.5 h-3.5 text-primary ml-1" />}
                         </button>

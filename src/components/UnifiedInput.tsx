@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Paperclip, Mic, Sparkles, ChevronDown, Check, X, Zap } from "lucide-react";
+import { Paperclip, Mic, Sparkles, ChevronDown, Check, X, Zap, Layers } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import {
   DropdownMenu,
@@ -8,6 +8,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import MultiProgramModal from "./MultiProgramModal";
 
 interface UnifiedInputProps {
   selectedLanguage: string | null;
@@ -37,6 +38,8 @@ const UnifiedInput = ({
 }: UnifiedInputProps) => {
   const [isFocused, setIsFocused] = useState(false);
   const [isRecording, setIsRecording] = useState(false);
+  const [multiProgramOpen, setMultiProgramOpen] = useState(false);
+  const [selectedStacks, setSelectedStacks] = useState<string[]>([]);
   const [displayText, setDisplayText] = useState("");
   const fileInputRef = useRef<HTMLInputElement>(null);
   const recognitionRef = useRef<any>(null);
@@ -311,6 +314,27 @@ const UnifiedInput = ({
             </DropdownMenuContent>
           </DropdownMenu>
 
+          {/* Multi-Program Button */}
+          <button
+            onClick={() => setMultiProgramOpen(true)}
+            className={`
+              flex items-center gap-2 px-3 py-2
+              rounded-lg border transition-all duration-200 text-sm
+              ${selectedStacks.length > 0
+                ? "bg-primary/10 border-primary/30 text-foreground"
+                : "bg-secondary/30 border-border/50 text-muted-foreground hover:border-primary/40 hover:bg-secondary/50"
+              }
+            `}
+          >
+            <Layers className="w-4 h-4" />
+            <span className="font-medium">
+              {selectedStacks.length > 0
+                ? `Multi-Program (${selectedStacks.length} selected)`
+                : "Multi-Program"
+              }
+            </span>
+          </button>
+
           {/* Action Icons */}
           <div className="flex items-center gap-2">
             <button
@@ -362,8 +386,16 @@ const UnifiedInput = ({
               <Zap className="w-4 h-4" />
               <span>Generate</span>
             </button>
-          </div>
-        </div>
+    </div>
+
+    {/* Multi-Program Modal */}
+    <MultiProgramModal
+      open={multiProgramOpen}
+      onClose={() => setMultiProgramOpen(false)}
+      selectedStacks={selectedStacks}
+      onApply={setSelectedStacks}
+    />
+  </div>
       </div>
     </div>
   );

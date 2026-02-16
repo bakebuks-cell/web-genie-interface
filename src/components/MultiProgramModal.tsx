@@ -1,4 +1,5 @@
 import { useState, useMemo, useEffect } from "react";
+import { createPortal } from "react-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { X, Check, Search, Layers } from "lucide-react";
 
@@ -53,7 +54,6 @@ const MultiProgramModal = ({ open, onClose, selectedStacks, onApply }: MultiProg
     }
   }, [open, selectedStacks]);
 
-
   // ESC to close
   useEffect(() => {
     if (!open) return;
@@ -79,22 +79,23 @@ const MultiProgramModal = ({ open, onClose, selectedStacks, onApply }: MultiProg
 
   const selectedNames = selected.map((id) => allItems.find((i) => i.id === id)?.name).filter(Boolean);
 
-  return (
+  // Render via portal to document.body so it's never clipped
+  return createPortal(
     <AnimatePresence>
       {open && (
         <motion.div
-          className="fixed inset-0 z-50 flex items-center justify-center"
+          className="fixed inset-0 z-[9999] flex items-center justify-center"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           transition={{ duration: 0.2 }}
         >
-          {/* Backdrop */}
+          {/* Backdrop with blur */}
           <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={onClose} />
 
           {/* Modal */}
           <motion.div
-            className="relative w-full max-w-lg mx-4 rounded-2xl overflow-hidden"
+            className="relative w-full max-w-lg mx-4 rounded-2xl overflow-hidden max-h-[80vh] flex flex-col"
             style={{
               background: "rgba(20, 24, 30, 0.95)",
               border: "1px solid rgba(0, 230, 210, 0.3)",
@@ -106,7 +107,7 @@ const MultiProgramModal = ({ open, onClose, selectedStacks, onApply }: MultiProg
             transition={{ duration: 0.25, ease: "easeOut" }}
           >
             {/* Header */}
-            <div className="flex items-center justify-between px-6 pt-5 pb-3">
+            <div className="flex items-center justify-between px-6 pt-5 pb-3 shrink-0">
               <div className="flex items-center gap-2">
                 <Layers className="w-5 h-5 text-primary" />
                 <h2 className="text-lg font-semibold text-foreground">Select your stack</h2>
@@ -120,7 +121,7 @@ const MultiProgramModal = ({ open, onClose, selectedStacks, onApply }: MultiProg
             </div>
 
             {/* Search */}
-            <div className="px-6 pb-4">
+            <div className="px-6 pb-4 shrink-0">
               <div className="relative">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                 <input
@@ -133,8 +134,8 @@ const MultiProgramModal = ({ open, onClose, selectedStacks, onApply }: MultiProg
               </div>
             </div>
 
-            {/* Sections */}
-            <div className="px-6 pb-4 max-h-[340px] overflow-y-auto scrollbar-hide space-y-5">
+            {/* Sections - scrollable */}
+            <div className="px-6 pb-4 overflow-y-auto scrollbar-hide space-y-5 flex-1 min-h-0">
               {filteredSections.map((section, idx) => (
                 <div key={section.label}>
                   {idx > 0 && <div className="border-t border-border/20 mb-4" />}
@@ -172,7 +173,7 @@ const MultiProgramModal = ({ open, onClose, selectedStacks, onApply }: MultiProg
             </div>
 
             {/* Footer */}
-            <div className="px-6 py-4 border-t border-border/20">
+            <div className="px-6 py-4 border-t border-border/20 shrink-0">
               {selected.length > 0 && (
                 <p className="text-xs text-muted-foreground mb-3">
                   Selected: <span className="text-foreground">{selectedNames.join(" • ")}</span>
@@ -197,7 +198,8 @@ const MultiProgramModal = ({ open, onClose, selectedStacks, onApply }: MultiProg
           </motion.div>
         </motion.div>
       )}
-    </AnimatePresence>
+    </AnimatePresence>,
+    document.body
   );
 };
 

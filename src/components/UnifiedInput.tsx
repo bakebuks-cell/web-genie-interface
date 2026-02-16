@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Paperclip, Mic, Sparkles, ChevronDown, Check, X, Zap, Layers } from "lucide-react";
+import { Paperclip, Mic, ChevronDown, Check, X, Layers, ArrowUp } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import {
   DropdownMenu,
@@ -41,10 +41,14 @@ const UnifiedInput = ({
   const [multiProgramOpen, setMultiProgramOpen] = useState(false);
   const [selectedStacks, setSelectedStacks] = useState<string[]>([]);
   const [displayText, setDisplayText] = useState("");
+  const [validationError, setValidationError] = useState("");
+  const [attentionPulse, setAttentionPulse] = useState(false);
+  const [langDropdownOpen, setLangDropdownOpen] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const recognitionRef = useRef<any>(null);
   const silenceTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const finalizeTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const langButtonRef = useRef<HTMLButtonElement>(null);
 
   // Refs for speech state
   const isRecordingRef = useRef(false);
@@ -55,7 +59,8 @@ const UnifiedInput = ({
   const { toast } = useToast();
   
   const selectedLang = languages.find((l) => l.id === selectedLanguage);
-  const isGenerateEnabled = selectedLanguage && idea.trim().length > 0;
+  const hasSelection = !!selectedLanguage || selectedStacks.length > 0;
+  const isGenerateEnabled = hasSelection && idea.trim().length > 0;
 
   // Cleanup on unmount
   useEffect(() => {
@@ -68,6 +73,11 @@ const UnifiedInput = ({
       if (finalizeTimeoutRef.current) clearTimeout(finalizeTimeoutRef.current);
     };
   }, []);
+
+  // Clear validation error when user selects something
+  useEffect(() => {
+    if (hasSelection) setValidationError("");
+  }, [hasSelection]);
 
   const handleAttach = () => {
     fileInputRef.current?.click();
@@ -211,6 +221,19 @@ const UnifiedInput = ({
     if (!isRecording) { setDisplayText(idea); }
   }, [idea, isRecording]);
 
+  const handleGenerate = () => {
+    if (!hasSelection) {
+      setValidationError("Please select a language or Multi-Program stack first.");
+      setAttentionPulse(true);
+      setTimeout(() => setAttentionPulse(false), 1000);
+      // Scroll into view and open dropdown
+      langButtonRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
+      setLangDropdownOpen(true);
+      return;
+    }
+    onGenerate();
+  };
+
   return (
     <div className="w-full max-w-2xl mx-auto">
       {/* Main unified container - futuristic teal glow */}
@@ -261,80 +284,98 @@ const UnifiedInput = ({
         {/* Bottom bar */}
         <div className="flex items-center justify-between mt-4 pt-4 border-t border-border/30">
           {/* Language Dropdown + Multi-Program in same row */}
-          <div className="flex items-center gap-2 flex-wrap">
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
+          <div className="flex flex-col gap-1">
+            <div className="flex items-center gap-2 flex-wrap">
+              <DropdownMenu open={langDropdownOpen} onOpenChange={setLangDropdownOpen}>
+                <DropdownMenuTrigger asChild>
+                  <button
+                    ref={langButtonRef}
+                    className={`
+                      flex items-center gap-2 px-3 py-2
+                      rounded-lg border transition-all duration-200
+                      text-sm
+                      ${selectedLanguage 
+                        ? "bg-primary/10 border-primary/30 text-foreground" 
+                        : "bg-secondary/30 border-border/50 text-muted-foreground hover:border-primary/40 hover:bg-secondary/50"
+                      }
+                      ${attentionPulse ? "animate-[pulse_0.5s_ease-in-out_2] border-primary shadow-[0_0_16px_rgba(0,230,210,0.5)]" : ""}
+                    `}
+                  >
+                    <span className="flex items-center gap-2 font-medium">
+                      {selectedLang ? (
+                        <>
+                          <span className="text-base">{selectedLang.icon}</span>
+                          <span>{selectedLang.name}</span>
+                        </>
+                      ) : (
+                        "Select Language"
+                      )}
+                    </span>
+                    <ChevronDown className="w-4 h-4 opacity-50" />
+                  </button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent 
+                  align="start" 
+                  className="w-56 bg-popover/95 backdrop-blur-xl border-border z-50"
+                >
+                  {languages.map((lang) => (
+                    <DropdownMenuItem
+                      key={lang.id}
+                      onClick={() => onLanguageSelect(lang.id)}
+                      className={`
+                        flex items-center gap-3 px-3 py-3 cursor-pointer
+                        transition-colors duration-150
+                        ${selectedLanguage === lang.id 
+                          ? "bg-primary/10 text-primary" 
+                          : "hover:bg-accent/10"
+                        }
+                      `}
+                    >
+                      <span className="text-lg">{lang.icon}</span>
+                      <span className="font-medium">{lang.name}</span>
+                      {selectedLanguage === lang.id && (
+                        <Check className="w-4 h-4 ml-auto text-primary" />
+                      )}
+                    </DropdownMenuItem>
+                  ))}
+                </DropdownMenuContent>
+              </DropdownMenu>
+
+              {/* Multi-Program Button */}
               <button
+                onClick={() => setMultiProgramOpen(true)}
                 className={`
                   flex items-center gap-2 px-3 py-2
-                  rounded-lg border transition-all duration-200
-                  text-sm
-                  ${selectedLanguage 
-                    ? "bg-primary/10 border-primary/30 text-foreground" 
+                  rounded-lg border transition-all duration-200 text-sm
+                  ${selectedStacks.length > 0
+                    ? "bg-primary/10 border-primary/30 text-foreground"
                     : "bg-secondary/30 border-border/50 text-muted-foreground hover:border-primary/40 hover:bg-secondary/50"
                   }
+                  ${attentionPulse && !selectedLanguage ? "animate-[pulse_0.5s_ease-in-out_2] border-primary shadow-[0_0_16px_rgba(0,230,210,0.5)]" : ""}
                 `}
               >
-                <span className="flex items-center gap-2 font-medium">
-                  {selectedLang ? (
-                    <>
-                      <span className="text-base">{selectedLang.icon}</span>
-                      <span>{selectedLang.name}</span>
-                    </>
-                  ) : (
-                    "Select Language"
-                  )}
+                <Layers className="w-4 h-4" />
+                <span className="font-medium">
+                  {selectedStacks.length > 0
+                    ? `Multi-Program (${selectedStacks.length} selected)`
+                    : "Multi-Program"
+                  }
                 </span>
-                <ChevronDown className="w-4 h-4 opacity-50" />
               </button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent 
-              align="start" 
-              className="w-56 bg-popover/95 backdrop-blur-xl border-border z-50"
-            >
-              {languages.map((lang) => (
-                <DropdownMenuItem
-                  key={lang.id}
-                  onClick={() => onLanguageSelect(lang.id)}
-                  className={`
-                    flex items-center gap-3 px-3 py-3 cursor-pointer
-                    transition-colors duration-150
-                    ${selectedLanguage === lang.id 
-                      ? "bg-primary/10 text-primary" 
-                      : "hover:bg-accent/10"
-                    }
-                  `}
+            </div>
+            {/* Validation error */}
+            <AnimatePresence>
+              {validationError && (
+                <motion.p
+                  initial={{ opacity: 0, y: -4 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -4 }}
+                  className="text-xs text-red-400 pl-1"
                 >
-                  <span className="text-lg">{lang.icon}</span>
-                  <span className="font-medium">{lang.name}</span>
-                  {selectedLanguage === lang.id && (
-                    <Check className="w-4 h-4 ml-auto text-primary" />
-                  )}
-                </DropdownMenuItem>
-              ))}
-            </DropdownMenuContent>
-          </DropdownMenu>
-
-          {/* Multi-Program Button */}
-          <button
-            onClick={() => setMultiProgramOpen(true)}
-            className={`
-              flex items-center gap-2 px-3 py-2
-              rounded-lg border transition-all duration-200 text-sm
-              ${selectedStacks.length > 0
-                ? "bg-primary/10 border-primary/30 text-foreground"
-                : "bg-secondary/30 border-border/50 text-muted-foreground hover:border-primary/40 hover:bg-secondary/50"
-              }
-            `}
-          >
-            <Layers className="w-4 h-4" />
-            <span className="font-medium">
-              {selectedStacks.length > 0
-                ? `Multi-Program (${selectedStacks.length} selected)`
-                : "Multi-Program"
-              }
-            </span>
-          </button>
+                  {validationError}
+                </motion.p>
+              )}
+            </AnimatePresence>
           </div>
 
           {/* Action Icons */}
@@ -367,13 +408,11 @@ const UnifiedInput = ({
               )}
             </div>
 
-            {/* Generate Button - teal neon gradient */}
+            {/* Generate Button - arrow only */}
             <button
-              onClick={onGenerate}
-              disabled={!isGenerateEnabled}
+              onClick={handleGenerate}
               className={`
-                flex items-center gap-2 px-4 py-2.5 rounded-xl 
-                font-medium text-sm
+                flex items-center justify-center p-2.5 rounded-xl 
                 transition-all duration-300 active:scale-95
                 ${isGenerateEnabled
                   ? "text-primary-foreground hover:opacity-90 shadow-[0_0_20px_rgba(0,255,200,0.3)]"
@@ -385,19 +424,18 @@ const UnifiedInput = ({
               } : undefined}
               title={isGenerateEnabled ? "Generate Application" : "Select language and describe your idea first"}
             >
-              <Zap className="w-4 h-4" />
-              <span>Generate</span>
+              <ArrowUp className="w-5 h-5" />
             </button>
-    </div>
+          </div>
 
-    {/* Multi-Program Modal */}
-    <MultiProgramModal
-      open={multiProgramOpen}
-      onClose={() => setMultiProgramOpen(false)}
-      selectedStacks={selectedStacks}
-      onApply={setSelectedStacks}
-    />
-  </div>
+          {/* Multi-Program Modal */}
+          <MultiProgramModal
+            open={multiProgramOpen}
+            onClose={() => setMultiProgramOpen(false)}
+            selectedStacks={selectedStacks}
+            onApply={setSelectedStacks}
+          />
+        </div>
       </div>
     </div>
   );

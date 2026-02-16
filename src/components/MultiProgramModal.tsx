@@ -53,6 +53,7 @@ const MultiProgramModal = ({ open, onClose, selectedStacks, onApply }: MultiProg
     }
   }, [open, selectedStacks]);
 
+  // Lock scroll when open
   useEffect(() => {
     if (open) {
       document.body.style.overflow = "hidden";
@@ -60,6 +61,7 @@ const MultiProgramModal = ({ open, onClose, selectedStacks, onApply }: MultiProg
     }
   }, [open]);
 
+  // ESC to close
   useEffect(() => {
     if (!open) return;
     const handler = (e: KeyboardEvent) => { if (e.key === "Escape") onClose(); };
@@ -88,7 +90,7 @@ const MultiProgramModal = ({ open, onClose, selectedStacks, onApply }: MultiProg
     <AnimatePresence>
       {open && (
         <motion.div
-          className="fixed inset-0 z-50 flex items-center justify-center p-4"
+          className="fixed inset-0 z-50 flex items-center justify-center"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
@@ -99,7 +101,7 @@ const MultiProgramModal = ({ open, onClose, selectedStacks, onApply }: MultiProg
 
           {/* Modal */}
           <motion.div
-            className="relative w-[92vw] max-w-3xl flex flex-col max-h-[85vh] rounded-2xl overflow-hidden"
+            className="relative w-full max-w-lg mx-4 rounded-2xl overflow-hidden"
             style={{
               background: "rgba(20, 24, 30, 0.95)",
               border: "1px solid rgba(0, 230, 210, 0.3)",
@@ -111,7 +113,7 @@ const MultiProgramModal = ({ open, onClose, selectedStacks, onApply }: MultiProg
             transition={{ duration: 0.25, ease: "easeOut" }}
           >
             {/* Header */}
-            <div className="flex items-center justify-between px-6 pt-5 pb-3 shrink-0">
+            <div className="flex items-center justify-between px-6 pt-5 pb-3">
               <div className="flex items-center gap-2">
                 <Layers className="w-5 h-5 text-primary" />
                 <h2 className="text-lg font-semibold text-foreground">Select your stack</h2>
@@ -125,7 +127,7 @@ const MultiProgramModal = ({ open, onClose, selectedStacks, onApply }: MultiProg
             </div>
 
             {/* Search */}
-            <div className="px-6 pb-4 shrink-0">
+            <div className="px-6 pb-4">
               <div className="relative">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                 <input
@@ -138,50 +140,46 @@ const MultiProgramModal = ({ open, onClose, selectedStacks, onApply }: MultiProg
               </div>
             </div>
 
-            {/* Scrollable body */}
-            <div className="flex-1 min-h-0 overflow-y-auto px-6 pb-4 pr-5 scrollbar-thin scrollbar-thumb-primary/20 scrollbar-track-transparent">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {filteredSections.map((section) => (
-                  <div
-                    key={section.label}
-                    className="rounded-xl border border-primary/20 bg-white/5 p-4"
-                  >
-                    <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-3">
-                      {section.label}
-                    </p>
-                    <div className="flex flex-wrap gap-2">
-                      {section.items.map((item) => {
-                        const isSelected = selected.includes(item.id);
-                        return (
-                          <button
-                            key={item.id}
-                            onClick={() => toggle(item.id)}
-                            className={`
-                              flex items-center gap-2 px-3 py-2 rounded-xl text-sm font-medium whitespace-nowrap
-                              border transition-all duration-200
-                              ${isSelected
-                                ? "bg-primary/15 border-primary/40 text-foreground shadow-[0_0_12px_rgba(0,230,210,0.2)]"
-                                : "bg-secondary/20 border-border/40 text-muted-foreground hover:border-primary/30 hover:bg-secondary/40"
-                              }
-                            `}
-                          >
-                            <span className="text-base">{item.icon}</span>
-                            <span className="truncate">{item.name}</span>
-                            {isSelected && <Check className="w-3.5 h-3.5 text-primary ml-1 shrink-0" />}
-                          </button>
-                        );
-                      })}
-                    </div>
+            {/* Sections */}
+            <div className="px-6 pb-4 max-h-[340px] overflow-y-auto scrollbar-hide space-y-5">
+              {filteredSections.map((section, idx) => (
+                <div key={section.label}>
+                  {idx > 0 && <div className="border-t border-border/20 mb-4" />}
+                  <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-3">
+                    {section.label}
+                  </p>
+                  <div className="flex flex-wrap gap-2">
+                    {section.items.map((item) => {
+                      const isSelected = selected.includes(item.id);
+                      return (
+                        <button
+                          key={item.id}
+                          onClick={() => toggle(item.id)}
+                          className={`
+                            flex items-center gap-2 px-3 py-2 rounded-xl text-sm font-medium
+                            border transition-all duration-200
+                            ${isSelected
+                              ? "bg-primary/15 border-primary/40 text-foreground shadow-[0_0_12px_rgba(0,230,210,0.2)]"
+                              : "bg-secondary/20 border-border/40 text-muted-foreground hover:border-primary/30 hover:bg-secondary/40"
+                            }
+                          `}
+                        >
+                          <span className="text-base">{item.icon}</span>
+                          <span>{item.name}</span>
+                          {isSelected && <Check className="w-3.5 h-3.5 text-primary ml-1" />}
+                        </button>
+                      );
+                    })}
                   </div>
-                ))}
-              </div>
+                </div>
+              ))}
               {filteredSections.length === 0 && (
                 <p className="text-sm text-muted-foreground text-center py-6">No technologies found.</p>
               )}
             </div>
 
-            {/* Sticky Footer */}
-            <div className="shrink-0 sticky bottom-0 px-6 py-4 border-t border-primary/20 bg-black/40 backdrop-blur-md">
+            {/* Footer */}
+            <div className="px-6 py-4 border-t border-border/20">
               {selected.length > 0 && (
                 <p className="text-xs text-muted-foreground mb-3">
                   Selected: <span className="text-foreground">{selectedNames.join(" • ")}</span>

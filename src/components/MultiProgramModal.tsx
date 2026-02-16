@@ -53,13 +53,6 @@ const MultiProgramModal = ({ open, onClose, selectedStacks, onApply }: MultiProg
     }
   }, [open, selectedStacks]);
 
-  // Lock scroll when open
-  useEffect(() => {
-    if (open) {
-      document.body.style.overflow = "hidden";
-      return () => { document.body.style.overflow = ""; };
-    }
-  }, [open]);
 
   // ESC to close
   useEffect(() => {

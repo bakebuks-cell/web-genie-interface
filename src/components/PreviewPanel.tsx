@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from "react";
-import { ExternalLink, RefreshCw, MousePointer2 } from "lucide-react";
+import { ExternalLink, RefreshCw, MousePointer2, Github } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
@@ -328,28 +328,46 @@ const PreviewPanel = ({
         </div>
       )}
 
-      {/* Preview / Code Toggle */}
-      <div className="px-4 pt-3 pb-1 flex items-center gap-1">
-        <button
-          onClick={() => setActiveTab("preview")}
-          className={`px-4 py-2 text-sm font-medium rounded-lg transition-all duration-200 ${
-            activeTab === "preview"
-              ? "bg-primary/15 text-primary border border-primary/30 shadow-[0_0_12px_rgba(0,230,210,0.2)]"
-              : "text-muted-foreground hover:text-foreground hover:bg-secondary/40 border border-transparent"
-          }`}
-        >
-          Preview
-        </button>
-        <button
-          onClick={() => setActiveTab("code")}
-          className={`px-4 py-2 text-sm font-medium rounded-lg transition-all duration-200 ${
-            activeTab === "code"
-              ? "bg-primary/15 text-primary border border-primary/30 shadow-[0_0_12px_rgba(0,230,210,0.2)]"
-              : "text-muted-foreground hover:text-foreground hover:bg-secondary/40 border border-transparent"
-          }`}
-        >
-          Code
-        </button>
+      {/* Preview / Code Toggle + Actions */}
+      <div className="px-4 pt-3 pb-1 flex items-center justify-between">
+        <div className="flex items-center gap-1">
+          <button
+            onClick={() => setActiveTab("preview")}
+            className={`px-4 py-2 text-sm font-medium rounded-lg transition-all duration-200 ${
+              activeTab === "preview"
+                ? "bg-primary/15 text-primary border border-primary/30 shadow-[0_0_12px_rgba(0,230,210,0.2)]"
+                : "text-muted-foreground hover:text-foreground hover:bg-secondary/40 border border-transparent"
+            }`}
+          >
+            Preview
+          </button>
+          <button
+            onClick={() => setActiveTab("code")}
+            className={`px-4 py-2 text-sm font-medium rounded-lg transition-all duration-200 ${
+              activeTab === "code"
+                ? "bg-primary/15 text-primary border border-primary/30 shadow-[0_0_12px_rgba(0,230,210,0.2)]"
+                : "text-muted-foreground hover:text-foreground hover:bg-secondary/40 border border-transparent"
+            }`}
+          >
+            Code
+          </button>
+        </div>
+
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => console.log("GitHub export placeholder")}
+            className="w-9 h-9 flex items-center justify-center rounded-lg border border-border bg-secondary/50 text-muted-foreground hover:text-primary hover:border-primary/40 hover:shadow-[0_0_12px_rgba(0,230,210,0.15)] transition-all duration-200"
+            title="Export to GitHub"
+          >
+            <Github className="w-4 h-4" />
+          </button>
+          <button
+            onClick={() => console.log("Publish placeholder")}
+            className="px-4 py-2 text-sm font-semibold rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 hover:shadow-[0_0_16px_rgba(0,230,210,0.3)] transition-all duration-200"
+          >
+            Publish
+          </button>
+        </div>
       </div>
 
       <div className="flex-1 p-4 overflow-auto flex items-start justify-center">

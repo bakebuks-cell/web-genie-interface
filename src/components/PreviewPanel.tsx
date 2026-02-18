@@ -1,9 +1,15 @@
 import { useState, useEffect, useRef, useCallback } from "react";
-import { ExternalLink, RefreshCw, MousePointer2, Github } from "lucide-react";
+import { ExternalLink, RefreshCw, MousePointer2, Github, Laptop, Tablet, Smartphone, ChevronDown } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { useNavigate } from "react-router-dom";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 interface HealthCheckStatus {
   isChecking: boolean;
@@ -57,7 +63,19 @@ const PreviewPanel = ({
   const [isLoading, setIsLoading] = useState(true);
   const [generationComplete, setGenerationComplete] = useState(false);
   const [activeTab, setActiveTab] = useState<"preview" | "code">("preview");
+  const [selectedDevice, setSelectedDevice] = useState<"desktop" | "tablet" | "mobile">("desktop");
+  const [selectedRoute, setSelectedRoute] = useState("/");
   const iframeRef = useRef<HTMLIFrameElement>(null);
+
+  const appRoutes = ["/", "/about", "/pricing", "/technologies", "/profile"];
+
+  const deviceOptions = [
+    { value: "desktop" as const, label: "Laptop", icon: Laptop },
+    { value: "tablet" as const, label: "Tablet", icon: Tablet },
+    { value: "mobile" as const, label: "Phone", icon: Smartphone },
+  ];
+
+  const activeDevice = deviceOptions.find(d => d.value === selectedDevice) || deviceOptions[0];
 
   // Inject click-to-select script into iframe when visual edit mode is enabled
   const injectVisualEditScript = useCallback(() => {
@@ -222,14 +240,29 @@ const PreviewPanel = ({
   }, [generatedUrl, healthCheckStatus?.isReady, healthCheckStatus?.isChecking]);
 
   const getPreviewWidth = () => {
-    switch (viewMode) {
+    switch (selectedDevice) {
       case "mobile":
-        return "max-w-[375px]";
+        return "max-w-[390px]";
       case "tablet":
-        return "max-w-[768px]";
+        return "max-w-[820px]";
       default:
         return "w-full";
     }
+  };
+
+  const handleRefreshPreview = () => {
+    if (onRefresh) {
+      onRefresh();
+    } else if (iframeRef.current) {
+      const src = iframeRef.current.src;
+      iframeRef.current.src = "";
+      setTimeout(() => { if (iframeRef.current) iframeRef.current.src = src; }, 50);
+    }
+  };
+
+  const handleOpenInNewTab = () => {
+    const base = generatedUrl || "about:blank";
+    window.open(base, "_blank");
   };
 
   const progressMessage = healthCheckStatus ? getProgressiveMessage(healthCheckStatus.elapsedSeconds) : null;
@@ -328,12 +361,13 @@ const PreviewPanel = ({
         </div>
       )}
 
-      {/* Preview / Code Toggle + Actions */}
-      <div className="px-4 pt-3 pb-1 flex items-center justify-between">
-        <div className="flex items-center gap-1">
+      {/* Preview / Code Toggle + Center Controls + Actions */}
+      <div className="px-3 pt-3 pb-1 flex items-center justify-between sticky top-0 z-10 bg-muted/30">
+        {/* Left: Preview/Code toggle */}
+        <div className="flex items-center gap-1 flex-shrink-0">
           <button
             onClick={() => setActiveTab("preview")}
-            className={`px-4 py-2 text-sm font-medium rounded-lg transition-all duration-200 ${
+            className={`px-3 py-1.5 text-sm font-medium rounded-lg transition-all duration-200 ${
               activeTab === "preview"
                 ? "bg-primary/15 text-primary border border-primary/30 shadow-[0_0_12px_rgba(0,230,210,0.2)]"
                 : "text-muted-foreground hover:text-foreground hover:bg-secondary/40 border border-transparent"
@@ -343,7 +377,7 @@ const PreviewPanel = ({
           </button>
           <button
             onClick={() => setActiveTab("code")}
-            className={`px-4 py-2 text-sm font-medium rounded-lg transition-all duration-200 ${
+            className={`px-3 py-1.5 text-sm font-medium rounded-lg transition-all duration-200 ${
               activeTab === "code"
                 ? "bg-primary/15 text-primary border border-primary/30 shadow-[0_0_12px_rgba(0,230,210,0.2)]"
                 : "text-muted-foreground hover:text-foreground hover:bg-secondary/40 border border-transparent"
@@ -353,17 +387,88 @@ const PreviewPanel = ({
           </button>
         </div>
 
-        <div className="flex items-center gap-2">
+        {/* Center: Device + Route + Open + Refresh */}
+        <div className="flex items-center gap-1.5">
+          {/* Device Switcher */}
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <button
+                className="h-8 px-2.5 flex items-center gap-1.5 rounded-lg border border-border bg-secondary/50 text-muted-foreground hover:text-primary hover:border-primary/40 hover:shadow-[0_0_12px_rgba(0,230,210,0.15)] transition-all duration-200 text-xs"
+                title="Device view"
+              >
+                <activeDevice.icon className="w-3.5 h-3.5" />
+                <ChevronDown className="w-3 h-3 opacity-60" />
+              </button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="center" className="min-w-[140px]">
+              {deviceOptions.map((device) => (
+                <DropdownMenuItem
+                  key={device.value}
+                  onClick={() => setSelectedDevice(device.value)}
+                  className={`flex items-center gap-2 cursor-pointer ${selectedDevice === device.value ? "text-primary" : ""}`}
+                >
+                  <device.icon className="w-4 h-4" />
+                  <span>{device.label}</span>
+                </DropdownMenuItem>
+              ))}
+            </DropdownMenuContent>
+          </DropdownMenu>
+
+          {/* Routes Dropdown */}
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <button
+                className="h-8 px-2.5 flex items-center gap-1.5 rounded-lg border border-border bg-secondary/50 text-muted-foreground hover:text-primary hover:border-primary/40 hover:shadow-[0_0_12px_rgba(0,230,210,0.15)] transition-all duration-200 text-xs font-mono"
+                title="Routes"
+              >
+                <span className="max-w-[80px] truncate">{selectedRoute}</span>
+                <ChevronDown className="w-3 h-3 opacity-60" />
+              </button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="center" className="min-w-[160px]">
+              {appRoutes.map((route) => (
+                <DropdownMenuItem
+                  key={route}
+                  onClick={() => setSelectedRoute(route)}
+                  className={`font-mono text-xs cursor-pointer ${selectedRoute === route ? "text-primary" : ""}`}
+                >
+                  {route}
+                </DropdownMenuItem>
+              ))}
+            </DropdownMenuContent>
+          </DropdownMenu>
+
+          {/* Open in New Tab */}
+          <button
+            onClick={handleOpenInNewTab}
+            className="w-8 h-8 flex items-center justify-center rounded-lg border border-border bg-secondary/50 text-muted-foreground hover:text-primary hover:border-primary/40 hover:shadow-[0_0_12px_rgba(0,230,210,0.15)] transition-all duration-200"
+            title="Open in new tab"
+          >
+            <ExternalLink className="w-3.5 h-3.5" />
+          </button>
+
+          {/* Refresh */}
+          <button
+            onClick={handleRefreshPreview}
+            className="w-8 h-8 flex items-center justify-center rounded-lg border border-border bg-secondary/50 text-muted-foreground hover:text-primary hover:border-primary/40 hover:shadow-[0_0_12px_rgba(0,230,210,0.15)] transition-all duration-200"
+            title="Refresh preview"
+          >
+            <RefreshCw className="w-3.5 h-3.5" />
+          </button>
+        </div>
+
+        {/* Right: GitHub + Publish */}
+        <div className="flex items-center gap-2 flex-shrink-0">
           <button
             onClick={() => console.log("GitHub export placeholder")}
-            className="w-9 h-9 flex items-center justify-center rounded-lg border border-border bg-secondary/50 text-muted-foreground hover:text-primary hover:border-primary/40 hover:shadow-[0_0_12px_rgba(0,230,210,0.15)] transition-all duration-200"
+            className="w-8 h-8 flex items-center justify-center rounded-lg border border-border bg-secondary/50 text-muted-foreground hover:text-primary hover:border-primary/40 hover:shadow-[0_0_12px_rgba(0,230,210,0.15)] transition-all duration-200"
             title="Export to GitHub"
           >
-            <Github className="w-4 h-4" />
+            <Github className="w-3.5 h-3.5" />
           </button>
           <button
             onClick={() => console.log("Publish placeholder")}
-            className="px-4 py-2 text-sm font-semibold rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 hover:shadow-[0_0_16px_rgba(0,230,210,0.3)] transition-all duration-200"
+            className="px-3 py-1.5 text-sm font-semibold rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 hover:shadow-[0_0_16px_rgba(0,230,210,0.3)] transition-all duration-200"
           >
             Publish
           </button>

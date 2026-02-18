@@ -48,8 +48,8 @@ export const HeroSection = () => {
       return;
     }
 
-    // Navigate to generation page with state
-    navigate("/generate", { state: { language: selectedLanguage, idea } });
+    // Navigate to generating page with state
+    navigate("/generating", { state: { language: selectedLanguage, idea } });
   };
 
   return (

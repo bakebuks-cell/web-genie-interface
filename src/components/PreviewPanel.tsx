@@ -3,7 +3,6 @@ import { ExternalLink, RefreshCw, MousePointer2 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
-import GenerationDashboard from "@/components/GenerationDashboard";
 import { useNavigate } from "react-router-dom";
 
 interface HealthCheckStatus {
@@ -57,6 +56,7 @@ const PreviewPanel = ({
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(true);
   const [generationComplete, setGenerationComplete] = useState(false);
+  const [activeTab, setActiveTab] = useState<"preview" | "code">("preview");
   const iframeRef = useRef<HTMLIFrameElement>(null);
 
   // Inject click-to-select script into iframe when visual edit mode is enabled
@@ -328,14 +328,67 @@ const PreviewPanel = ({
         </div>
       )}
 
+      {/* Preview / Code Toggle */}
+      <div className="px-4 pt-3 pb-1 flex items-center gap-1">
+        <button
+          onClick={() => setActiveTab("preview")}
+          className={`px-4 py-2 text-sm font-medium rounded-lg transition-all duration-200 ${
+            activeTab === "preview"
+              ? "bg-primary/15 text-primary border border-primary/30 shadow-[0_0_12px_rgba(0,230,210,0.2)]"
+              : "text-muted-foreground hover:text-foreground hover:bg-secondary/40 border border-transparent"
+          }`}
+        >
+          Preview
+        </button>
+        <button
+          onClick={() => setActiveTab("code")}
+          className={`px-4 py-2 text-sm font-medium rounded-lg transition-all duration-200 ${
+            activeTab === "code"
+              ? "bg-primary/15 text-primary border border-primary/30 shadow-[0_0_12px_rgba(0,230,210,0.2)]"
+              : "text-muted-foreground hover:text-foreground hover:bg-secondary/40 border border-transparent"
+          }`}
+        >
+          Code
+        </button>
+      </div>
+
       <div className="flex-1 p-4 overflow-auto flex items-start justify-center">
         <div className={`${getPreviewWidth()} h-full mx-auto transition-all duration-300`}>
-          {!generatedUrl ? (
-            <GenerationDashboard
-              language={language}
-              idea={idea}
-              onComplete={() => setGenerationComplete(true)}
-            />
+          {activeTab === "code" ? (
+            /* Code Viewer Placeholder */
+            <div className="h-full bg-card rounded-2xl border border-border overflow-hidden flex flex-col">
+              <div className="h-12 bg-muted/50 border-b border-border flex items-center px-4 gap-2 flex-shrink-0">
+                <span className="text-xs text-muted-foreground font-mono">index.tsx</span>
+              </div>
+              <div className="flex-1 p-6 font-mono text-sm text-muted-foreground overflow-auto">
+                <pre className="whitespace-pre-wrap">{`// Code view will be available once backend is connected.
+// Your generated ${language} application code will appear here.
+
+import React from 'react';
+
+function App() {
+  return (
+    <div className="app">
+      <h1>Your Application</h1>
+      <p>Generated with ${language}</p>
+    </div>
+  );
+}
+
+export default App;`}</pre>
+              </div>
+            </div>
+          ) : !generatedUrl ? (
+            /* Placeholder preview when no URL yet */
+            <div className="h-full bg-card rounded-2xl border border-border overflow-hidden flex flex-col items-center justify-center p-8">
+              <div className="w-16 h-16 rounded-2xl bg-primary/10 border border-primary/20 flex items-center justify-center mb-4">
+                <ExternalLink className="w-8 h-8 text-primary/60" />
+              </div>
+              <h3 className="text-lg font-semibold text-foreground mb-2">App Preview</h3>
+              <p className="text-sm text-muted-foreground text-center max-w-sm">
+                Your generated application will appear here. Start a conversation to build or modify your app.
+              </p>
+            </div>
           ) : (
             // Always display iframe immediately; overlay health-check UI on top while polling.
             <div className="h-full bg-card rounded-2xl border border-border overflow-hidden flex flex-col">

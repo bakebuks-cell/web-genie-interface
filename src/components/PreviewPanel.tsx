@@ -387,20 +387,20 @@ const PreviewPanel = ({
           </button>
         </div>
 
-        {/* Center: Device + Route + Open + Refresh */}
-        <div className="flex items-center gap-1.5">
+        {/* Center: Unified control pill */}
+        <div className="flex items-center h-9 rounded-full border border-primary/20 bg-secondary/60 backdrop-blur-sm shadow-[0_0_12px_rgba(0,230,210,0.08)] overflow-visible">
           {/* Device Switcher */}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <button
-                className="h-8 px-2.5 flex items-center gap-1.5 rounded-lg border border-border bg-secondary/50 text-muted-foreground hover:text-primary hover:border-primary/40 hover:shadow-[0_0_12px_rgba(0,230,210,0.15)] transition-all duration-200 text-xs"
+                className="h-full px-3 flex items-center gap-1.5 text-muted-foreground hover:text-primary transition-colors duration-200 rounded-l-full"
                 title="Device view"
               >
-                <activeDevice.icon className="w-3.5 h-3.5" />
-                <ChevronDown className="w-3 h-3 opacity-60" />
+                <activeDevice.icon className="w-4 h-4" />
+                <ChevronDown className="w-3 h-3 opacity-50" />
               </button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="center" className="min-w-[140px]">
+            <DropdownMenuContent align="center" className="min-w-[140px] z-50 bg-popover">
               {deviceOptions.map((device) => (
                 <DropdownMenuItem
                   key={device.value}
@@ -414,18 +414,20 @@ const PreviewPanel = ({
             </DropdownMenuContent>
           </DropdownMenu>
 
+          <div className="w-px h-4 bg-border/50" />
+
           {/* Routes Dropdown */}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <button
-                className="h-8 px-2.5 flex items-center gap-1.5 rounded-lg border border-border bg-secondary/50 text-muted-foreground hover:text-primary hover:border-primary/40 hover:shadow-[0_0_12px_rgba(0,230,210,0.15)] transition-all duration-200 text-xs font-mono"
+                className="h-full px-3 flex items-center gap-1.5 text-muted-foreground hover:text-primary transition-colors duration-200 font-mono text-xs"
                 title="Routes"
               >
                 <span className="max-w-[80px] truncate">{selectedRoute}</span>
-                <ChevronDown className="w-3 h-3 opacity-60" />
+                <ChevronDown className="w-3 h-3 opacity-50" />
               </button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="center" className="min-w-[160px]">
+            <DropdownMenuContent align="center" className="min-w-[160px] z-50 bg-popover">
               {appRoutes.map((route) => (
                 <DropdownMenuItem
                   key={route}
@@ -438,19 +440,23 @@ const PreviewPanel = ({
             </DropdownMenuContent>
           </DropdownMenu>
 
+          <div className="w-px h-4 bg-border/50" />
+
           {/* Open in New Tab */}
           <button
             onClick={handleOpenInNewTab}
-            className="w-8 h-8 flex items-center justify-center rounded-lg border border-border bg-secondary/50 text-muted-foreground hover:text-primary hover:border-primary/40 hover:shadow-[0_0_12px_rgba(0,230,210,0.15)] transition-all duration-200"
+            className="h-full px-3 flex items-center justify-center text-muted-foreground hover:text-primary transition-colors duration-200"
             title="Open in new tab"
           >
             <ExternalLink className="w-3.5 h-3.5" />
           </button>
 
+          <div className="w-px h-4 bg-border/50" />
+
           {/* Refresh */}
           <button
             onClick={handleRefreshPreview}
-            className="w-8 h-8 flex items-center justify-center rounded-lg border border-border bg-secondary/50 text-muted-foreground hover:text-primary hover:border-primary/40 hover:shadow-[0_0_12px_rgba(0,230,210,0.15)] transition-all duration-200"
+            className="h-full px-3 flex items-center justify-center text-muted-foreground hover:text-primary transition-colors duration-200 rounded-r-full"
             title="Refresh preview"
           >
             <RefreshCw className="w-3.5 h-3.5" />

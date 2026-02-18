@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useLocation } from "react-router-dom";
 import ChatPanel, { HealthCheckStatus } from "@/components/ChatPanel";
 import PreviewPanel from "@/components/PreviewPanel";
-import GenerateToolbar from "@/components/GenerateToolbar";
+
 import { useAuth } from "@/contexts/AuthContext";
 
 const languageNames: Record<string, string> = {
@@ -76,16 +76,6 @@ const GenerationPage = () => {
 
   return (
     <div className="h-screen flex flex-col bg-background">
-      {/* Top Toolbar */}
-      <GenerateToolbar 
-        userInitial={userInitial} 
-        currentPath={currentPath}
-        onPathChange={setCurrentPath}
-        onDeviceChange={setSelectedDevice}
-        selectedDevice={selectedDevice}
-        onRefresh={handleRefresh}
-        onOpenExternal={handleOpenExternal}
-      />
 
       {/* Main Content - Split View */}
       <div className="flex-1 flex overflow-hidden">

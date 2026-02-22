@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { ExternalLink, RefreshCw, MousePointer2, Github, Laptop, Tablet, Smartphone, ChevronDown } from "lucide-react";
+import IdePanel from "@/components/code/IdePanel";
 import { motion, AnimatePresence } from "framer-motion";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
@@ -484,28 +485,8 @@ const PreviewPanel = ({
       <div className="flex-1 p-4 overflow-auto flex items-start justify-center">
         <div className={`${getPreviewWidth()} h-full mx-auto transition-all duration-300`}>
           {activeTab === "code" ? (
-            /* Code Viewer Placeholder */
-            <div className="h-full bg-card rounded-2xl border border-border overflow-hidden flex flex-col">
-              <div className="h-12 bg-muted/50 border-b border-border flex items-center px-4 gap-2 flex-shrink-0">
-                <span className="text-xs text-muted-foreground font-mono">index.tsx</span>
-              </div>
-              <div className="flex-1 p-6 font-mono text-sm text-muted-foreground overflow-auto">
-                <pre className="whitespace-pre-wrap">{`// Code view will be available once backend is connected.
-// Your generated ${language} application code will appear here.
-
-import React from 'react';
-
-function App() {
-  return (
-    <div className="app">
-      <h1>Your Application</h1>
-      <p>Generated with ${language}</p>
-    </div>
-  );
-}
-
-export default App;`}</pre>
-              </div>
+            <div className="h-full animate-fade-in" style={{ animationDuration: '150ms' }}>
+              <IdePanel />
             </div>
           ) : !generatedUrl ? (
             /* Placeholder preview when no URL yet */

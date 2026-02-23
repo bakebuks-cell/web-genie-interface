@@ -185,18 +185,71 @@ const ChatPanel = ({
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [showCreditsDialog, setShowCreditsDialog] = useState(false);
   
-  // Derive project name from initialPrompt
-  const deriveProjectName = (prompt: string): string => {
+  // Robust project name extraction from prompt
+  const extractProjectName = (prompt: string): string => {
     if (!prompt || !prompt.trim()) return "Untitled Project";
-    // Try to extract a short brandable name (first 1-3 meaningful words)
-    const words = prompt.trim().split(/\s+/).filter(w => w.length > 1);
-    if (words.length === 0) return "Untitled Project";
-    const name = words.slice(0, 3).join(" ");
-    // Capitalize first letter of each word
-    return name.replace(/\b\w/g, c => c.toUpperCase());
+    const p = prompt.trim();
+
+    const genericWords = new Set([
+      "build", "create", "make", "website", "app", "application", "generate",
+      "design", "develop", "site", "page", "landing", "web", "platform", "tool",
+      "a", "an", "the", "my", "our", "this", "that", "new", "simple", "basic",
+      "for", "with", "using", "please", "i", "want", "need", "like",
+    ]);
+
+    const cleanName = (raw: string): string => {
+      let name = raw.trim().replace(/[.,!?:;]+$/, "").trim();
+      // Remove leading filler: a, an, the
+      name = name.replace(/^(a|an|the)\s+/i, "").trim();
+      // Truncate to ~30 chars without cutting mid-word
+      if (name.length > 30) {
+        const cut = name.substring(0, 30);
+        const lastSpace = cut.lastIndexOf(" ");
+        name = lastSpace > 10 ? cut.substring(0, lastSpace) : cut;
+      }
+      if (!name) return "";
+      // Title case but preserve intentional casing (e.g. MyCodex.Dev)
+      const hasIntentionalCase = /[A-Z]/.test(name.substring(1));
+      if (!hasIntentionalCase) {
+        name = name.replace(/\b\w/g, c => c.toUpperCase());
+      }
+      return name;
+    };
+
+    // A) "for [a|an|the] <name>"
+    const forMatch = p.match(/\bfor\s+(?:a\s+|an\s+|the\s+)?(.+)/i);
+    if (forMatch) {
+      const candidate = cleanName(forMatch[1]);
+      if (candidate) { console.log("Extracted project name:", candidate); return candidate; }
+    }
+
+    // B) "named|called|titled <name>" or "app/company name is <name>"
+    const namedMatch = p.match(/\b(?:named|called|titled)\s+(.+)/i)
+      || p.match(/\b(?:app|company|project|product)\s+name\s+is\s+(.+)/i);
+    if (namedMatch) {
+      const candidate = cleanName(namedMatch[1]);
+      if (candidate) { console.log("Extracted project name:", candidate); return candidate; }
+    }
+
+    // C) Quoted name
+    const quoteMatch = p.match(/[""]([^""]+)[""]/) || p.match(/"([^"]+)"/);
+    if (quoteMatch) {
+      const candidate = cleanName(quoteMatch[1]);
+      if (candidate) { console.log("Extracted project name:", candidate); return candidate; }
+    }
+
+    // D) Fallback: pick meaningful words (skip generic ones)
+    const words = p.split(/\s+/).filter(w => !genericWords.has(w.toLowerCase()) && w.length > 1);
+    if (words.length > 0) {
+      const fallback = cleanName(words.slice(0, 3).join(" "));
+      if (fallback) { console.log("Extracted project name:", fallback); return fallback; }
+    }
+
+    console.log("Extracted project name:", "Untitled Project");
+    return "Untitled Project";
   };
   
-  const [projectName, setProjectName] = useState(() => deriveProjectName(initialPrompt));
+  const [projectName, setProjectName] = useState(() => extractProjectName(initialPrompt));
   const [renameValue, setRenameValue] = useState("");
   
   const { textareaRef, adjustHeight } = useAutoResizeTextarea({

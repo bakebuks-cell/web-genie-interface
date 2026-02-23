@@ -17,6 +17,10 @@ import {
   Target,
   X,
   Lock,
+  ChevronDown,
+  Pencil,
+  Trash2,
+  CreditCard,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useNavigate } from "react-router-dom";
@@ -29,6 +33,21 @@ import { Button } from "@/components/ui/button";
 import { supabase } from "@/lib/supabase";
 import { toast } from "sonner";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+  DialogClose,
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
 
 // Extend Window interface for Speech Recognition
 interface SpeechRecognitionEvent extends Event {
@@ -162,9 +181,27 @@ const ChatPanel = ({
   const [isRecording, setIsRecording] = useState(false);
   const [showUpgradePrompt, setShowUpgradePrompt] = useState(false);
   const [hasAutoTriggered, setHasAutoTriggered] = useState(false);
+  const [showRenameDialog, setShowRenameDialog] = useState(false);
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [showCreditsDialog, setShowCreditsDialog] = useState(false);
+  
+  // Derive project name from initialPrompt
+  const deriveProjectName = (prompt: string): string => {
+    if (!prompt || !prompt.trim()) return "Untitled Project";
+    // Try to extract a short brandable name (first 1-3 meaningful words)
+    const words = prompt.trim().split(/\s+/).filter(w => w.length > 1);
+    if (words.length === 0) return "Untitled Project";
+    const name = words.slice(0, 3).join(" ");
+    // Capitalize first letter of each word
+    return name.replace(/\b\w/g, c => c.toUpperCase());
+  };
+  
+  const [projectName, setProjectName] = useState(() => deriveProjectName(initialPrompt));
+  const [renameValue, setRenameValue] = useState("");
+  
   const { textareaRef, adjustHeight } = useAutoResizeTextarea({
-    minHeight: 44,
-    maxHeight: 120,
+    minHeight: 72,
+    maxHeight: 160,
   });
   const commandPaletteRef = useRef<HTMLDivElement>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -734,71 +771,90 @@ const ChatPanel = ({
 
   return (
     <div className="h-full flex flex-col bg-card/50 backdrop-blur-xl border-r border-border">
-      {/* Header with Credits */}
+      {/* Header with Project Name */}
       <div className="p-4 border-b border-border">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <Bot className="w-5 h-5 text-primary" />
-            <div>
-              {isUnlimited ? (
-                <h2 className="font-semibold text-amber-500 flex items-center gap-1.5">
-                  <Zap className="w-4 h-4" />
-                  Unlimited Credits
-                </h2>
-              ) : (
-                <h2 className="font-semibold text-foreground">
-                  <span className={hasCredits ? 'text-primary' : 'text-destructive'}>
-                    {currentCredits}
-                  </span>
-                  <span className="text-muted-foreground"> / 5 Credits</span>
-                </h2>
-              )}
-              <p className="text-xs text-muted-foreground">
-                {hasCredits ? 'Each generation uses 1 credit' : 'Credits exhausted'}
-              </p>
-            </div>
-          </div>
-          
-          {!isAuthenticated && (
-            <Button 
-              variant="ghost" 
-              size="sm" 
-              onClick={() => navigate('/login')}
-              className="text-xs text-primary hover:text-primary"
-            >
-              Sign In
-            </Button>
-          )}
-          
-          {isAuthenticated && !isUnlimited && !hasCredits && (
-            <Button 
-              size="sm" 
-              onClick={() => navigate('/pricing')}
-              className="text-xs bg-primary hover:bg-primary/90"
-            >
-              Upgrade
-            </Button>
-          )}
+        <div className="flex items-center gap-2">
+          <Bot className="w-5 h-5 text-primary flex-shrink-0" />
+          <h2 className="font-semibold text-foreground truncate text-base">{projectName}</h2>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <button className="p-1 rounded-md text-muted-foreground hover:text-foreground hover:bg-secondary/60 transition-colors flex-shrink-0">
+                <ChevronDown className="w-4 h-4" />
+              </button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="start" className="w-48 bg-popover border-border z-50">
+              <DropdownMenuItem onClick={() => { setRenameValue(projectName); setShowRenameDialog(true); }} className="gap-2 cursor-pointer">
+                <Pencil className="w-4 h-4" />
+                Rename
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => setShowDeleteDialog(true)} className="gap-2 cursor-pointer text-destructive focus:text-destructive">
+                <Trash2 className="w-4 h-4" />
+                Delete
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => setShowCreditsDialog(true)} className="gap-2 cursor-pointer">
+                <CreditCard className="w-4 h-4" />
+                Credits
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
-        
-        {/* Credits Progress Bar */}
-        {!isUnlimited && (
-          <div className="mt-3 h-1.5 bg-secondary rounded-full overflow-hidden">
-            <motion.div
-              className={`h-full rounded-full ${
-                currentCredits > 2 
-                  ? 'bg-gradient-to-r from-primary to-accent-purple' 
-                  : currentCredits > 0 
-                    ? 'bg-amber-500' 
-                    : 'bg-destructive'
-              }`}
-              initial={{ width: 0 }}
-              animate={{ width: `${(currentCredits / 5) * 100}%` }}
-              transition={{ duration: 0.3 }}
-            />
-          </div>
-        )}
       </div>
+
+      {/* Rename Dialog */}
+      <Dialog open={showRenameDialog} onOpenChange={setShowRenameDialog}>
+        <DialogContent className="sm:max-w-sm bg-card border-border">
+          <DialogHeader>
+            <DialogTitle>Rename Project</DialogTitle>
+          </DialogHeader>
+          <Input
+            value={renameValue}
+            onChange={(e) => setRenameValue(e.target.value)}
+            placeholder="Enter new name"
+            className="bg-secondary/50 border-border"
+          />
+          <DialogFooter>
+            <DialogClose asChild>
+              <Button variant="ghost" size="sm">Cancel</Button>
+            </DialogClose>
+            <Button size="sm" onClick={() => { setProjectName(renameValue); setShowRenameDialog(false); }}>
+              Save
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Delete Confirm Dialog */}
+      <Dialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+        <DialogContent className="sm:max-w-sm bg-card border-border">
+          <DialogHeader>
+            <DialogTitle>Delete Project</DialogTitle>
+          </DialogHeader>
+          <p className="text-sm text-muted-foreground">Are you sure you want to delete "{projectName}"? This action cannot be undone.</p>
+          <DialogFooter>
+            <DialogClose asChild>
+              <Button variant="ghost" size="sm">Cancel</Button>
+            </DialogClose>
+            <Button variant="destructive" size="sm" onClick={() => { setShowDeleteDialog(false); toast.success("Project deleted"); navigate("/"); }}>
+              Delete
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Credits Dialog */}
+      <Dialog open={showCreditsDialog} onOpenChange={setShowCreditsDialog}>
+        <DialogContent className="sm:max-w-sm bg-card border-border">
+          <DialogHeader>
+            <DialogTitle>Credits</DialogTitle>
+          </DialogHeader>
+          <CreditsDisplay />
+          <DialogFooter>
+            <DialogClose asChild>
+              <Button variant="ghost" size="sm">Close</Button>
+            </DialogClose>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       {/* Messages */}
       <div className="flex-1 overflow-y-auto p-4 space-y-4">
@@ -1047,7 +1103,7 @@ const ChatPanel = ({
               className={cn(
                 "flex-1 px-2 py-2 resize-none bg-transparent",
                 "text-foreground text-sm focus:outline-none",
-                "placeholder:text-muted-foreground min-h-[44px]"
+                "placeholder:text-muted-foreground min-h-[72px]"
               )}
               style={{ overflow: "hidden" }}
             />
@@ -1101,21 +1157,6 @@ const ChatPanel = ({
             </motion.button>
           </div>
 
-          {/* Quick commands */}
-          <div className="flex flex-wrap gap-1.5 mt-2">
-            {commandSuggestions.slice(0, 3).map((suggestion, index) => (
-              <motion.button
-                key={suggestion.prefix}
-                onClick={() => selectCommandSuggestion(index)}
-                className="flex items-center gap-1.5 px-2 py-1 bg-secondary/50 hover:bg-secondary rounded-md text-xs text-muted-foreground hover:text-foreground transition-all"
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
-              >
-                {suggestion.icon}
-                <span>{suggestion.label}</span>
-              </motion.button>
-            ))}
-          </div>
         </div>
       </div>
     </div>

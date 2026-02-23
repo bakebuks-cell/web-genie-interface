@@ -1,11 +1,12 @@
 import { useEffect } from "react";
-import { File, Folder, Search, ChevronDown, ChevronRight, X, Loader2 } from "lucide-react";
+import { File, Folder, Search, ChevronDown, ChevronRight, X, Loader2, Copy, Check } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 import { useProjectCodeStore } from "@/stores/useProjectCodeStore";
 import type { FileTreeNode } from "@/types/projectCode";
 import { useState } from "react";
+import { toast } from "sonner";
 
 // ── Tree node renderer ──────────────────────
 
@@ -75,6 +76,19 @@ const IdePanel = () => {
   } = useProjectCodeStore();
 
   const [searchQuery, setSearchQuery] = useState("");
+  const [copied, setCopied] = useState(false);
+
+  const handleCopyCode = async () => {
+    if (!activeFile) return;
+    try {
+      await navigator.clipboard.writeText(activeFile.content);
+      setCopied(true);
+      toast.success("Copied!", { className: "border-primary/30" });
+      setTimeout(() => setCopied(false), 2000);
+    } catch {
+      toast.error("Failed to copy");
+    }
+  };
 
   // Auto-load mock files when the panel mounts and status is idle
   useEffect(() => {
@@ -166,8 +180,9 @@ const IdePanel = () => {
 
       {/* Editor Area */}
       <div className="flex-1 flex flex-col min-w-0">
-        {/* Tabs */}
-        <div className="h-9 flex items-center bg-card/40 border-b border-border overflow-x-auto">
+        {/* Tabs + Copy */}
+        <div className="h-9 flex items-center bg-card/40 border-b border-border">
+          <div className="flex-1 flex items-center overflow-x-auto">
           {openTabs.map((tab) => (
             <button
               key={tab}
@@ -192,6 +207,17 @@ const IdePanel = () => {
               </span>
             </button>
           ))}
+          </div>
+          {/* Copy Code Button */}
+          <button
+            onClick={handleCopyCode}
+            disabled={!activeFile}
+            className="h-full px-3 flex items-center gap-1.5 text-xs text-muted-foreground hover:text-primary border-l border-border transition-colors disabled:opacity-40 disabled:cursor-not-allowed flex-shrink-0"
+            title="Copy code"
+          >
+            {copied ? <Check className="w-3.5 h-3.5 text-primary" /> : <Copy className="w-3.5 h-3.5" />}
+            <span className="hidden sm:inline">{copied ? "Copied" : "Copy"}</span>
+          </button>
         </div>
 
         {/* Code */}

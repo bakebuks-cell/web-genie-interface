@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from "react";
-import { ExternalLink, RefreshCw, MousePointer2, Github, Laptop, Tablet, Smartphone, ChevronDown } from "lucide-react";
+import { ExternalLink, RefreshCw, MousePointer2, Github, Laptop, Tablet, Smartphone, ChevronDown, Share2, Copy, Check, Loader2, Link as LinkIcon } from "lucide-react";
 import IdePanel from "@/components/code/IdePanel";
 import { motion, AnimatePresence } from "framer-motion";
 import { Switch } from "@/components/ui/switch";
@@ -11,6 +11,10 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { toast } from "sonner";
 
 interface HealthCheckStatus {
   isChecking: boolean;
@@ -46,6 +50,102 @@ const getProgressiveMessage = (elapsedSeconds: number): { emoji: string; message
     return { emoji: "🐢", message: "Heavy build detected! Still working, please hold on..." };
   }
 };
+// ── Publish Dropdown ──────────────────────
+const PublishDropdown = () => {
+  const [publishState, setPublishState] = useState<"idle" | "publishing" | "done">("idle");
+  const [generatedUrl, setGeneratedUrl] = useState("");
+
+  const handlePublish = () => {
+    setPublishState("publishing");
+    setTimeout(() => {
+      const id = Math.random().toString(36).substring(2, 10);
+      setGeneratedUrl(`mycodex.dev/p/${id}`);
+      setPublishState("done");
+    }, 2000);
+  };
+
+  const handleCopyUrl = async () => {
+    await navigator.clipboard.writeText(generatedUrl);
+    toast.success("URL copied!");
+  };
+
+  return (
+    <Popover>
+      <PopoverTrigger asChild>
+        <button className="px-3 py-1.5 text-sm font-semibold rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 hover:shadow-[0_0_16px_rgba(0,230,210,0.3)] transition-all duration-200">
+          Publish
+        </button>
+      </PopoverTrigger>
+      <PopoverContent align="end" className="w-72 bg-popover border-border p-4 z-50">
+        {publishState === "idle" && (
+          <div className="space-y-3">
+            <p className="text-sm font-semibold text-foreground">Publish your project</p>
+            <Button onClick={handlePublish} className="w-full">
+              Publish
+            </Button>
+          </div>
+        )}
+        {publishState === "publishing" && (
+          <div className="flex flex-col items-center gap-3 py-2">
+            <Loader2 className="w-5 h-5 animate-spin text-primary" />
+            <p className="text-sm text-muted-foreground">Publishing...</p>
+          </div>
+        )}
+        {publishState === "done" && (
+          <div className="space-y-3">
+            <div className="flex items-center gap-2">
+              <Check className="w-4 h-4 text-primary" />
+              <p className="text-sm font-semibold text-foreground">Published!</p>
+            </div>
+            <div className="flex items-center gap-2">
+              <Input value={generatedUrl} readOnly className="text-xs bg-secondary/50 border-border h-8" />
+              <button onClick={handleCopyUrl} className="p-1.5 rounded-md text-muted-foreground hover:text-primary transition-colors flex-shrink-0">
+                <Copy className="w-4 h-4" />
+              </button>
+            </div>
+          </div>
+        )}
+      </PopoverContent>
+    </Popover>
+  );
+};
+
+// ── Share Button ──────────────────────
+const ShareButton = ({ publishedUrl }: { publishedUrl: string | null }) => {
+  const handleCopy = async (url: string) => {
+    await navigator.clipboard.writeText(url);
+    toast.success("Link copied!");
+  };
+
+  return (
+    <Popover>
+      <PopoverTrigger asChild>
+        <button
+          className="w-8 h-8 flex items-center justify-center rounded-lg border border-border bg-secondary/50 text-muted-foreground hover:text-primary hover:border-primary/40 hover:shadow-[0_0_12px_rgba(0,230,210,0.15)] transition-all duration-200"
+          title="Share"
+        >
+          <Share2 className="w-3.5 h-3.5" />
+        </button>
+      </PopoverTrigger>
+      <PopoverContent align="end" className="w-72 bg-popover border-border p-4 z-50">
+        <p className="text-sm font-semibold text-foreground mb-3">Share via link</p>
+        {publishedUrl ? (
+          <div className="flex items-center gap-2">
+            <Input value={publishedUrl} readOnly className="text-xs bg-secondary/50 border-border h-8" />
+            <button onClick={() => handleCopy(publishedUrl)} className="p-1.5 rounded-md text-muted-foreground hover:text-primary transition-colors flex-shrink-0">
+              <Copy className="w-4 h-4" />
+            </button>
+          </div>
+        ) : (
+          <div className="flex items-center gap-2 text-muted-foreground">
+            <LinkIcon className="w-4 h-4 flex-shrink-0" />
+            <p className="text-xs">Publish first to get a share link.</p>
+          </div>
+        )}
+      </PopoverContent>
+    </Popover>
+  );
+};
 
 const PreviewPanel = ({ 
   language, 
@@ -66,6 +166,7 @@ const PreviewPanel = ({
   const [activeTab, setActiveTab] = useState<"preview" | "code">("preview");
   const [selectedDevice, setSelectedDevice] = useState<"desktop" | "tablet" | "mobile">("desktop");
   const [selectedRoute, setSelectedRoute] = useState("/");
+  const [publishedUrl, setPublishedUrl] = useState<string | null>(null);
   const iframeRef = useRef<HTMLIFrameElement>(null);
 
   const appRoutes = ["/", "/about", "/pricing", "/technologies", "/profile"];
@@ -464,7 +565,7 @@ const PreviewPanel = ({
           </button>
         </div>
 
-        {/* Right: GitHub + Publish */}
+        {/* Right: GitHub + Publish + Share */}
         <div className="flex items-center gap-2 flex-shrink-0">
           <button
             onClick={() => console.log("GitHub export placeholder")}
@@ -473,12 +574,12 @@ const PreviewPanel = ({
           >
             <Github className="w-3.5 h-3.5" />
           </button>
-          <button
-            onClick={() => console.log("Publish placeholder")}
-            className="px-3 py-1.5 text-sm font-semibold rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 hover:shadow-[0_0_16px_rgba(0,230,210,0.3)] transition-all duration-200"
-          >
-            Publish
-          </button>
+
+          {/* Publish Dropdown */}
+          <PublishDropdown />
+
+          {/* Share Button */}
+          <ShareButton publishedUrl={publishedUrl} />
         </div>
       </div>
 

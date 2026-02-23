@@ -20,7 +20,6 @@ import {
   ChevronDown,
   Pencil,
   Trash2,
-  CreditCard,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useNavigate } from "react-router-dom";
@@ -183,78 +182,14 @@ const ChatPanel = ({
   const [hasAutoTriggered, setHasAutoTriggered] = useState(false);
   const [showRenameDialog, setShowRenameDialog] = useState(false);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
-  const [showCreditsDialog, setShowCreditsDialog] = useState(false);
+  // showCreditsDialog removed - credits now inline in dropdown
   
-  // Robust project name extraction from prompt
-  const extractProjectName = (prompt: string): string => {
-    if (!prompt || !prompt.trim()) return "Untitled Project";
-    const p = prompt.trim();
-
-    const genericWords = new Set([
-      "build", "create", "make", "website", "app", "application", "generate",
-      "design", "develop", "site", "page", "landing", "web", "platform", "tool",
-      "a", "an", "the", "my", "our", "this", "that", "new", "simple", "basic",
-      "for", "with", "using", "please", "i", "want", "need", "like",
-    ]);
-
-    const cleanName = (raw: string): string => {
-      let name = raw.trim().replace(/[.,!?:;]+$/, "").trim();
-      // Remove leading filler: a, an, the
-      name = name.replace(/^(a|an|the)\s+/i, "").trim();
-      // Truncate to ~30 chars without cutting mid-word
-      if (name.length > 30) {
-        const cut = name.substring(0, 30);
-        const lastSpace = cut.lastIndexOf(" ");
-        name = lastSpace > 10 ? cut.substring(0, lastSpace) : cut;
-      }
-      if (!name) return "";
-      // Title case but preserve intentional casing (e.g. MyCodex.Dev)
-      const hasIntentionalCase = /[A-Z]/.test(name.substring(1));
-      if (!hasIntentionalCase) {
-        name = name.replace(/\b\w/g, c => c.toUpperCase());
-      }
-      return name;
-    };
-
-    // A) "for [a|an|the] <name>"
-    const forMatch = p.match(/\bfor\s+(?:a\s+|an\s+|the\s+)?(.+)/i);
-    if (forMatch) {
-      const candidate = cleanName(forMatch[1]);
-      if (candidate) { console.log("Extracted project name:", candidate); return candidate; }
-    }
-
-    // B) "named|called|titled <name>" or "app/company name is <name>"
-    const namedMatch = p.match(/\b(?:named|called|titled)\s+(.+)/i)
-      || p.match(/\b(?:app|company|project|product)\s+name\s+is\s+(.+)/i);
-    if (namedMatch) {
-      const candidate = cleanName(namedMatch[1]);
-      if (candidate) { console.log("Extracted project name:", candidate); return candidate; }
-    }
-
-    // C) Quoted name
-    const quoteMatch = p.match(/[""]([^""]+)[""]/) || p.match(/"([^"]+)"/);
-    if (quoteMatch) {
-      const candidate = cleanName(quoteMatch[1]);
-      if (candidate) { console.log("Extracted project name:", candidate); return candidate; }
-    }
-
-    // D) Fallback: pick meaningful words (skip generic ones)
-    const words = p.split(/\s+/).filter(w => !genericWords.has(w.toLowerCase()) && w.length > 1);
-    if (words.length > 0) {
-      const fallback = cleanName(words.slice(0, 3).join(" "));
-      if (fallback) { console.log("Extracted project name:", fallback); return fallback; }
-    }
-
-    console.log("Extracted project name:", "Untitled Project");
-    return "Untitled Project";
-  };
-  
-  const [projectName, setProjectName] = useState(() => extractProjectName(initialPrompt));
+  const [projectName, setProjectName] = useState("Name your project");
   const [renameValue, setRenameValue] = useState("");
   
   const { textareaRef, adjustHeight } = useAutoResizeTextarea({
-    minHeight: 72,
-    maxHeight: 160,
+    minHeight: 96,
+    maxHeight: 200,
   });
   const commandPaletteRef = useRef<HTMLDivElement>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -828,26 +763,59 @@ const ChatPanel = ({
       <div className="p-4 border-b border-border">
         <div className="flex items-center gap-2">
           <Bot className="w-5 h-5 text-primary flex-shrink-0" />
-          <h2 className="font-semibold text-foreground truncate text-base">{projectName}</h2>
+          <h2 className={cn(
+            "font-semibold truncate text-base",
+            projectName === "Name your project" ? "text-muted-foreground italic" : "text-foreground"
+          )}>{projectName}</h2>
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <button className="p-1 rounded-md text-muted-foreground hover:text-foreground hover:bg-secondary/60 transition-colors flex-shrink-0">
                 <ChevronDown className="w-4 h-4" />
               </button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="start" className="w-48 bg-popover border-border z-50">
-              <DropdownMenuItem onClick={() => { setRenameValue(projectName); setShowRenameDialog(true); }} className="gap-2 cursor-pointer">
-                <Pencil className="w-4 h-4" />
-                Rename
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => setShowDeleteDialog(true)} className="gap-2 cursor-pointer text-destructive focus:text-destructive">
-                <Trash2 className="w-4 h-4" />
-                Delete
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => setShowCreditsDialog(true)} className="gap-2 cursor-pointer">
-                <CreditCard className="w-4 h-4" />
-                Credits
-              </DropdownMenuItem>
+            <DropdownMenuContent align="start" className="w-64 bg-popover border-border z-50 p-0">
+              {/* Big Credits Display */}
+              <div className="px-4 py-4 border-b border-border">
+                <div className="flex items-center gap-2 mb-1">
+                  <Zap className="w-5 h-5 text-primary" />
+                  <span className="text-lg font-bold text-foreground">
+                    {isUnlimited ? (
+                      <span className="text-amber-500">Unlimited</span>
+                    ) : (
+                      <>
+                        <span className={currentCredits > 0 ? "text-primary" : "text-destructive"}>{currentCredits}</span>
+                        <span className="text-muted-foreground font-normal text-base"> / 5 today</span>
+                      </>
+                    )}
+                  </span>
+                </div>
+                <p className="text-xs text-muted-foreground">Daily generation credits</p>
+                {!isUnlimited && (
+                  <div className="mt-2 h-1.5 bg-secondary rounded-full overflow-hidden">
+                    <div
+                      className={cn(
+                        "h-full rounded-full transition-all",
+                        currentCredits > 2
+                          ? "bg-gradient-to-r from-primary to-primary/70"
+                          : currentCredits > 0
+                            ? "bg-amber-500"
+                            : "bg-destructive"
+                      )}
+                      style={{ width: `${(currentCredits / 5) * 100}%` }}
+                    />
+                  </div>
+                )}
+              </div>
+              <div className="py-1">
+                <DropdownMenuItem onClick={() => { setRenameValue(projectName === "Name your project" ? "" : projectName); setShowRenameDialog(true); }} className="gap-2 cursor-pointer px-4 py-2">
+                  <Pencil className="w-4 h-4" />
+                  Rename
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setShowDeleteDialog(true)} className="gap-2 cursor-pointer text-destructive focus:text-destructive px-4 py-2">
+                  <Trash2 className="w-4 h-4" />
+                  Delete
+                </DropdownMenuItem>
+              </div>
             </DropdownMenuContent>
           </DropdownMenu>
         </div>
@@ -894,20 +862,7 @@ const ChatPanel = ({
         </DialogContent>
       </Dialog>
 
-      {/* Credits Dialog */}
-      <Dialog open={showCreditsDialog} onOpenChange={setShowCreditsDialog}>
-        <DialogContent className="sm:max-w-sm bg-card border-border">
-          <DialogHeader>
-            <DialogTitle>Credits</DialogTitle>
-          </DialogHeader>
-          <CreditsDisplay />
-          <DialogFooter>
-            <DialogClose asChild>
-              <Button variant="ghost" size="sm">Close</Button>
-            </DialogClose>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      {/* Credits Dialog removed - now inline in dropdown */}
 
       {/* Messages */}
       <div className="flex-1 overflow-y-auto p-4 space-y-4">
@@ -1156,9 +1111,10 @@ const ChatPanel = ({
               className={cn(
                 "flex-1 px-2 py-2 resize-none bg-transparent",
                 "text-foreground text-sm focus:outline-none",
-                "placeholder:text-muted-foreground min-h-[72px]"
+                "placeholder:text-muted-foreground/60 placeholder:text-sm",
+                "min-h-[96px]"
               )}
-              style={{ overflow: "hidden" }}
+              style={{ overflow: "hidden", verticalAlign: "top" }}
             />
 
             {/* Voice Button */}

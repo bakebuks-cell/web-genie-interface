@@ -72,6 +72,91 @@ declare global {
 }
 import * as React from "react";
 
+// ── Robust project name extraction ──────────────────────────────────
+const GENERIC_WORDS = new Set([
+  "build","create","make","design","develop","generate","write","code",
+  "website","site","web","app","application","system","platform","tool",
+  "page","project","software","program","ai","an","a","the","my","our",
+  "for","with","using","please","i","want","need","would","like","to",
+  "that","this","is","it","me","can","you","some","new","simple","basic",
+  "full","complete","modern","beautiful","nice","good","great","cool",
+]);
+
+function getProjectName(prompt: string): string {
+  if (!prompt || !prompt.trim()) return "Untitled Project";
+  const p = prompt.trim();
+
+  // Helper to clean an extracted name
+  const clean = (raw: string): string => {
+    let s = raw.trim().replace(/[.,!?:;]+$/, "").trim();
+    // Remove leading filler
+    s = s.replace(/^(a|an|the|my|our)\s+/i, "").trim();
+    // Truncate to ~40 chars without cutting words
+    if (s.length > 40) {
+      const words = s.split(/\s+/);
+      let result = "";
+      for (const w of words) {
+        if ((result + " " + w).trim().length > 40) break;
+        result = (result + " " + w).trim();
+      }
+      s = result;
+    }
+    return s || "";
+  };
+
+  // Priority A-D: explicit "X name is/: <name>" patterns
+  const explicitPatterns = [
+    /\b(?:app|application)\s+name[\s:]+(?:is\s+)?(.+)/i,
+    /\bproject\s+name[\s:]+(?:is\s+)?(.+)/i,
+    /\b(?:website|site)\s+name[\s:]+(?:is\s+)?(.+)/i,
+    /\b(?:company|brand)\s+name[\s:]+(?:is\s+)?(.+)/i,
+  ];
+  for (const rx of explicitPatterns) {
+    const m = p.match(rx);
+    if (m) { const c = clean(m[1]); if (c) { console.log("Extracted project name:", c); return c; } }
+  }
+
+  // Priority E: called/named/titled
+  const namedMatch = p.match(/\b(?:called|named|titled)\s+(.+)/i);
+  if (namedMatch) { const c = clean(namedMatch[1]); if (c) { console.log("Extracted project name:", c); return c; } }
+
+  // Priority F: "for [my/our] <name>" — grab to punctuation or end
+  const forMatch = p.match(/\bfor\s+(?:my\s+|our\s+)?([A-Z][A-Za-z0-9 .'&-]*)/);
+  if (forMatch) { const c = clean(forMatch[1]); if (c && c.split(/\s+/).length <= 6) { console.log("Extracted project name:", c); return c; } }
+
+  // Also try case-insensitive "for" but require at least 2-char result
+  if (!forMatch) {
+    const forMatch2 = p.match(/\bfor\s+(?:a\s+|an\s+|the\s+|my\s+|our\s+)?(.+)/i);
+    if (forMatch2) {
+      const c = clean(forMatch2[1]);
+      // Only use if it looks like a name (not too generic)
+      const words = c.split(/\s+/);
+      const meaningful = words.filter(w => !GENERIC_WORDS.has(w.toLowerCase()));
+      if (meaningful.length > 0 && meaningful.length <= 5) {
+        const name = meaningful.join(" ");
+        console.log("Extracted project name:", name);
+        return name;
+      }
+    }
+  }
+
+  // Priority G: quoted names
+  const quoteMatch = p.match(/["""]([^"""]+)["""]/) || p.match(/'([^']+)'/);
+  if (quoteMatch) { const c = clean(quoteMatch[1]); if (c) { console.log("Extracted project name:", c); return c; } }
+
+  // Fallback: generate from meaningful words
+  const words = p.split(/\s+/).filter(w => !GENERIC_WORDS.has(w.toLowerCase()) && w.length > 1);
+  if (words.length > 0) {
+    // Take up to 2 meaningful words, capitalize
+    const picked = words.slice(0, 2).map(w => w.charAt(0).toUpperCase() + w.slice(1));
+    const name = picked.join("");
+    console.log("Extracted project name:", name);
+    return name;
+  }
+
+  return "Untitled Project";
+}
+
 interface UseAutoResizeTextareaProps {
   minHeight: number;
   maxHeight?: number;
@@ -184,7 +269,7 @@ const ChatPanel = ({
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   // showCreditsDialog removed - credits now inline in dropdown
   
-  const [projectName, setProjectName] = useState("Name your project");
+  const [projectName, setProjectName] = useState(() => getProjectName(initialPrompt));
   const [renameValue, setRenameValue] = useState("");
   
   const { textareaRef, adjustHeight } = useAutoResizeTextarea({
@@ -765,7 +850,7 @@ const ChatPanel = ({
           <Bot className="w-5 h-5 text-primary flex-shrink-0" />
           <h2 className={cn(
             "font-semibold truncate text-base",
-            projectName === "Name your project" ? "text-muted-foreground italic" : "text-foreground"
+            projectName === "Untitled Project" ? "text-muted-foreground italic" : "text-foreground"
           )}>{projectName}</h2>
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
@@ -807,7 +892,7 @@ const ChatPanel = ({
                 )}
               </div>
               <div className="py-1">
-                <DropdownMenuItem onClick={() => { setRenameValue(projectName === "Name your project" ? "" : projectName); setShowRenameDialog(true); }} className="gap-2 cursor-pointer px-4 py-2">
+                <DropdownMenuItem onClick={() => { setRenameValue(projectName === "Untitled Project" ? "" : projectName); setShowRenameDialog(true); }} className="gap-2 cursor-pointer px-4 py-2">
                   <Pencil className="w-4 h-4" />
                   Rename
                 </DropdownMenuItem>
@@ -1050,7 +1135,7 @@ const ChatPanel = ({
           />
 
           {/* Input container */}
-          <div className="flex items-end gap-2 bg-secondary/50 rounded-xl p-2 border border-border focus-within:border-primary/50 transition-colors">
+          <div className="flex items-start gap-2 bg-secondary/50 rounded-xl p-2 border border-border focus-within:border-primary/50 transition-colors">
             <div className="flex items-center gap-1">
               <Tooltip>
                 <TooltipTrigger asChild>
@@ -1109,12 +1194,12 @@ const ChatPanel = ({
               onKeyDown={handleKeyDown}
               placeholder="Type your instructions..."
               className={cn(
-                "flex-1 px-2 py-2 resize-none bg-transparent",
+                "flex-1 pt-2 pl-2 pr-2 pb-2 resize-none bg-transparent",
                 "text-foreground text-sm focus:outline-none",
                 "placeholder:text-muted-foreground/60 placeholder:text-sm",
-                "min-h-[96px]"
+                "min-h-[96px] self-start"
               )}
-              style={{ overflow: "hidden", verticalAlign: "top" }}
+              style={{ overflow: "hidden" }}
             />
 
             {/* Voice Button */}

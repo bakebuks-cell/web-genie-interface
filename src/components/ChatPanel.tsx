@@ -32,6 +32,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/lib/supabase";
 import { toast } from "sonner";
+import { saveRecentProject } from "./RecentProjectCard";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import {
   DropdownMenu,
@@ -570,6 +571,19 @@ const ChatPanel = ({
         const data = result.data;
         if (data.success && data.url) {
           onGeneratedUrl?.(data.url);
+          
+          // Save recent project
+          saveRecentProject({
+            projectId: data.projectId || Date.now().toString(),
+            projectName,
+            promptText: prompt,
+            mode: "single",
+            singleLanguage: selectedStack,
+            language: selectedStack,
+            idea: prompt,
+            updatedAt: new Date().toISOString(),
+          });
+          
           setMessages((prev) => [
             ...prev,
             {
@@ -578,7 +592,7 @@ const ChatPanel = ({
               content: `🚀 Your app is ready!\n\nURL: ${data.url}`,
             },
           ]);
-          
+
           // Mark as ready immediately - no more polling
           markAsReady(data.url);
         } else {
@@ -738,6 +752,19 @@ const ChatPanel = ({
           if (data.success && data.url) {
             // Pass projectId if available from response
             onGeneratedUrl?.(data.url, data.projectId);
+            
+            // Save recent project on successful generation
+            saveRecentProject({
+              projectId: data.projectId || Date.now().toString(),
+              projectName,
+              promptText: promptText,
+              mode: "single",
+              singleLanguage: selectedLanguage,
+              language: selectedLanguage,
+              idea: promptText,
+              updatedAt: new Date().toISOString(),
+            });
+            
             setMessages((prev) => [
               ...prev,
               {

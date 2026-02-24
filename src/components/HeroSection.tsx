@@ -1,9 +1,11 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import UnifiedInput from "./UnifiedInput";
+import UnifiedInput, { GenerationMode } from "./UnifiedInput";
 import { HeroBackground } from "./HeroBackground";
 import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/contexts/AuthContext";
+import RecentProjectCard from "./RecentProjectCard";
 
 // Language mapping for display names
 const languageNames: Record<string, string> = {
@@ -17,28 +19,23 @@ const languageNames: Record<string, string> = {
 
 export const HeroSection = () => {
   const [selectedLanguage, setSelectedLanguage] = useState<string | null>(null);
+  const [multiStack, setMultiStack] = useState<string[]>([]);
   const [idea, setIdea] = useState("");
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { user } = useAuth();
 
-  const handleLanguageSelect = (language: string) => {
+  const handleLanguageSelect = (language: string | null) => {
     setSelectedLanguage(language);
-    toast({
-      title: "Language Selected",
-      description: `You selected ${languageNames[language] || language}`,
-    });
+    if (language) {
+      toast({
+        title: "Language Selected",
+        description: `You selected ${languageNames[language] || language}`,
+      });
+    }
   };
 
-  const handleGenerate = () => {
-    if (!selectedLanguage) {
-      toast({
-        title: "Select a Language",
-        description: "Please select a programming language first",
-        variant: "destructive",
-      });
-      return;
-    }
-    
+  const handleGenerate = (generationMode: GenerationMode) => {
     if (!idea.trim()) {
       toast({
         title: "Describe Your Application",
@@ -48,8 +45,14 @@ export const HeroSection = () => {
       return;
     }
 
-    // Navigate to generating page with state
-    navigate("/generating", { state: { language: selectedLanguage, idea } });
+    // Navigate to generating page with full generation mode state
+    navigate("/generating", { 
+      state: { 
+        language: generationMode.singleLanguage || generationMode.multiStack[0] || "react",
+        idea,
+        generationMode,
+      } 
+    });
   };
 
   return (
@@ -99,7 +102,7 @@ export const HeroSection = () => {
             />
           </motion.div>
           
-          {/* Supporting Quote with typewriter-like effect */}
+          {/* Supporting Quote */}
           <motion.p 
             className="text-muted-foreground text-sm md:text-base font-light tracking-wide max-w-lg mx-auto"
             initial={{ opacity: 0, y: 10 }}
@@ -153,8 +156,22 @@ export const HeroSection = () => {
             idea={idea}
             onIdeaChange={setIdea}
             onGenerate={handleGenerate}
+            multiStack={multiStack}
+            onMultiStackChange={setMultiStack}
           />
         </motion.div>
+
+        {/* Recent Project Card for logged-in users */}
+        {user && (
+          <motion.div
+            className="mt-8"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 1.5, duration: 0.6 }}
+          >
+            <RecentProjectCard />
+          </motion.div>
+        )}
       </div>
     </section>
   );

@@ -10,12 +10,20 @@ import {
 } from "@/components/ui/dropdown-menu";
 import MultiProgramModal from "./MultiProgramModal";
 
+export interface GenerationMode {
+  mode: "single" | "multi";
+  singleLanguage: string | null;
+  multiStack: string[];
+}
+
 interface UnifiedInputProps {
   selectedLanguage: string | null;
-  onLanguageSelect: (language: string) => void;
+  onLanguageSelect: (language: string | null) => void;
   idea: string;
   onIdeaChange: (idea: string) => void;
-  onGenerate: () => void;
+  onGenerate: (generationMode: GenerationMode) => void;
+  multiStack: string[];
+  onMultiStackChange: (stacks: string[]) => void;
 }
 
 const languages = [
@@ -35,11 +43,12 @@ const UnifiedInput = ({
   idea,
   onIdeaChange,
   onGenerate,
+  multiStack,
+  onMultiStackChange,
 }: UnifiedInputProps) => {
   const [isFocused, setIsFocused] = useState(false);
   const [isRecording, setIsRecording] = useState(false);
   const [multiProgramOpen, setMultiProgramOpen] = useState(false);
-  const [selectedStacks, setSelectedStacks] = useState<string[]>([]);
   const [displayText, setDisplayText] = useState("");
   const [validationError, setValidationError] = useState("");
   const [attentionPulse, setAttentionPulse] = useState(false);
@@ -59,7 +68,8 @@ const UnifiedInput = ({
   const { toast } = useToast();
   
   const selectedLang = languages.find((l) => l.id === selectedLanguage);
-  const hasSelection = !!selectedLanguage || selectedStacks.length > 0;
+  const isMultiMode = multiStack.length > 0;
+  const hasSelection = !!selectedLanguage || isMultiMode;
   const isGenerateEnabled = hasSelection && idea.trim().length > 0;
 
   // Cleanup on unmount
@@ -221,17 +231,38 @@ const UnifiedInput = ({
     if (!isRecording) { setDisplayText(idea); }
   }, [idea, isRecording]);
 
+  // When multi-program stack is applied, clear single language
+  const handleMultiStackApply = (stacks: string[]) => {
+    onMultiStackChange(stacks);
+    if (stacks.length > 0) {
+      // Clear single language when multi is active
+      onLanguageSelect(null);
+    }
+  };
+
+  // When single language is selected, clear multi stack
+  const handleLanguageSelect = (langId: string) => {
+    onLanguageSelect(langId);
+    if (multiStack.length > 0) {
+      onMultiStackChange([]);
+    }
+  };
+
   const handleGenerate = () => {
     if (!hasSelection) {
-      setValidationError("Please select a language or Multi-Program stack first.");
+      setValidationError("Please select a language or choose a Multi-Program stack.");
       setAttentionPulse(true);
       setTimeout(() => setAttentionPulse(false), 1000);
-      // Scroll into view and open dropdown
       langButtonRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
       setLangDropdownOpen(true);
       return;
     }
-    onGenerate();
+
+    const generationMode: GenerationMode = isMultiMode
+      ? { mode: "multi", singleLanguage: null, multiStack }
+      : { mode: "single", singleLanguage: selectedLanguage, multiStack: [] };
+
+    onGenerate(generationMode);
   };
 
   return (
@@ -296,9 +327,11 @@ const UnifiedInput = ({
                       text-sm
                       ${selectedLanguage 
                         ? "bg-primary/10 border-primary/30 text-foreground" 
-                        : "bg-secondary/30 border-border/50 text-muted-foreground hover:border-primary/40 hover:bg-secondary/50"
+                        : isMultiMode
+                          ? "bg-secondary/20 border-border/30 text-muted-foreground/50 opacity-60"
+                          : "bg-secondary/30 border-border/50 text-muted-foreground hover:border-primary/40 hover:bg-secondary/50"
                       }
-                      ${attentionPulse ? "animate-[pulse_0.5s_ease-in-out_2] border-primary shadow-[0_0_16px_rgba(0,230,210,0.5)]" : ""}
+                      ${attentionPulse && !isMultiMode ? "animate-[pulse_0.5s_ease-in-out_2] border-primary shadow-[0_0_16px_rgba(0,230,210,0.5)]" : ""}
                     `}
                   >
                     <span className="font-medium">
@@ -314,7 +347,7 @@ const UnifiedInput = ({
                   {languages.map((lang) => (
                     <DropdownMenuItem
                       key={lang.id}
-                      onClick={() => onLanguageSelect(lang.id)}
+                      onClick={() => handleLanguageSelect(lang.id)}
                       className={`
                         flex items-center gap-3 px-3 py-3 cursor-pointer
                         transition-colors duration-150
@@ -339,17 +372,17 @@ const UnifiedInput = ({
                 className={`
                   flex items-center gap-2 px-3 py-2
                   rounded-lg border transition-all duration-200 text-sm
-                  ${selectedStacks.length > 0
+                  ${isMultiMode
                     ? "bg-primary/10 border-primary/30 text-foreground"
                     : "bg-secondary/30 border-border/50 text-muted-foreground hover:border-primary/40 hover:bg-secondary/50"
                   }
-                  ${attentionPulse && !selectedLanguage ? "animate-[pulse_0.5s_ease-in-out_2] border-primary shadow-[0_0_16px_rgba(0,230,210,0.5)]" : ""}
+                  ${attentionPulse && !selectedLanguage && !isMultiMode ? "animate-[pulse_0.5s_ease-in-out_2] border-primary shadow-[0_0_16px_rgba(0,230,210,0.5)]" : ""}
                 `}
               >
                 <Layers className="w-4 h-4" />
                 <span className="font-medium">
-                  {selectedStacks.length > 0
-                    ? `Multi-Program (${selectedStacks.length} selected)`
+                  {isMultiMode
+                    ? `Multi-Program (${multiStack.length} selected)`
                     : "Multi-Program"
                   }
                 </span>
@@ -424,8 +457,8 @@ const UnifiedInput = ({
           <MultiProgramModal
             open={multiProgramOpen}
             onClose={() => setMultiProgramOpen(false)}
-            selectedStacks={selectedStacks}
-            onApply={setSelectedStacks}
+            selectedStacks={multiStack}
+            onApply={handleMultiStackApply}
           />
         </div>
       </div>

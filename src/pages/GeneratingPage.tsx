@@ -6,7 +6,7 @@ import GenerationDashboard from "@/components/GenerationDashboard";
 const GeneratingPage = () => {
   const location = useLocation();
   const navigate = useNavigate();
-  const { language, idea } = location.state || {};
+  const { language, idea, generationMode } = location.state || {};
 
   // If no state, redirect home
   useEffect(() => {
@@ -16,7 +16,7 @@ const GeneratingPage = () => {
   }, [language, idea, navigate]);
 
   const handleComplete = () => {
-    navigate("/generate", { state: { language, idea }, replace: true });
+    navigate("/generate", { state: { language, idea, generationMode }, replace: true });
   };
 
   if (!language && !idea) return null;

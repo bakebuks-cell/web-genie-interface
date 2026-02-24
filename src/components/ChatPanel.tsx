@@ -20,6 +20,7 @@ import {
   ChevronDown,
   Pencil,
   Trash2,
+  Sparkles,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useNavigate } from "react-router-dom";
@@ -73,6 +74,10 @@ declare global {
 import * as React from "react";
 
 // ── Robust project name extraction ──────────────────────────────────
+const FILLER_WORDS = new Set([
+  "a","an","the","my","our","your","this","that",
+]);
+
 const GENERIC_WORDS = new Set([
   "build","create","make","design","develop","generate","write","code",
   "website","site","web","app","application","system","platform","tool",
@@ -82,29 +87,34 @@ const GENERIC_WORDS = new Set([
   "full","complete","modern","beautiful","nice","good","great","cool",
 ]);
 
+function sanitizeName(raw: string): string {
+  let s = raw.trim();
+  // Remove surrounding quotes
+  s = s.replace(/^["'""\u201C\u201D]+|["'""\u201C\u201D]+$/g, "");
+  // Remove trailing punctuation
+  s = s.replace(/[.,!?:;]+$/, "").trim();
+  // Remove leading filler words (only single filler, not part of the name)
+  s = s.replace(/^(a|an|the|my|our|your)\s+/i, "").trim();
+  // Remove sneaked-in generic verbs at the start
+  s = s.replace(/^(website|app|application|create|build|for)\s+/i, "").trim();
+  // Truncate to 40 chars without cutting words
+  if (s.length > 40) {
+    const words = s.split(/\s+/);
+    let result = "";
+    for (const w of words) {
+      if ((result + " " + w).trim().length > 40) break;
+      result = (result + " " + w).trim();
+    }
+    s = result;
+  }
+  return s || "";
+}
+
 function getProjectName(prompt: string): string {
   if (!prompt || !prompt.trim()) return "Untitled Project";
   const p = prompt.trim();
 
-  // Helper to clean an extracted name
-  const clean = (raw: string): string => {
-    let s = raw.trim().replace(/[.,!?:;]+$/, "").trim();
-    // Remove leading filler
-    s = s.replace(/^(a|an|the|my|our)\s+/i, "").trim();
-    // Truncate to ~40 chars without cutting words
-    if (s.length > 40) {
-      const words = s.split(/\s+/);
-      let result = "";
-      for (const w of words) {
-        if ((result + " " + w).trim().length > 40) break;
-        result = (result + " " + w).trim();
-      }
-      s = result;
-    }
-    return s || "";
-  };
-
-  // Priority A-D: explicit "X name is/: <name>" patterns
+  // Priority A-D: explicit "X name is/: <name>"
   const explicitPatterns = [
     /\b(?:app|application)\s+name[\s:]+(?:is\s+)?(.+)/i,
     /\bproject\s+name[\s:]+(?:is\s+)?(.+)/i,
@@ -113,45 +123,41 @@ function getProjectName(prompt: string): string {
   ];
   for (const rx of explicitPatterns) {
     const m = p.match(rx);
-    if (m) { const c = clean(m[1]); if (c) { console.log("Extracted project name:", c); return c; } }
+    if (m) { const c = sanitizeName(m[1]); if (c) return c; }
   }
 
-  // Priority E: called/named/titled
-  const namedMatch = p.match(/\b(?:called|named|titled)\s+(.+)/i);
-  if (namedMatch) { const c = clean(namedMatch[1]); if (c) { console.log("Extracted project name:", c); return c; } }
+  // Priority E: call it / name it / called / named / titled
+  const namedMatch = p.match(/\b(?:call\s+it|name\s+it|called|named|titled)\s+(.+)/i);
+  if (namedMatch) { const c = sanitizeName(namedMatch[1]); if (c) return c; }
 
-  // Priority F: "for [my/our] <name>" — grab to punctuation or end
-  const forMatch = p.match(/\bfor\s+(?:my\s+|our\s+)?([A-Z][A-Za-z0-9 .'&-]*)/);
-  if (forMatch) { const c = clean(forMatch[1]); if (c && c.split(/\s+/).length <= 6) { console.log("Extracted project name:", c); return c; } }
+  // Priority F: "for <Name>" - capture proper noun sequence (starts with uppercase)
+  const forProperMatch = p.match(/\bfor\s+(?:my\s+|our\s+|a\s+|an\s+|the\s+)?([A-Z][A-Za-z0-9 .'&-]*)/);
+  if (forProperMatch) {
+    const c = sanitizeName(forProperMatch[1]);
+    if (c && c.split(/\s+/).length <= 5) return c;
+  }
 
-  // Also try case-insensitive "for" but require at least 2-char result
-  if (!forMatch) {
-    const forMatch2 = p.match(/\bfor\s+(?:a\s+|an\s+|the\s+|my\s+|our\s+)?(.+)/i);
-    if (forMatch2) {
-      const c = clean(forMatch2[1]);
-      // Only use if it looks like a name (not too generic)
-      const words = c.split(/\s+/);
-      const meaningful = words.filter(w => !GENERIC_WORDS.has(w.toLowerCase()));
-      if (meaningful.length > 0 && meaningful.length <= 5) {
-        const name = meaningful.join(" ");
-        console.log("Extracted project name:", name);
-        return name;
-      }
-    }
+  // Priority F2: "for <name>" case-insensitive, filter generics
+  const forMatch2 = p.match(/\bfor\s+(?:a\s+|an\s+|the\s+|my\s+|our\s+)?(.+?)(?:[.,!?]|$)/i);
+  if (forMatch2) {
+    const raw = sanitizeName(forMatch2[1]);
+    const words = raw.split(/\s+/).filter(w => !GENERIC_WORDS.has(w.toLowerCase()) && w.length > 1);
+    if (words.length > 0 && words.length <= 4) return words.join(" ");
   }
 
   // Priority G: quoted names
-  const quoteMatch = p.match(/["""]([^"""]+)["""]/) || p.match(/'([^']+)'/);
-  if (quoteMatch) { const c = clean(quoteMatch[1]); if (c) { console.log("Extracted project name:", c); return c; } }
+  const quoteMatch = p.match(/["""\u201C]([^"""\u201D]+)["""\u201D]/) || p.match(/'([^']+)'/);
+  if (quoteMatch) { const c = sanitizeName(quoteMatch[1]); if (c) return c; }
 
-  // Fallback: generate from meaningful words
-  const words = p.split(/\s+/).filter(w => !GENERIC_WORDS.has(w.toLowerCase()) && w.length > 1);
-  if (words.length > 0) {
-    // Take up to 2 meaningful words, capitalize
-    const picked = words.slice(0, 2).map(w => w.charAt(0).toUpperCase() + w.slice(1));
-    const name = picked.join("");
-    console.log("Extracted project name:", name);
-    return name;
+  // Fallback: meaningful keywords → brandable name
+  const words = p.split(/\s+/).filter(w => !GENERIC_WORDS.has(w.toLowerCase()) && w.length > 2);
+  if (words.length >= 2) {
+    const a = words[0].charAt(0).toUpperCase() + words[0].slice(1).toLowerCase();
+    const b = words[1].charAt(0).toUpperCase() + words[1].slice(1).toLowerCase();
+    return a + b;
+  }
+  if (words.length === 1) {
+    return words[0].charAt(0).toUpperCase() + words[0].slice(1);
   }
 
   return "Untitled Project";
@@ -273,9 +279,10 @@ const ChatPanel = ({
   const [renameValue, setRenameValue] = useState("");
   
   const { textareaRef, adjustHeight } = useAutoResizeTextarea({
-    minHeight: 96,
-    maxHeight: 200,
+    minHeight: 80,
+    maxHeight: 180,
   });
+  const [showPlanDropdown, setShowPlanDropdown] = useState(false);
   const commandPaletteRef = useRef<HTMLDivElement>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const recognitionRef = useRef<SpeechRecognition | null>(null);
@@ -1150,9 +1157,13 @@ const ChatPanel = ({
                 "w-full pt-3 pl-3 pr-3 pb-2 resize-none bg-transparent",
                 "text-foreground text-sm focus:outline-none",
                 "placeholder:text-muted-foreground/60 placeholder:text-sm",
-                "min-h-[110px]"
+                "min-h-[80px] instruction-textarea"
               )}
-              style={{ overflow: "hidden" }}
+              style={{
+                overflowY: "auto",
+                scrollbarWidth: "thin",
+                scrollbarColor: "hsl(var(--primary) / 0.3) transparent",
+              }}
             />
 
             {/* Bottom bar: icons pinned */}
@@ -1208,6 +1219,35 @@ const ChatPanel = ({
 
               {/* Bottom-right icons */}
               <div className="flex items-center gap-1">
+                {/* Plan Button */}
+                <DropdownMenu open={showPlanDropdown} onOpenChange={setShowPlanDropdown}>
+                  <DropdownMenuTrigger asChild>
+                    <motion.button
+                      type="button"
+                      whileHover={{ scale: 1.05 }}
+                      whileTap={{ scale: 0.95 }}
+                      className="flex items-center gap-1 px-2 py-1.5 rounded-lg text-xs font-medium text-muted-foreground hover:text-foreground transition-colors"
+                    >
+                      <Sparkles className="w-3.5 h-3.5" />
+                      <span>Plan</span>
+                    </motion.button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end" className="w-48 bg-popover border-border z-50">
+                    <div className="px-3 py-2 border-b border-border">
+                      <span className="text-xs font-semibold text-foreground">Choose your plan</span>
+                    </div>
+                    <DropdownMenuItem className="gap-2 cursor-pointer px-3 py-2 text-xs">
+                      Free
+                    </DropdownMenuItem>
+                    <DropdownMenuItem className="gap-2 cursor-pointer px-3 py-2 text-xs">
+                      Pro
+                    </DropdownMenuItem>
+                    <DropdownMenuItem className="gap-2 cursor-pointer px-3 py-2 text-xs">
+                      Enterprise
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+
                 {/* Voice Button */}
                 <motion.button
                   type="button"

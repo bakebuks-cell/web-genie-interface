@@ -11,6 +11,21 @@
   display: none;
 }
 
+/* Subtle scrollbar for instruction textarea */
+.instruction-textarea::-webkit-scrollbar {
+  width: 4px;
+}
+.instruction-textarea::-webkit-scrollbar-track {
+  background: transparent;
+}
+.instruction-textarea::-webkit-scrollbar-thumb {
+  background: hsl(var(--primary) / 0.2);
+  border-radius: 9999px;
+}
+.instruction-textarea::-webkit-scrollbar-thumb:hover {
+  background: hsl(var(--primary) / 0.5);
+}
+
 /* System font stack - no external imports needed */
 
 @layer base {

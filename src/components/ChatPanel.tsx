@@ -1135,55 +1135,8 @@ const ChatPanel = ({
           />
 
           {/* Input container */}
-          <div className="flex items-start gap-2 bg-secondary/50 rounded-xl p-2 border border-border focus-within:border-primary/50 transition-colors">
-            <div className="flex items-center gap-1">
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <motion.button
-                    type="button"
-                    onClick={handleAttachFile}
-                    disabled={!isAuthenticated || isUploading}
-                    whileTap={isAuthenticated ? { scale: 0.94 } : undefined}
-                    className={cn(
-                      "p-2 rounded-lg transition-colors relative",
-                      isAuthenticated 
-                        ? "text-muted-foreground hover:text-foreground" 
-                        : "text-muted-foreground/40 cursor-not-allowed"
-                    )}
-                  >
-                    {isUploading ? (
-                      <LoaderIcon className="w-4 h-4 animate-spin" />
-                    ) : (
-                      <>
-                        <Paperclip className="w-4 h-4" />
-                        {!isAuthenticated && (
-                          <Lock className="w-2.5 h-2.5 absolute -bottom-0.5 -right-0.5 text-muted-foreground/60" />
-                        )}
-                      </>
-                    )}
-                  </motion.button>
-                </TooltipTrigger>
-                <TooltipContent side="top">
-                  {isAuthenticated ? "Attach files" : "Sign in to attach files"}
-                </TooltipContent>
-              </Tooltip>
-              <motion.button
-                type="button"
-                data-command-button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  setShowCommandPalette((prev) => !prev);
-                }}
-                whileTap={{ scale: 0.94 }}
-                className={cn(
-                  "p-2 text-muted-foreground hover:text-foreground rounded-lg transition-colors",
-                  showCommandPalette && "bg-accent text-foreground"
-                )}
-              >
-                <Command className="w-4 h-4" />
-              </motion.button>
-            </div>
-
+          <div className="flex flex-col bg-secondary/50 rounded-xl border border-border focus-within:border-primary/50 transition-colors">
+            {/* Textarea area */}
             <textarea
               ref={textareaRef}
               value={value}
@@ -1194,61 +1147,116 @@ const ChatPanel = ({
               onKeyDown={handleKeyDown}
               placeholder="Type your instructions..."
               className={cn(
-                "flex-1 pt-2 pl-2 pr-2 pb-2 resize-none bg-transparent",
+                "w-full pt-3 pl-3 pr-3 pb-2 resize-none bg-transparent",
                 "text-foreground text-sm focus:outline-none",
                 "placeholder:text-muted-foreground/60 placeholder:text-sm",
-                "min-h-[96px] self-start"
+                "min-h-[110px]"
               )}
               style={{ overflow: "hidden" }}
             />
 
-            {/* Voice Button */}
-            <motion.button
-              type="button"
-              onClick={toggleVoiceRecording}
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              className={cn(
-                "p-2.5 rounded-lg text-sm font-medium transition-all relative",
-                isRecording
-                  ? "bg-destructive text-destructive-foreground shadow-lg shadow-destructive/30"
-                  : "bg-secondary text-muted-foreground hover:text-foreground hover:bg-secondary/80"
-              )}
-            >
-              {isRecording ? (
-                <>
-                  <MicOff className="w-4 h-4" />
-                  <motion.div
-                    className="absolute inset-0 rounded-lg border-2 border-destructive"
-                    animate={{ scale: [1, 1.2, 1], opacity: [1, 0, 1] }}
-                    transition={{ duration: 1.5, repeat: Infinity }}
-                  />
-                </>
-              ) : (
-                <Mic className="w-4 h-4" />
-              )}
-            </motion.button>
+            {/* Bottom bar: icons pinned */}
+            <div className="flex items-center justify-between px-2 pb-2">
+              {/* Bottom-left icons */}
+              <div className="flex items-center gap-1">
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <motion.button
+                      type="button"
+                      onClick={handleAttachFile}
+                      disabled={!isAuthenticated || isUploading}
+                      whileTap={isAuthenticated ? { scale: 0.94 } : undefined}
+                      className={cn(
+                        "p-2 rounded-lg transition-colors relative",
+                        isAuthenticated 
+                          ? "text-muted-foreground hover:text-foreground" 
+                          : "text-muted-foreground/40 cursor-not-allowed"
+                      )}
+                    >
+                      {isUploading ? (
+                        <LoaderIcon className="w-4 h-4 animate-spin" />
+                      ) : (
+                        <>
+                          <Paperclip className="w-4 h-4" />
+                          {!isAuthenticated && (
+                            <Lock className="w-2.5 h-2.5 absolute -bottom-0.5 -right-0.5 text-muted-foreground/60" />
+                          )}
+                        </>
+                      )}
+                    </motion.button>
+                  </TooltipTrigger>
+                  <TooltipContent side="top">
+                    {isAuthenticated ? "Attach files" : "Sign in to attach files"}
+                  </TooltipContent>
+                </Tooltip>
+                <motion.button
+                  type="button"
+                  data-command-button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setShowCommandPalette((prev) => !prev);
+                  }}
+                  whileTap={{ scale: 0.94 }}
+                  className={cn(
+                    "p-2 text-muted-foreground hover:text-foreground rounded-lg transition-colors",
+                    showCommandPalette && "bg-accent text-foreground"
+                  )}
+                >
+                  <Command className="w-4 h-4" />
+                </motion.button>
+              </div>
 
-            {/* Send Button */}
-            <motion.button
-              type="button"
-              onClick={handleSendMessage}
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
-              disabled={isTyping || !value.trim()}
-              className={cn(
-                "p-2.5 rounded-lg text-sm font-medium transition-all",
-                value.trim()
-                  ? "bg-primary text-primary-foreground shadow-lg"
-                  : "bg-muted text-muted-foreground cursor-not-allowed"
-              )}
-            >
-              {isTyping ? (
-                <LoaderIcon className="w-4 h-4 animate-spin" />
-              ) : (
-                <SendIcon className="w-4 h-4" />
-              )}
-            </motion.button>
+              {/* Bottom-right icons */}
+              <div className="flex items-center gap-1">
+                {/* Voice Button */}
+                <motion.button
+                  type="button"
+                  onClick={toggleVoiceRecording}
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  className={cn(
+                    "p-2 rounded-lg text-sm font-medium transition-all relative",
+                    isRecording
+                      ? "bg-destructive text-destructive-foreground shadow-lg shadow-destructive/30"
+                      : "text-muted-foreground hover:text-foreground"
+                  )}
+                >
+                  {isRecording ? (
+                    <>
+                      <MicOff className="w-4 h-4" />
+                      <motion.div
+                        className="absolute inset-0 rounded-lg border-2 border-destructive"
+                        animate={{ scale: [1, 1.2, 1], opacity: [1, 0, 1] }}
+                        transition={{ duration: 1.5, repeat: Infinity }}
+                      />
+                    </>
+                  ) : (
+                    <Mic className="w-4 h-4" />
+                  )}
+                </motion.button>
+
+                {/* Send Button */}
+                <motion.button
+                  type="button"
+                  onClick={handleSendMessage}
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                  disabled={isTyping || !value.trim()}
+                  className={cn(
+                    "p-2 rounded-lg text-sm font-medium transition-all",
+                    value.trim()
+                      ? "bg-primary text-primary-foreground shadow-lg"
+                      : "bg-muted text-muted-foreground cursor-not-allowed"
+                  )}
+                >
+                  {isTyping ? (
+                    <LoaderIcon className="w-4 h-4 animate-spin" />
+                  ) : (
+                    <SendIcon className="w-4 h-4" />
+                  )}
+                </motion.button>
+              </div>
+            </div>
           </div>
 
         </div>

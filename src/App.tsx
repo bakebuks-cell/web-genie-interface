@@ -12,6 +12,8 @@ import Preview from "./pages/Preview";
 import About from "./pages/About";
 import Technologies from "./pages/Technologies";
 import Pricing from "./pages/Pricing";
+import Docs from "./pages/Docs";
+import Showcase from "./pages/Showcase";
 import Login from "./pages/Login";
 import SignUp from "./pages/SignUp";
 import Profile from "./pages/Profile";
@@ -27,15 +29,18 @@ const App = () => (
       <BrowserRouter>
         <AuthProvider>
           <Routes>
+            {/* Builder routes — no layout */}
             <Route path="/generating" element={<GeneratingPage />} />
             <Route path="/generate" element={<GenerationPage />} />
             <Route path="/preview" element={<Preview />} />
-            
-            {/* All other pages with Layout */}
+
+            {/* Public pages with Layout */}
             <Route path="/" element={<Layout><Index /></Layout>} />
             <Route path="/about" element={<Layout><About /></Layout>} />
             <Route path="/technologies" element={<Layout><Technologies /></Layout>} />
             <Route path="/pricing" element={<Layout><Pricing /></Layout>} />
+            <Route path="/docs" element={<Layout><Docs /></Layout>} />
+            <Route path="/showcase" element={<Layout><Showcase /></Layout>} />
             <Route path="/login" element={<Layout><Login /></Layout>} />
             <Route path="/signup" element={<Layout><SignUp /></Layout>} />
             <Route path="/profile" element={<Profile />} />

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import UnifiedInput, { GenerationMode } from "./UnifiedInput";
@@ -8,6 +8,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import RecentProjectCard from "./RecentProjectCard";
 import { useCreateProject } from "@/hooks/useProjects";
 import { saveRecentProject } from "./RecentProjectCard";
+import { savePreAuthDraft, getPreAuthDraft, clearPreAuthDraft } from "@/lib/preAuthDraft";
 
 // Language mapping for display names
 const languageNames: Record<string, string> = {
@@ -27,6 +28,42 @@ export const HeroSection = () => {
   const { toast } = useToast();
   const { user } = useAuth();
   const createProject = useCreateProject();
+  const hasResumed = useRef(false);
+
+  // Resume generation from pre-auth draft after login
+  useEffect(() => {
+    if (!user || hasResumed.current) return;
+    const draft = getPreAuthDraft();
+    if (!draft) return;
+    hasResumed.current = true;
+
+    // Restore state and auto-navigate
+    setIdea(draft.prompt);
+    if (draft.mode === "single" && draft.singleLanguage) {
+      setSelectedLanguage(draft.singleLanguage);
+    } else if (draft.mode === "multi") {
+      setMultiStack(draft.multiStack);
+    }
+
+    clearPreAuthDraft();
+
+    const generationMode: GenerationMode = {
+      mode: draft.mode,
+      singleLanguage: draft.singleLanguage || undefined,
+      multiStack: draft.multiStack,
+    };
+
+    // Small delay to let state settle
+    setTimeout(() => {
+      navigate("/generating", {
+        state: {
+          language: draft.singleLanguage || draft.multiStack[0] || "react",
+          idea: draft.prompt,
+          generationMode,
+        },
+      });
+    }, 100);
+  }, [user]);
 
   const handleLanguageSelect = (language: string | null) => {
     setSelectedLanguage(language);
@@ -45,6 +82,18 @@ export const HeroSection = () => {
         description: "Please describe the application you want to build",
         variant: "destructive",
       });
+      return;
+    }
+
+    // Auth gate: redirect unauthenticated users
+    if (!user) {
+      savePreAuthDraft({
+        prompt: idea,
+        mode: generationMode.mode === "multi" ? "multi" : "single",
+        singleLanguage: generationMode.singleLanguage || null,
+        multiStack: generationMode.multiStack || [],
+      });
+      navigate("/auth-gate");
       return;
     }
 

@@ -1,26 +1,40 @@
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Menu, X } from "lucide-react";
-import { motion } from "framer-motion";
+import { Menu, X, User, LogOut, CreditCard, LayoutDashboard } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
+import { useAuth } from "@/contexts/AuthContext";
 
 const navItems = [
   { label: "Home", href: "/" },
+  { label: "Pricing", href: "/pricing" },
   { label: "Technology", href: "/technologies" },
   { label: "About", href: "/about" },
-  { label: "Pricing", href: "/pricing" },
 ];
 
 export const Navbar = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isProfileOpen, setIsProfileOpen] = useState(false);
+  const profileRef = useRef<HTMLDivElement>(null);
   const navigate = useNavigate();
+  const { user, profile, signOut } = useAuth();
 
-  const handleLogin = () => {
-    navigate("/login");
-  };
+  useEffect(() => {
+    const handleClick = (e: MouseEvent) => {
+      if (profileRef.current && !profileRef.current.contains(e.target as Node)) {
+        setIsProfileOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClick);
+    return () => document.removeEventListener("mousedown", handleClick);
+  }, []);
 
-  const handleSignUp = () => {
-    navigate("/signup");
+  const handleLogin = () => navigate("/login");
+  const handleSignUp = () => navigate("/signup");
+  const handleLogout = async () => {
+    await signOut();
+    setIsProfileOpen(false);
+    navigate("/");
   };
 
   const brandText = "MyCodex.Dev";
@@ -71,25 +85,77 @@ export const Navbar = () => {
           {/* Divider */}
           <div className="hidden md:block w-px h-5 bg-primary/15 mx-2" />
 
-          {/* Auth Buttons */}
+          {/* Auth Buttons — context-aware */}
           <div className="hidden md:flex items-center gap-2">
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={handleLogin}
-              className="text-muted-foreground hover:text-foreground hover:bg-primary/5 rounded-full px-4 h-8 text-sm"
-            >
-              Login
-            </Button>
-            <button
-              onClick={handleSignUp}
-              className="rounded-full px-4 h-8 text-sm font-medium text-primary-foreground shadow-[0_0_15px_rgba(0,255,200,0.25)] transition-all duration-300 hover:shadow-[0_0_25px_rgba(0,255,200,0.4)] hover:opacity-90"
-              style={{
-                background: "linear-gradient(90deg, #00f0ff, #00c8a0)",
-              }}
-            >
-              Sign Up
-            </button>
+            {user ? (
+              <>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => navigate("/generate")}
+                  className="text-muted-foreground hover:text-foreground hover:bg-primary/5 rounded-full px-4 h-8 text-sm gap-1.5"
+                >
+                  <LayoutDashboard className="w-3.5 h-3.5" />
+                  Projects
+                </Button>
+                {/* Profile dropdown */}
+                <div ref={profileRef} className="relative">
+                  <button
+                    onClick={() => setIsProfileOpen(!isProfileOpen)}
+                    className="flex items-center justify-center w-8 h-8 rounded-full bg-primary/10 border border-primary/20 text-primary hover:bg-primary/20 transition-colors"
+                  >
+                    <User className="w-4 h-4" />
+                  </button>
+                  <AnimatePresence>
+                    {isProfileOpen && (
+                      <motion.div
+                        initial={{ opacity: 0, y: -8, scale: 0.95 }}
+                        animate={{ opacity: 1, y: 0, scale: 1 }}
+                        exit={{ opacity: 0, y: -8, scale: 0.95 }}
+                        transition={{ duration: 0.15 }}
+                        className="absolute right-0 mt-2 w-52 bg-background/80 backdrop-blur-2xl border border-primary/15 rounded-xl shadow-[0_8px_32px_rgba(0,0,0,0.5)] overflow-hidden"
+                      >
+                        <div className="px-4 py-3 border-b border-primary/10">
+                          <p className="text-sm font-medium text-foreground truncate">
+                            {profile?.display_name || user.email}
+                          </p>
+                          <p className="text-xs text-muted-foreground capitalize">{profile?.plan || "free"} plan</p>
+                        </div>
+                        <div className="py-1">
+                          <button onClick={() => { navigate("/profile"); setIsProfileOpen(false); }} className="w-full flex items-center gap-2 px-4 py-2 text-sm text-muted-foreground hover:text-foreground hover:bg-primary/5 transition-colors">
+                            <User className="w-4 h-4" /> Profile
+                          </button>
+                          <button onClick={() => { navigate("/pricing"); setIsProfileOpen(false); }} className="w-full flex items-center gap-2 px-4 py-2 text-sm text-muted-foreground hover:text-foreground hover:bg-primary/5 transition-colors">
+                            <CreditCard className="w-4 h-4" /> Billing & Plan
+                          </button>
+                          <button onClick={handleLogout} className="w-full flex items-center gap-2 px-4 py-2 text-sm text-red-400 hover:text-red-300 hover:bg-red-500/5 transition-colors">
+                            <LogOut className="w-4 h-4" /> Logout
+                          </button>
+                        </div>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </div>
+              </>
+            ) : (
+              <>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={handleLogin}
+                  className="text-muted-foreground hover:text-foreground hover:bg-primary/5 rounded-full px-4 h-8 text-sm"
+                >
+                  Login
+                </Button>
+                <button
+                  onClick={handleSignUp}
+                  className="rounded-full px-4 h-8 text-sm font-medium text-primary-foreground shadow-[0_0_15px_rgba(0,255,200,0.25)] transition-all duration-300 hover:shadow-[0_0_25px_rgba(0,255,200,0.4)] hover:opacity-90"
+                  style={{ background: "linear-gradient(90deg, #00f0ff, #00c8a0)" }}
+                >
+                  Sign Up
+                </button>
+              </>
+            )}
           </div>
 
           {/* Mobile Menu Button */}
@@ -106,12 +172,7 @@ export const Navbar = () => {
       {isMobileMenuOpen && (
         <div className="md:hidden mt-2 flex justify-end">
           <motion.div 
-            className="
-              bg-background/60 backdrop-blur-2xl 
-              border border-primary/15 rounded-2xl
-              p-4 w-64
-              shadow-[0_8px_32px_rgba(0,0,0,0.4)]
-            "
+            className="bg-background/60 backdrop-blur-2xl border border-primary/15 rounded-2xl p-4 w-64 shadow-[0_8px_32px_rgba(0,0,0,0.4)]"
             initial={{ opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.2 }}
@@ -128,23 +189,28 @@ export const Navbar = () => {
                 </Link>
               ))}
               <div className="flex flex-col gap-2 pt-3 border-t border-primary/15 mt-2">
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={handleLogin}
-                  className="justify-start text-muted-foreground hover:bg-primary/5 rounded-lg"
-                >
-                  Login
-                </Button>
-                <button
-                  onClick={handleSignUp}
-                  className="rounded-lg px-4 h-9 text-sm font-medium text-primary-foreground"
-                  style={{
-                    background: "linear-gradient(90deg, #00f0ff, #00c8a0)",
-                  }}
-                >
-                  Sign Up
-                </button>
+                {user ? (
+                  <>
+                    <Button variant="ghost" size="sm" onClick={() => { navigate("/generate"); setIsMobileMenuOpen(false); }} className="justify-start text-muted-foreground hover:bg-primary/5 rounded-lg gap-2">
+                      <LayoutDashboard className="w-4 h-4" /> Projects
+                    </Button>
+                    <Button variant="ghost" size="sm" onClick={() => { navigate("/profile"); setIsMobileMenuOpen(false); }} className="justify-start text-muted-foreground hover:bg-primary/5 rounded-lg gap-2">
+                      <User className="w-4 h-4" /> Profile
+                    </Button>
+                    <Button variant="ghost" size="sm" onClick={async () => { await signOut(); setIsMobileMenuOpen(false); navigate("/"); }} className="justify-start text-red-400 hover:bg-red-500/5 rounded-lg gap-2">
+                      <LogOut className="w-4 h-4" /> Logout
+                    </Button>
+                  </>
+                ) : (
+                  <>
+                    <Button variant="ghost" size="sm" onClick={handleLogin} className="justify-start text-muted-foreground hover:bg-primary/5 rounded-lg">
+                      Login
+                    </Button>
+                    <button onClick={handleSignUp} className="rounded-lg px-4 h-9 text-sm font-medium text-primary-foreground" style={{ background: "linear-gradient(90deg, #00f0ff, #00c8a0)" }}>
+                      Sign Up
+                    </button>
+                  </>
+                )}
               </div>
             </div>
           </motion.div>

@@ -59,7 +59,7 @@ const PublishDropdown = () => {
     setPublishState("publishing");
     setTimeout(() => {
       const id = Math.random().toString(36).substring(2, 10);
-      setGeneratedUrl(`mycodex.dev/p/${id}`);
+      setGeneratedUrl(`mycodex/p/${id}`);
       setPublishState("done");
     }, 2000);
   };

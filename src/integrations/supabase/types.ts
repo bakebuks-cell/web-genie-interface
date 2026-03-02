@@ -44,6 +44,51 @@ export type Database = {
         }
         Relationships: []
       }
+      projects: {
+        Row: {
+          code_snapshot: Json | null
+          created_at: string
+          id: string
+          mode: string
+          multi_stack: Json | null
+          name: string
+          preview_url: string | null
+          prompt: string | null
+          single_language: string | null
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          code_snapshot?: Json | null
+          created_at?: string
+          id?: string
+          mode?: string
+          multi_stack?: Json | null
+          name?: string
+          preview_url?: string | null
+          prompt?: string | null
+          single_language?: string | null
+          status?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          code_snapshot?: Json | null
+          created_at?: string
+          id?: string
+          mode?: string
+          multi_stack?: Json | null
+          name?: string
+          preview_url?: string | null
+          prompt?: string | null
+          single_language?: string | null
+          status?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       technologies: {
         Row: {
           created_at: string

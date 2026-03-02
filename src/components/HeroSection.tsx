@@ -6,6 +6,8 @@ import { HeroBackground } from "./HeroBackground";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
 import RecentProjectCard from "./RecentProjectCard";
+import { useCreateProject } from "@/hooks/useProjects";
+import { saveRecentProject } from "./RecentProjectCard";
 
 // Language mapping for display names
 const languageNames: Record<string, string> = {
@@ -24,6 +26,7 @@ export const HeroSection = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const { user } = useAuth();
+  const createProject = useCreateProject();
 
   const handleLanguageSelect = (language: string | null) => {
     setSelectedLanguage(language);
@@ -35,7 +38,7 @@ export const HeroSection = () => {
     }
   };
 
-  const handleGenerate = (generationMode: GenerationMode) => {
+  const handleGenerate = async (generationMode: GenerationMode) => {
     if (!idea.trim()) {
       toast({
         title: "Describe Your Application",
@@ -45,12 +48,46 @@ export const HeroSection = () => {
       return;
     }
 
-    // Navigate to generating page with full generation mode state
+    // If logged in, create project in DB
+    let dbProjectId: string | undefined;
+    if (user) {
+      try {
+        // Derive a project name from prompt
+        const name = idea.trim().slice(0, 60) || "Untitled Project";
+        const project = await createProject.mutateAsync({
+          name,
+          prompt: idea,
+          mode: generationMode.mode,
+          single_language: generationMode.singleLanguage,
+          multi_stack: generationMode.mode === "multi"
+            ? { frontend: generationMode.multiStack.filter(s => ["react","html","csharp"].includes(s)), backend: generationMode.multiStack.filter(s => ["nodejs","python","golang","php","java"].includes(s)), database: [] }
+            : { frontend: [], backend: [], database: [] },
+          status: "generating",
+        });
+        dbProjectId = project.id;
+      } catch (e) {
+        console.error("Failed to save project:", e);
+      }
+    }
+
+    // Also save to localStorage for the recent card
+    saveRecentProject({
+      projectId: dbProjectId || Date.now().toString(),
+      projectName: idea.trim().slice(0, 60) || "Untitled Project",
+      promptText: idea,
+      mode: generationMode.mode,
+      singleLanguage: generationMode.singleLanguage,
+      language: generationMode.singleLanguage || generationMode.multiStack[0] || "react",
+      idea,
+      updatedAt: new Date().toISOString(),
+    });
+
     navigate("/generating", { 
       state: { 
         language: generationMode.singleLanguage || generationMode.multiStack[0] || "react",
         idea,
         generationMode,
+        dbProjectId,
       } 
     });
   };

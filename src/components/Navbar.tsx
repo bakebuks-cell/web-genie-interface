@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Menu, X, User, LogOut, CreditCard } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useAuth } from "@/contexts/AuthContext";
-import { ProjectsDropdown } from "./ProjectsDropdown";
+import { LayoutDashboard } from "lucide-react";
 
 const navItems = [
   { label: "Home", href: "/" },
@@ -72,7 +72,15 @@ export const Navbar = () => {
           <div className="hidden md:flex items-center gap-2">
             {user ? (
               <>
-                <ProjectsDropdown />
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => navigate("/projects")}
+                  className="text-muted-foreground hover:text-foreground hover:bg-primary/5 rounded-full px-4 h-8 text-sm gap-1.5"
+                >
+                  <LayoutDashboard className="w-3.5 h-3.5" />
+                  Projects
+                </Button>
                 <div ref={profileRef} className="relative">
                   <button
                     onClick={() => setIsProfileOpen(!isProfileOpen)}
@@ -151,7 +159,7 @@ export const Navbar = () => {
               <div className="flex flex-col gap-2 pt-3 border-t border-primary/15 mt-2">
                 {user ? (
                   <>
-                    <Button variant="ghost" size="sm" onClick={() => { navigate("/generate"); setIsMobileMenuOpen(false); }} className="justify-start text-muted-foreground hover:bg-primary/5 rounded-lg gap-2">
+                    <Button variant="ghost" size="sm" onClick={() => { navigate("/projects"); setIsMobileMenuOpen(false); }} className="justify-start text-muted-foreground hover:bg-primary/5 rounded-lg gap-2">
                       Projects
                     </Button>
                     <Button variant="ghost" size="sm" onClick={() => { navigate("/profile"); setIsMobileMenuOpen(false); }} className="justify-start text-muted-foreground hover:bg-primary/5 rounded-lg gap-2">

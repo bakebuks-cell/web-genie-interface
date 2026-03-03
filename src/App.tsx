@@ -17,6 +17,7 @@ import SignUp from "./pages/SignUp";
 import Profile from "./pages/Profile";
 import NotFound from "./pages/NotFound";
 import AuthGate from "./pages/AuthGate";
+import Projects from "./pages/Projects";
 
 const queryClient = new QueryClient();
 
@@ -40,6 +41,7 @@ const App = () => (
             <Route path="/login" element={<Layout><Login /></Layout>} />
             <Route path="/signup" element={<Layout><SignUp /></Layout>} />
             <Route path="/auth-gate" element={<AuthGate />} />
+            <Route path="/projects" element={<Layout><Projects /></Layout>} />
             <Route path="/profile" element={<Profile />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<Layout><NotFound /></Layout>} />

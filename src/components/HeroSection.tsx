@@ -5,9 +5,7 @@ import UnifiedInput, { GenerationMode } from "./UnifiedInput";
 import { HeroBackground } from "./HeroBackground";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
-import RecentProjectCard from "./RecentProjectCard";
 import { useCreateProject } from "@/hooks/useProjects";
-import { saveRecentProject } from "./RecentProjectCard";
 import { savePreAuthDraft, getPreAuthDraft, clearPreAuthDraft } from "@/lib/preAuthDraft";
 
 // Language mapping for display names
@@ -119,17 +117,6 @@ export const HeroSection = () => {
       }
     }
 
-    // Also save to localStorage for the recent card
-    saveRecentProject({
-      projectId: dbProjectId || Date.now().toString(),
-      projectName: idea.trim().slice(0, 60) || "Untitled Project",
-      promptText: idea,
-      mode: generationMode.mode,
-      singleLanguage: generationMode.singleLanguage,
-      language: generationMode.singleLanguage || generationMode.multiStack[0] || "react",
-      idea,
-      updatedAt: new Date().toISOString()
-    });
 
     navigate("/generating", {
       state: {
@@ -247,17 +234,6 @@ export const HeroSection = () => {
           
         </motion.div>
 
-        {/* Recent Project Card for logged-in users */}
-        {user &&
-        <motion.div
-          className="mt-8"
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 1.5, duration: 0.6 }}>
-          
-            <RecentProjectCard />
-          </motion.div>
-        }
       </div>
     </section>);
 

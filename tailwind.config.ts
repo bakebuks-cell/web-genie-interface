@@ -22,10 +22,6 @@ export default {
         ring: "hsl(var(--ring))",
         background: "hsl(var(--background))",
         foreground: "hsl(var(--foreground))",
-        panel: "hsl(var(--panel))",
-        glow: "hsl(var(--glow))",
-        "glow-muted": "hsl(var(--glow-muted))",
-        "accent-2": "hsl(var(--accent-2))",
         primary: {
           DEFAULT: "hsl(var(--primary))",
           foreground: "hsl(var(--primary-foreground))",

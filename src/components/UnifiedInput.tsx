@@ -2,6 +2,12 @@ import { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Paperclip, Mic, ChevronDown, Check, X, Layers, ArrowUp } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import MultiProgramModal from "./MultiProgramModal";
 
 export interface GenerationMode {
@@ -52,8 +58,8 @@ const UnifiedInput = ({
   const silenceTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const finalizeTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const langButtonRef = useRef<HTMLButtonElement>(null);
-  const dropdownRef = useRef<HTMLDivElement>(null);
 
+  // Refs for speech state
   const isRecordingRef = useRef(false);
   const startIdeaRef = useRef("");
   const accumulatedFinalRef = useRef("");
@@ -66,57 +72,69 @@ const UnifiedInput = ({
   const hasSelection = !!selectedLanguage || isMultiMode;
   const isGenerateEnabled = hasSelection && idea.trim().length > 0;
 
-  // Close dropdown on outside click
-  useEffect(() => {
-    if (!langDropdownOpen) return;
-    const handler = (e: MouseEvent) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
-        setLangDropdownOpen(false);
-      }
-    };
-    document.addEventListener("mousedown", handler);
-    return () => document.removeEventListener("mousedown", handler);
-  }, [langDropdownOpen]);
-
+  // Cleanup on unmount
   useEffect(() => {
     return () => {
       isRecordingRef.current = false;
-      if (recognitionRef.current) { try { recognitionRef.current.abort(); } catch {} }
+      if (recognitionRef.current) {
+        try { recognitionRef.current.abort(); } catch {}
+      }
       if (silenceTimeoutRef.current) clearTimeout(silenceTimeoutRef.current);
       if (finalizeTimeoutRef.current) clearTimeout(finalizeTimeoutRef.current);
     };
   }, []);
 
+  // Clear validation error when user selects something
   useEffect(() => {
     if (hasSelection) setValidationError("");
   }, [hasSelection]);
 
-  const handleAttach = () => { fileInputRef.current?.click(); };
+  const handleAttach = () => {
+    fileInputRef.current?.click();
+  };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
     if (files && files.length > 0) {
       const fileNames = Array.from(files).map(f => f.name).join(", ");
-      toast({ title: "Files Attached", description: `Selected: ${fileNames}` });
+      toast({
+        title: "Files Attached",
+        description: `Selected: ${fileNames}`,
+      });
     }
     e.target.value = "";
   };
 
   const clearTimers = () => {
-    if (silenceTimeoutRef.current) { clearTimeout(silenceTimeoutRef.current); silenceTimeoutRef.current = null; }
-    if (finalizeTimeoutRef.current) { clearTimeout(finalizeTimeoutRef.current); finalizeTimeoutRef.current = null; }
+    if (silenceTimeoutRef.current) {
+      clearTimeout(silenceTimeoutRef.current);
+      silenceTimeoutRef.current = null;
+    }
+    if (finalizeTimeoutRef.current) {
+      clearTimeout(finalizeTimeoutRef.current);
+      finalizeTimeoutRef.current = null;
+    }
   };
 
   const resetSilenceTimer = () => {
-    if (silenceTimeoutRef.current) clearTimeout(silenceTimeoutRef.current);
-    silenceTimeoutRef.current = setTimeout(() => { if (isRecordingRef.current) finishRecording(); }, 5000);
+    if (silenceTimeoutRef.current) {
+      clearTimeout(silenceTimeoutRef.current);
+    }
+    silenceTimeoutRef.current = setTimeout(() => {
+      if (isRecordingRef.current) {
+        finishRecording();
+      }
+    }, 5000);
   };
 
   const updateDisplayText = () => {
+    const base = startIdeaRef.current.trim();
+    const final = accumulatedFinalRef.current.trim();
+    const interim = currentInterimRef.current.trim();
     const parts: string[] = [];
-    if (startIdeaRef.current.trim()) parts.push(startIdeaRef.current.trim());
-    if (accumulatedFinalRef.current.trim()) parts.push(accumulatedFinalRef.current.trim());
-    if (currentInterimRef.current.trim()) parts.push(currentInterimRef.current.trim());
+    if (base) parts.push(base);
+    if (final) parts.push(final);
+    if (interim) parts.push(interim);
     setDisplayText(parts.join(" "));
   };
 
@@ -124,15 +142,22 @@ const UnifiedInput = ({
     if (!isRecordingRef.current) return;
     isRecordingRef.current = false;
     clearTimers();
-    if (recognitionRef.current) { try { recognitionRef.current.stop(); } catch {} }
+    if (recognitionRef.current) {
+      try { recognitionRef.current.stop(); } catch {}
+    }
     finalizeTimeoutRef.current = setTimeout(() => {
+      const base = startIdeaRef.current.trim();
+      const final = accumulatedFinalRef.current.trim();
       const parts: string[] = [];
-      if (startIdeaRef.current.trim()) parts.push(startIdeaRef.current.trim());
-      if (accumulatedFinalRef.current.trim()) parts.push(accumulatedFinalRef.current.trim());
+      if (base) parts.push(base);
+      if (final) parts.push(final);
       const finalText = parts.join(" ");
       onIdeaChange(finalText);
       setDisplayText(finalText);
-      if (recognitionRef.current) { try { recognitionRef.current.abort(); } catch {} recognitionRef.current = null; }
+      if (recognitionRef.current) {
+        try { recognitionRef.current.abort(); } catch {}
+        recognitionRef.current = null;
+      }
       setIsRecording(false);
       accumulatedFinalRef.current = "";
       currentInterimRef.current = "";
@@ -169,8 +194,12 @@ const UnifiedInput = ({
       resetSilenceTimer();
       for (let i = event.resultIndex; i < event.results.length; i++) {
         const result = event.results[i];
-        if (result.isFinal) { accumulatedFinalRef.current += result[0].transcript; currentInterimRef.current = ""; }
-        else { currentInterimRef.current = result[0].transcript; }
+        if (result.isFinal) {
+          accumulatedFinalRef.current += result[0].transcript;
+          currentInterimRef.current = "";
+        } else {
+          currentInterimRef.current = result[0].transcript;
+        }
       }
       updateDisplayText();
     };
@@ -180,7 +209,9 @@ const UnifiedInput = ({
     recognition.onerror = (event: any) => {
       if (event.error === 'no-speech' || event.error === 'aborted') return;
       toast({ title: "Voice Error", description: `Error: ${event.error}`, variant: "destructive" });
-      isRecordingRef.current = false; setIsRecording(false); clearTimers();
+      isRecordingRef.current = false;
+      setIsRecording(false);
+      clearTimers();
     };
     recognition.onend = () => {
       if (isRecordingRef.current && recognitionRef.current === recognition) {
@@ -188,23 +219,33 @@ const UnifiedInput = ({
       }
     };
 
-    try { recognition.start(); } catch {
-      isRecordingRef.current = false; setIsRecording(false); clearTimers();
+    try { recognition.start(); } catch (e) {
+      isRecordingRef.current = false;
+      setIsRecording(false);
+      clearTimers();
       toast({ title: "Voice Error", description: "Failed to start voice recognition.", variant: "destructive" });
     }
   };
 
-  useEffect(() => { if (!isRecording) setDisplayText(idea); }, [idea, isRecording]);
+  useEffect(() => {
+    if (!isRecording) { setDisplayText(idea); }
+  }, [idea, isRecording]);
 
+  // When multi-program stack is applied, clear single language
   const handleMultiStackApply = (stacks: string[]) => {
     onMultiStackChange(stacks);
-    if (stacks.length > 0) onLanguageSelect(null);
+    if (stacks.length > 0) {
+      // Clear single language when multi is active
+      onLanguageSelect(null);
+    }
   };
 
+  // When single language is selected, clear multi stack
   const handleLanguageSelect = (langId: string) => {
     onLanguageSelect(langId);
-    if (multiStack.length > 0) onMultiStackChange([]);
-    setLangDropdownOpen(false);
+    if (multiStack.length > 0) {
+      onMultiStackChange([]);
+    }
   };
 
   const handleGenerate = () => {
@@ -216,116 +257,146 @@ const UnifiedInput = ({
       setLangDropdownOpen(true);
       return;
     }
+
     const generationMode: GenerationMode = isMultiMode
       ? { mode: "multi", singleLanguage: null, multiStack }
       : { mode: "single", singleLanguage: selectedLanguage, multiStack: [] };
+
     onGenerate(generationMode);
   };
 
   return (
     <div className="w-full max-w-2xl mx-auto">
+      {/* Main unified container - futuristic teal glow */}
       <div
         className={`
-          relative flex flex-col p-4 rounded-2xl backdrop-blur-lg transition-all duration-300 ease-out
-          glass-panel-strong
-          ${isFocused
-            ? "shadow-[0_0_40px_hsl(var(--glow)/0.3),0_0_80px_hsl(var(--glow)/0.1)]"
-            : "shadow-[0_0_30px_hsl(var(--glow)/0.15),0_0_60px_hsl(var(--glow)/0.05)]"
+          relative flex flex-col p-4
+          rounded-2xl
+          backdrop-blur-lg
+          transition-all duration-300 ease-out
+          ${isFocused 
+            ? "shadow-[0_0_50px_rgba(0,255,200,0.35),0_0_80px_rgba(0,255,200,0.15),inset_0_0_30px_rgba(0,255,200,0.05)]" 
+            : "shadow-[0_0_40px_rgba(0,255,200,0.2),0_0_60px_rgba(0,255,200,0.08)]"
           }
         `}
-        style={{ border: `1px solid hsl(var(--glow) / ${isFocused ? 0.25 : 0.15})` }}
+        style={{
+          background: "rgba(30, 30, 30, 0.6)",
+          border: "1px solid rgba(0, 230, 210, 0.25)",
+        }}
       >
-        <input ref={fileInputRef} type="file" multiple accept="image/*,.pdf,.doc,.docx,.txt" onChange={handleFileChange} className="hidden" />
+        {/* Hidden file input */}
+        <input
+          ref={fileInputRef}
+          type="file"
+          multiple
+          accept="image/*,.pdf,.doc,.docx,.txt"
+          onChange={handleFileChange}
+          className="hidden"
+        />
 
+        {/* Textarea */}
         <textarea
           value={displayText}
-          onChange={(e) => { if (!isRecording) onIdeaChange(e.target.value); }}
+          onChange={(e) => { if (!isRecording) { onIdeaChange(e.target.value); } }}
           onFocus={() => setIsFocused(true)}
           onBlur={() => setIsFocused(false)}
           placeholder="Describe your application idea..."
           rows={3}
-          className="w-full px-1 py-1 bg-transparent text-foreground placeholder:text-muted-foreground/50 focus:outline-none text-sm leading-relaxed resize-none scrollbar-hide"
+          className="
+            w-full px-1 py-1
+            bg-transparent text-foreground 
+            placeholder:text-muted-foreground/50
+            focus:outline-none
+            text-sm leading-relaxed resize-none
+            scrollbar-hide
+          "
         />
 
         {/* Bottom bar */}
         <div className="flex items-center justify-between mt-4 pt-4 border-t border-border/30">
+          {/* Language Dropdown + Multi-Program in same row */}
           <div className="flex flex-col gap-1">
             <div className="flex items-center gap-2 flex-wrap">
-              {/* Language Dropdown - custom pill style */}
-              <div ref={dropdownRef} className="relative">
-                <button
-                  ref={langButtonRef}
-                  onClick={() => setLangDropdownOpen(!langDropdownOpen)}
-                  className={`
-                    flex items-center gap-2 px-3.5 py-2 h-9
-                    rounded-[var(--radius)] border transition-all duration-200 text-sm
-                    ${selectedLanguage
-                      ? "bg-primary/10 border-primary/25 text-foreground shadow-[0_0_12px_hsl(var(--glow)/0.1)]"
-                      : isMultiMode
-                        ? "bg-secondary/20 border-border/30 text-muted-foreground/50 opacity-60"
-                        : "bg-secondary/40 border-border/50 text-muted-foreground hover:border-primary/30 hover:bg-secondary/60"
-                    }
-                    ${attentionPulse && !isMultiMode ? "animate-[pulse_0.5s_ease-in-out_2] border-primary shadow-glow" : ""}
-                  `}
+              <DropdownMenu open={langDropdownOpen} onOpenChange={setLangDropdownOpen}>
+                <DropdownMenuTrigger asChild>
+                  <button
+                    ref={langButtonRef}
+                    className={`
+                      flex items-center gap-2 px-3 py-2
+                      rounded-lg border transition-all duration-200
+                      text-sm
+                      ${selectedLanguage 
+                        ? "bg-primary/10 border-primary/30 text-foreground" 
+                        : isMultiMode
+                          ? "bg-secondary/20 border-border/30 text-muted-foreground/50 opacity-60"
+                          : "bg-secondary/30 border-border/50 text-muted-foreground hover:border-primary/40 hover:bg-secondary/50"
+                      }
+                      ${attentionPulse && !isMultiMode ? "animate-[pulse_0.5s_ease-in-out_2] border-primary shadow-[0_0_16px_rgba(0,230,210,0.5)]" : ""}
+                    `}
+                  >
+                    <span className="font-medium">
+                      {selectedLang ? selectedLang.name : "Select Language"}
+                    </span>
+                    <ChevronDown className="w-4 h-4 opacity-50" />
+                  </button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent 
+                  align="start" 
+                  className="w-56 bg-popover/95 backdrop-blur-xl border-border z-50"
                 >
-                  <span className="font-medium">{selectedLang ? selectedLang.name : "Select Language"}</span>
-                  <ChevronDown className={`w-3.5 h-3.5 opacity-50 transition-transform duration-200 ${langDropdownOpen ? 'rotate-180' : ''}`} />
-                </button>
-
-                <AnimatePresence>
-                  {langDropdownOpen && (
-                    <motion.div
-                      initial={{ opacity: 0, y: -6, scale: 0.97 }}
-                      animate={{ opacity: 1, y: 0, scale: 1 }}
-                      exit={{ opacity: 0, y: -6, scale: 0.97 }}
-                      transition={{ duration: 0.15 }}
-                      className="absolute top-full mt-2 left-0 z-[100] w-56 rounded-xl glass-panel-strong shadow-large overflow-hidden"
+                  {languages.map((lang) => (
+                    <DropdownMenuItem
+                      key={lang.id}
+                      onClick={() => handleLanguageSelect(lang.id)}
+                      className={`
+                        flex items-center gap-3 px-3 py-3 cursor-pointer
+                        transition-colors duration-150
+                        ${selectedLanguage === lang.id 
+                          ? "bg-primary/10 text-primary" 
+                          : "hover:bg-accent/10"
+                        }
+                      `}
                     >
-                      <div className="py-1">
-                        {languages.map((lang) => (
-                          <button
-                            key={lang.id}
-                            onClick={() => handleLanguageSelect(lang.id)}
-                            className={`
-                              w-full flex items-center gap-3 px-4 py-2.5 text-sm transition-colors duration-150
-                              ${selectedLanguage === lang.id
-                                ? "bg-primary/10 text-primary"
-                                : "text-foreground/80 hover:bg-primary/5 hover:text-foreground"
-                              }
-                            `}
-                          >
-                            <span className="font-medium">{lang.name}</span>
-                            {selectedLanguage === lang.id && <Check className="w-4 h-4 ml-auto text-primary" />}
-                          </button>
-                        ))}
-                      </div>
-                    </motion.div>
-                  )}
-                </AnimatePresence>
-              </div>
+                      <span className="font-medium">{lang.name}</span>
+                      {selectedLanguage === lang.id && (
+                        <Check className="w-4 h-4 ml-auto text-primary" />
+                      )}
+                    </DropdownMenuItem>
+                  ))}
+                </DropdownMenuContent>
+              </DropdownMenu>
 
               {/* Multi-Program Button */}
               <button
                 onClick={() => setMultiProgramOpen(true)}
                 className={`
-                  flex items-center gap-2 px-3.5 py-2 h-9
-                  rounded-[var(--radius)] border transition-all duration-200 text-sm
+                  flex items-center gap-2 px-3 py-2
+                  rounded-lg border transition-all duration-200 text-sm
                   ${isMultiMode
-                    ? "bg-primary/10 border-primary/25 text-foreground shadow-[0_0_12px_hsl(var(--glow)/0.1)]"
-                    : "bg-secondary/40 border-border/50 text-muted-foreground hover:border-primary/30 hover:bg-secondary/60"
+                    ? "bg-primary/10 border-primary/30 text-foreground"
+                    : "bg-secondary/30 border-border/50 text-muted-foreground hover:border-primary/40 hover:bg-secondary/50"
                   }
-                  ${attentionPulse && !selectedLanguage && !isMultiMode ? "animate-[pulse_0.5s_ease-in-out_2] border-primary shadow-glow" : ""}
+                  ${attentionPulse && !selectedLanguage && !isMultiMode ? "animate-[pulse_0.5s_ease-in-out_2] border-primary shadow-[0_0_16px_rgba(0,230,210,0.5)]" : ""}
                 `}
               >
                 <Layers className="w-4 h-4" />
                 <span className="font-medium">
-                  {isMultiMode ? `Multi-Program (${multiStack.length})` : "Multi-Program"}
+                  {isMultiMode
+                    ? `Multi-Program (${multiStack.length} selected)`
+                    : "Multi-Program"
+                  }
                 </span>
               </button>
             </div>
+            {/* Validation error */}
             <AnimatePresence>
               {validationError && (
-                <motion.p initial={{ opacity: 0, y: -4 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -4 }} className="text-xs text-destructive pl-1">
+                <motion.p
+                  initial={{ opacity: 0, y: -4 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -4 }}
+                  className="text-xs text-red-400 pl-1"
+                >
                   {validationError}
                 </motion.p>
               )}
@@ -333,32 +404,62 @@ const UnifiedInput = ({
           </div>
 
           {/* Action Icons */}
-          <div className="flex items-center gap-1.5">
-            <button onClick={handleAttach} className="p-2.5 rounded-[var(--radius)] text-muted-foreground hover:text-foreground hover:bg-secondary/60 active:scale-95 transition-all duration-200" title="Attach file">
+          <div className="flex items-center gap-2">
+            <button
+              onClick={handleAttach}
+              className="p-2.5 rounded-xl text-muted-foreground hover:text-foreground hover:bg-secondary/60 active:scale-95 transition-all duration-200"
+              title="Attach file"
+            >
               <Paperclip className="w-5 h-5" />
             </button>
 
             <div className="relative">
               <button
                 onClick={handleVoice}
-                className={`relative p-2.5 rounded-[var(--radius)] transition-all duration-300 active:scale-95 ${isRecording ? "bg-primary/20 text-primary animate-[float_2s_ease-in-out_infinite]" : "text-muted-foreground hover:text-foreground hover:bg-secondary/60"}`}
+                className={`
+                  relative p-2.5 rounded-xl 
+                  transition-all duration-300 active:scale-95
+                  ${isRecording
+                    ? "bg-primary/20 text-primary animate-[float_2s_ease-in-out_infinite]"
+                    : "text-muted-foreground hover:text-foreground hover:bg-secondary/60"
+                  }
+                `}
                 title={isRecording ? "Click to stop" : "Voice input"}
               >
                 <Mic className="w-5 h-5" />
               </button>
-              {isRecording && <span className="absolute inset-0 rounded-[var(--radius)] border-2 border-primary/50 animate-[pulse_2s_ease-in-out_infinite] pointer-events-none" />}
+              {isRecording && (
+                <span className="absolute inset-0 rounded-xl border-2 border-primary/50 animate-[pulse_2s_ease-in-out_infinite] pointer-events-none" />
+              )}
             </div>
 
+            {/* Generate Button - arrow only */}
             <button
               onClick={handleGenerate}
-              className={`flex items-center justify-center p-2.5 rounded-[var(--radius)] transition-all duration-250 active:scale-95 ${isGenerateEnabled ? "bg-primary text-primary-foreground hover:brightness-110 shadow-[0_0_20px_hsl(var(--glow)/0.3)]" : "bg-muted text-muted-foreground cursor-not-allowed opacity-50"}`}
+              className={`
+                flex items-center justify-center p-2.5 rounded-xl 
+                transition-all duration-300 active:scale-95
+                ${isGenerateEnabled
+                  ? "text-primary-foreground hover:opacity-90 shadow-[0_0_20px_rgba(0,255,200,0.3)]"
+                  : "bg-muted text-muted-foreground cursor-not-allowed opacity-50"
+                }
+              `}
+              style={isGenerateEnabled ? {
+                background: "linear-gradient(90deg, #00f0ff, #00c8a0)",
+              } : undefined}
               title={isGenerateEnabled ? "Generate Application" : "Select language and describe your idea first"}
             >
               <ArrowUp className="w-5 h-5" />
             </button>
           </div>
 
-          <MultiProgramModal open={multiProgramOpen} onClose={() => setMultiProgramOpen(false)} selectedStacks={multiStack} onApply={handleMultiStackApply} />
+          {/* Multi-Program Modal */}
+          <MultiProgramModal
+            open={multiProgramOpen}
+            onClose={() => setMultiProgramOpen(false)}
+            selectedStacks={multiStack}
+            onApply={handleMultiStackApply}
+          />
         </div>
       </div>
     </div>

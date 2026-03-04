@@ -3,10 +3,13 @@ import { useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   Zap, Clock, Puzzle, Eye, Code, Layers, FolderKanban, Share2, CreditCard,
-  GraduationCap, Building2, Users, ArrowRight, LayoutGrid
+  GraduationCap, Building2, Users, ArrowRight, ListChecks, Monitor, Rocket,
+  Timer, BarChart3, Workflow, HelpCircle
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import productScreenshot from "@/assets/product-screenshot.png";
+import builderPreview from "@/assets/builder-preview.png";
 
 /* ─── animation helpers ─── */
 function Section({ children, className = "" }: { children: React.ReactNode; className?: string }) {
@@ -126,35 +129,53 @@ function HowItWorks() {
   );
 }
 
-/* ─── 3. What You Can Build ─── */
-function TemplatesGrid() {
-  const templates = [
-    "Portfolio", "E-commerce", "Dashboard", "Landing Page", "SaaS Starter", "Blog",
+/* ─── 3. Live Builder Experience (replaces Templates) ─── */
+function LiveBuilderExperience() {
+  const bullets = [
+    { icon: ListChecks, label: "Prompt → structured plan" },
+    { icon: Layers, label: "Multi-program stacks (frontend + backend + database)" },
+    { icon: Monitor, label: "Real-time Preview + Code IDE" },
+    { icon: FolderKanban, label: "Projects reopen where you left off" },
+    { icon: Rocket, label: "One-click Publish + Share link" },
   ];
 
   return (
     <Section className="border-t border-border/20">
-      <div className="container mx-auto px-6 lg:px-8 max-w-5xl">
+      <div className="container mx-auto px-6 lg:px-8 max-w-6xl">
         <FadeIn>
-          <p className="text-xs font-medium tracking-widest uppercase text-primary mb-4">Templates</p>
-          <h2 className="text-2xl md:text-3xl font-semibold text-foreground mb-4">
-            What you can build.
+          <p className="text-xs font-medium tracking-widest uppercase text-primary mb-4">Workspace</p>
+          <h2 className="text-2xl md:text-3xl font-semibold text-foreground mb-3 leading-tight">
+            Live builder experience
           </h2>
-          <p className="text-muted-foreground text-sm max-w-md mb-14">
-            From simple landing pages to full-stack applications — start with a template or your own idea.
+          <p className="text-muted-foreground text-sm max-w-lg mb-14">
+            Generate, edit, preview, and publish — all in one workspace.
           </p>
         </FadeIn>
-        <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-          {templates.map((t, i) => (
-            <FadeIn key={i} delay={i * 0.06}>
-              <div className={card}>
-                <div className="h-20 rounded-lg bg-muted/30 mb-4 flex items-center justify-center">
-                  <LayoutGrid className="w-5 h-5 text-muted-foreground/40" />
+
+        <div className="grid lg:grid-cols-[5fr_7fr] gap-12 lg:gap-16 items-center">
+          <div className="space-y-4">
+            {bullets.map((b, i) => (
+              <FadeIn key={i} delay={i * 0.07}>
+                <div className="flex items-center gap-3 py-2.5">
+                  <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
+                    <b.icon className="w-4 h-4 text-primary" />
+                  </div>
+                  <span className="text-sm text-foreground/80">{b.label}</span>
                 </div>
-                <h3 className="text-sm font-medium text-foreground">{t}</h3>
-              </div>
-            </FadeIn>
-          ))}
+              </FadeIn>
+            ))}
+          </div>
+
+          <FadeIn delay={0.12}>
+            <div className="rounded-xl overflow-hidden border border-primary/20 shadow-[0_0_40px_-12px_hsl(var(--primary)/0.15)]">
+              <img
+                src={builderPreview}
+                alt="MyCodex builder workspace with code and live preview"
+                className="w-full"
+                loading="lazy"
+              />
+            </div>
+          </FadeIn>
         </div>
       </div>
     </Section>
@@ -236,7 +257,94 @@ function UseCases() {
   );
 }
 
-/* ─── 6. Pricing Teaser ─── */
+/* ─── 6. Built for Speed & Clarity (Metrics) ─── */
+function MetricsSection() {
+  const stats = [
+    { icon: Timer, value: "Minutes", label: "to first draft", desc: "From idea to working code — not hours." },
+    { icon: Workflow, value: "Multi-stack", label: "ready", desc: "Frontend, backend, and database in one project." },
+    { icon: BarChart3, value: "Preview + Code", label: "workflow", desc: "See changes live as you build." },
+  ];
+
+  return (
+    <Section className="border-t border-border/20">
+      <div className="container mx-auto px-6 lg:px-8 max-w-5xl">
+        <FadeIn>
+          <p className="text-xs font-medium tracking-widest uppercase text-primary mb-4 text-center">Performance</p>
+          <h2 className="text-2xl md:text-3xl font-semibold text-foreground text-center mb-14">
+            Built for speed & clarity.
+          </h2>
+        </FadeIn>
+        <div className="grid md:grid-cols-3 gap-6">
+          {stats.map((s, i) => (
+            <FadeIn key={i} delay={i * 0.08}>
+              <div className={card}>
+                <s.icon className="w-5 h-5 text-primary mb-4" />
+                <p className="text-lg font-semibold text-foreground">{s.value}</p>
+                <p className="text-xs font-medium text-primary/70 mb-2">{s.label}</p>
+                <p className="text-xs text-muted-foreground leading-relaxed">{s.desc}</p>
+              </div>
+            </FadeIn>
+          ))}
+        </div>
+      </div>
+    </Section>
+  );
+}
+
+/* ─── 7. FAQ ─── */
+function FAQSection() {
+  const faqs = [
+    {
+      q: "Do I need to pick a language every time?",
+      a: "No. You can choose a default stack or switch between languages per project. Multi-Program mode also lets you combine multiple technologies in one build.",
+    },
+    {
+      q: "What is Multi-Program mode?",
+      a: "It lets you generate a full stack — frontend, backend, and database — in a single project instead of writing each layer separately.",
+    },
+    {
+      q: "Can I reopen my projects later?",
+      a: "Yes. All your projects are saved and accessible from the Projects page. They reopen exactly where you left off.",
+    },
+    {
+      q: "How do credits work?",
+      a: "Free accounts get 5 credits per day. Each generation uses one credit. Upgrading to Pro or Enterprise gives you more credits and additional features.",
+    },
+    {
+      q: "Can I export code to GitHub?",
+      a: "Not yet, but it's on the roadmap. For now you can copy code directly from the built-in editor or use the Publish feature to share a live link.",
+    },
+  ];
+
+  return (
+    <Section className="border-t border-border/20">
+      <div className="container mx-auto px-6 lg:px-8 max-w-2xl">
+        <FadeIn>
+          <p className="text-xs font-medium tracking-widest uppercase text-primary mb-4 text-center">FAQ</p>
+          <h2 className="text-2xl md:text-3xl font-semibold text-foreground text-center mb-12">
+            Common questions
+          </h2>
+        </FadeIn>
+        <FadeIn delay={0.1}>
+          <Accordion type="single" collapsible className="w-full">
+            {faqs.map((faq, i) => (
+              <AccordionItem key={i} value={`faq-${i}`} className="border-border/30">
+                <AccordionTrigger className="text-sm text-foreground hover:no-underline hover:text-primary transition-colors py-5">
+                  {faq.q}
+                </AccordionTrigger>
+                <AccordionContent className="text-sm text-muted-foreground leading-relaxed">
+                  {faq.a}
+                </AccordionContent>
+              </AccordionItem>
+            ))}
+          </Accordion>
+        </FadeIn>
+      </div>
+    </Section>
+  );
+}
+
+/* ─── 8. Pricing Teaser ─── */
 function PricingTeaser() {
   const navigate = useNavigate();
   return (
@@ -268,9 +376,11 @@ export default function LandingSections() {
     <div>
       <WhySection />
       <HowItWorks />
-      <TemplatesGrid />
+      <LiveBuilderExperience />
       <KeyFeatures />
       <UseCases />
+      <MetricsSection />
+      <FAQSection />
       <PricingTeaser />
     </div>
   );

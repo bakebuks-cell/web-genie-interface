@@ -30,94 +30,108 @@
 
 @layer base {
   :root {
-    /* Deep Charcoal + Teal Neon Theme */
-    --background: 210 30% 5%;
-    --foreground: 0 0% 93%;
+    /* Deep Charcoal + Teal Neon — aligned with landing images */
+    --background: 216 28% 7%;
+    --foreground: 180 10% 92%;
 
-    --card: 210 20% 8%;
-    --card-foreground: 0 0% 93%;
+    --card: 215 22% 10%;
+    --card-foreground: 180 10% 92%;
 
-    --popover: 210 20% 8%;
-    --popover-foreground: 0 0% 93%;
+    --popover: 215 22% 10%;
+    --popover-foreground: 180 10% 92%;
 
-    --primary: 170 100% 47%;
-    --primary-foreground: 210 30% 5%;
+    --primary: 174 100% 42%;
+    --primary-foreground: 216 28% 7%;
 
-    --secondary: 210 15% 12%;
-    --secondary-foreground: 0 0% 85%;
+    --secondary: 215 18% 13%;
+    --secondary-foreground: 180 8% 78%;
 
-    --muted: 210 15% 14%;
-    --muted-foreground: 210 10% 50%;
+    --muted: 215 16% 16%;
+    --muted-foreground: 210 10% 48%;
 
-    --accent: 170 100% 47%;
-    --accent-foreground: 210 30% 5%;
+    --accent: 174 100% 42%;
+    --accent-foreground: 216 28% 7%;
 
     --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 170 30% 18%;
-    --input: 170 20% 16%;
-    --ring: 170 100% 47%;
+    --border: 180 14% 16%;
+    --input: 180 12% 14%;
+    --ring: 174 100% 42%;
 
-    --radius: 0.75rem;
+    --radius: 0.625rem;
 
-    /* Custom tokens - teal neon */
-    --gradient-primary: linear-gradient(90deg, hsl(175 100% 50%) 0%, hsl(160 100% 39%) 100%);
-    --gradient-hero: linear-gradient(90deg, hsl(175 100% 50%) 0%, hsl(160 100% 39%) 100%);
-    --gradient-card-hover: linear-gradient(135deg, hsl(170 100% 47% / 0.06) 0%, hsl(160 100% 39% / 0.04) 100%);
+    /* Extended tokens */
+    --panel: 215 20% 11%;
+    --glow: 174 100% 42%;
+    --glow-muted: 174 60% 30%;
+    --accent-2: 160 90% 40%;
+
+    /* Gradients */
+    --gradient-primary: linear-gradient(135deg, hsl(174 100% 42%) 0%, hsl(160 90% 38%) 100%);
+    --gradient-hero: linear-gradient(135deg, hsl(174 100% 42%) 0%, hsl(160 90% 38%) 100%);
+    --gradient-card-hover: linear-gradient(135deg, hsl(174 100% 42% / 0.06) 0%, hsl(160 90% 38% / 0.03) 100%);
+
+    /* Shadows */
     --shadow-soft: 0 4px 6px -1px hsl(0 0% 0% / 0.4), 0 2px 4px -2px hsl(0 0% 0% / 0.3);
     --shadow-medium: 0 10px 15px -3px hsl(0 0% 0% / 0.5), 0 4px 6px -4px hsl(0 0% 0% / 0.3);
     --shadow-large: 0 20px 25px -5px hsl(0 0% 0% / 0.6), 0 8px 10px -6px hsl(0 0% 0% / 0.4);
-    --shadow-glow: 0 0 40px hsl(170 100% 47% / 0.25);
+    --shadow-glow: 0 0 30px hsl(174 100% 42% / 0.2);
+    --shadow-glow-strong: 0 0 40px hsl(174 100% 42% / 0.35);
 
-    --sidebar-background: 210 30% 4%;
-    --sidebar-foreground: 0 0% 85%;
-    --sidebar-primary: 170 100% 47%;
-    --sidebar-primary-foreground: 210 30% 5%;
-    --sidebar-accent: 210 15% 12%;
-    --sidebar-accent-foreground: 0 0% 85%;
-    --sidebar-border: 170 30% 18%;
-    --sidebar-ring: 170 100% 47%;
+    --sidebar-background: 216 28% 5%;
+    --sidebar-foreground: 180 8% 78%;
+    --sidebar-primary: 174 100% 42%;
+    --sidebar-primary-foreground: 216 28% 7%;
+    --sidebar-accent: 215 18% 13%;
+    --sidebar-accent-foreground: 180 8% 78%;
+    --sidebar-border: 180 14% 16%;
+    --sidebar-ring: 174 100% 42%;
   }
 
   .dark {
-    /* Same as root - Deep Charcoal + Teal Neon */
-    --background: 210 30% 5%;
-    --foreground: 0 0% 93%;
+    /* Same as root */
+    --background: 216 28% 7%;
+    --foreground: 180 10% 92%;
 
-    --card: 210 20% 8%;
-    --card-foreground: 0 0% 93%;
+    --card: 215 22% 10%;
+    --card-foreground: 180 10% 92%;
 
-    --popover: 210 20% 8%;
-    --popover-foreground: 0 0% 93%;
+    --popover: 215 22% 10%;
+    --popover-foreground: 180 10% 92%;
 
-    --primary: 170 100% 47%;
-    --primary-foreground: 210 30% 5%;
+    --primary: 174 100% 42%;
+    --primary-foreground: 216 28% 7%;
 
-    --secondary: 210 15% 12%;
-    --secondary-foreground: 0 0% 85%;
+    --secondary: 215 18% 13%;
+    --secondary-foreground: 180 8% 78%;
 
-    --muted: 210 15% 14%;
-    --muted-foreground: 210 10% 50%;
+    --muted: 215 16% 16%;
+    --muted-foreground: 210 10% 48%;
 
-    --accent: 170 100% 47%;
-    --accent-foreground: 210 30% 5%;
+    --accent: 174 100% 42%;
+    --accent-foreground: 216 28% 7%;
 
     --destructive: 0 62% 30%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 170 30% 18%;
-    --input: 170 20% 16%;
-    --ring: 170 100% 47%;
+    --border: 180 14% 16%;
+    --input: 180 12% 14%;
+    --ring: 174 100% 42%;
 
-    --sidebar-background: 210 30% 4%;
-    --sidebar-foreground: 0 0% 85%;
-    --sidebar-primary: 170 100% 47%;
-    --sidebar-primary-foreground: 210 30% 5%;
-    --sidebar-accent: 210 15% 12%;
-    --sidebar-accent-foreground: 0 0% 85%;
-    --sidebar-border: 170 30% 18%;
-    --sidebar-ring: 170 100% 47%;
+    --panel: 215 20% 11%;
+    --glow: 174 100% 42%;
+    --glow-muted: 174 60% 30%;
+    --accent-2: 160 90% 40%;
+
+    --sidebar-background: 216 28% 5%;
+    --sidebar-foreground: 180 8% 78%;
+    --sidebar-primary: 174 100% 42%;
+    --sidebar-primary-foreground: 216 28% 7%;
+    --sidebar-accent: 215 18% 13%;
+    --sidebar-accent-foreground: 180 8% 78%;
+    --sidebar-border: 180 14% 16%;
+    --sidebar-ring: 174 100% 42%;
   }
 }
 
@@ -162,6 +176,18 @@
     mask-composite: exclude;
   }
 
+  .glass-panel {
+    background: hsl(var(--panel) / 0.7);
+    backdrop-filter: blur(20px);
+    border: 1px solid hsl(var(--border));
+  }
+
+  .glass-panel-strong {
+    background: hsl(var(--panel) / 0.85);
+    backdrop-filter: blur(24px);
+    border: 1px solid hsl(var(--glow) / 0.12);
+  }
+
   .shadow-soft {
     box-shadow: var(--shadow-soft);
   }
@@ -176,6 +202,10 @@
 
   .shadow-glow {
     box-shadow: var(--shadow-glow);
+  }
+
+  .shadow-glow-strong {
+    box-shadow: var(--shadow-glow-strong);
   }
 
   .animate-float {
@@ -213,10 +243,10 @@
 
   @keyframes pulse-glow {
     0%, 100% {
-      box-shadow: 0 0 20px hsl(170 100% 47% / 0.3);
+      box-shadow: 0 0 20px hsl(var(--glow) / 0.25);
     }
     50% {
-      box-shadow: 0 0 40px hsl(170 100% 47% / 0.5);
+      box-shadow: 0 0 40px hsl(var(--glow) / 0.45);
     }
   }
 
@@ -235,16 +265,6 @@
 
   .animate-spin-slow {
     animation: spin-slow 3s linear infinite;
-  }
-
-  /* Floating animation for mic button */
-  @keyframes float {
-    0%, 100% {
-      transform: translateY(0);
-    }
-    50% {
-      transform: translateY(-3px);
-    }
   }
 
   .lab-bg::before {

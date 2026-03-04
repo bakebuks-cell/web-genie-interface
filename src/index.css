@@ -11,6 +11,26 @@
   display: none;
 }
 
+/* ── App-wide thin scrollbars (IDE style) ── */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: hsl(var(--primary) / 0.25) transparent;
+}
+*::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+*::-webkit-scrollbar-track {
+  background: transparent;
+}
+*::-webkit-scrollbar-thumb {
+  background: hsl(var(--muted-foreground) / 0.2);
+  border-radius: 9999px;
+}
+*::-webkit-scrollbar-thumb:hover {
+  background: hsl(var(--primary) / 0.4);
+}
+
 /* Subtle scrollbar for instruction textarea */
 .instruction-textarea::-webkit-scrollbar {
   width: 4px;
@@ -30,94 +50,99 @@
 
 @layer base {
   :root {
-    /* Deep Charcoal + Teal Neon Theme */
-    --background: 210 30% 5%;
-    --foreground: 0 0% 93%;
+    /* IDE Dark Charcoal + Teal/Cyan Glow Theme */
+    --background: 220 20% 6%;
+    --foreground: 210 10% 88%;
 
-    --card: 210 20% 8%;
-    --card-foreground: 0 0% 93%;
+    --card: 220 18% 9%;
+    --card-foreground: 210 10% 88%;
 
-    --popover: 210 20% 8%;
-    --popover-foreground: 0 0% 93%;
+    --popover: 220 20% 8%;
+    --popover-foreground: 210 10% 88%;
 
-    --primary: 170 100% 47%;
-    --primary-foreground: 210 30% 5%;
+    --primary: 174 85% 44%;
+    --primary-foreground: 220 20% 6%;
 
-    --secondary: 210 15% 12%;
-    --secondary-foreground: 0 0% 85%;
+    --secondary: 220 14% 12%;
+    --secondary-foreground: 210 10% 78%;
 
-    --muted: 210 15% 14%;
-    --muted-foreground: 210 10% 50%;
+    --muted: 220 14% 14%;
+    --muted-foreground: 220 8% 48%;
 
-    --accent: 170 100% 47%;
-    --accent-foreground: 210 30% 5%;
+    --accent: 174 85% 44%;
+    --accent-foreground: 220 20% 6%;
 
-    --destructive: 0 84% 60%;
+    --destructive: 0 72% 51%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 170 30% 18%;
-    --input: 170 20% 16%;
-    --ring: 170 100% 47%;
+    --border: 220 12% 16%;
+    --input: 220 14% 14%;
+    --ring: 174 85% 44%;
 
-    --radius: 0.75rem;
+    --radius: 0.5rem;
 
-    /* Custom tokens - teal neon */
-    --gradient-primary: linear-gradient(90deg, hsl(175 100% 50%) 0%, hsl(160 100% 39%) 100%);
-    --gradient-hero: linear-gradient(90deg, hsl(175 100% 50%) 0%, hsl(160 100% 39%) 100%);
-    --gradient-card-hover: linear-gradient(135deg, hsl(170 100% 47% / 0.06) 0%, hsl(160 100% 39% / 0.04) 100%);
-    --shadow-soft: 0 4px 6px -1px hsl(0 0% 0% / 0.4), 0 2px 4px -2px hsl(0 0% 0% / 0.3);
-    --shadow-medium: 0 10px 15px -3px hsl(0 0% 0% / 0.5), 0 4px 6px -4px hsl(0 0% 0% / 0.3);
-    --shadow-large: 0 20px 25px -5px hsl(0 0% 0% / 0.6), 0 8px 10px -6px hsl(0 0% 0% / 0.4);
-    --shadow-glow: 0 0 40px hsl(170 100% 47% / 0.25);
+    /* IDE-specific extended tokens */
+    --panel: 220 18% 10%;
+    --panel-2: 220 16% 12%;
+    --glow: 174 85% 44%;
 
-    --sidebar-background: 210 30% 4%;
-    --sidebar-foreground: 0 0% 85%;
-    --sidebar-primary: 170 100% 47%;
-    --sidebar-primary-foreground: 210 30% 5%;
-    --sidebar-accent: 210 15% 12%;
-    --sidebar-accent-foreground: 0 0% 85%;
-    --sidebar-border: 170 30% 18%;
-    --sidebar-ring: 170 100% 47%;
+    /* Custom tokens - teal/cyan IDE */
+    --gradient-primary: linear-gradient(135deg, hsl(174 85% 44%) 0%, hsl(160 70% 40%) 100%);
+    --gradient-hero: linear-gradient(135deg, hsl(174 85% 44%) 0%, hsl(160 70% 40%) 100%);
+    --gradient-card-hover: linear-gradient(180deg, hsl(220 18% 11%) 0%, hsl(220 18% 9%) 100%);
+    --shadow-soft: 0 2px 8px hsl(0 0% 0% / 0.3);
+    --shadow-medium: 0 4px 16px hsl(0 0% 0% / 0.4);
+    --shadow-large: 0 8px 32px hsl(0 0% 0% / 0.5);
+    --shadow-glow: 0 0 20px hsl(174 85% 44% / 0.15);
+
+    --sidebar-background: 220 20% 5%;
+    --sidebar-foreground: 210 10% 78%;
+    --sidebar-primary: 174 85% 44%;
+    --sidebar-primary-foreground: 220 20% 6%;
+    --sidebar-accent: 220 14% 12%;
+    --sidebar-accent-foreground: 210 10% 78%;
+    --sidebar-border: 220 12% 16%;
+    --sidebar-ring: 174 85% 44%;
   }
 
   .dark {
-    /* Same as root - Deep Charcoal + Teal Neon */
-    --background: 210 30% 5%;
-    --foreground: 0 0% 93%;
+    /* Same as root */
+    --background: 220 20% 6%;
+    --foreground: 210 10% 88%;
 
-    --card: 210 20% 8%;
-    --card-foreground: 0 0% 93%;
+    --card: 220 18% 9%;
+    --card-foreground: 210 10% 88%;
 
-    --popover: 210 20% 8%;
-    --popover-foreground: 0 0% 93%;
+    --popover: 220 20% 8%;
+    --popover-foreground: 210 10% 88%;
 
-    --primary: 170 100% 47%;
-    --primary-foreground: 210 30% 5%;
+    --primary: 174 85% 44%;
+    --primary-foreground: 220 20% 6%;
 
-    --secondary: 210 15% 12%;
-    --secondary-foreground: 0 0% 85%;
+    --secondary: 220 14% 12%;
+    --secondary-foreground: 210 10% 78%;
 
-    --muted: 210 15% 14%;
-    --muted-foreground: 210 10% 50%;
+    --muted: 220 14% 14%;
+    --muted-foreground: 220 8% 48%;
 
-    --accent: 170 100% 47%;
-    --accent-foreground: 210 30% 5%;
+    --accent: 174 85% 44%;
+    --accent-foreground: 220 20% 6%;
 
-    --destructive: 0 62% 30%;
+    --destructive: 0 72% 51%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 170 30% 18%;
-    --input: 170 20% 16%;
-    --ring: 170 100% 47%;
+    --border: 220 12% 16%;
+    --input: 220 14% 14%;
+    --ring: 174 85% 44%;
 
-    --sidebar-background: 210 30% 4%;
-    --sidebar-foreground: 0 0% 85%;
-    --sidebar-primary: 170 100% 47%;
-    --sidebar-primary-foreground: 210 30% 5%;
-    --sidebar-accent: 210 15% 12%;
-    --sidebar-accent-foreground: 0 0% 85%;
-    --sidebar-border: 170 30% 18%;
-    --sidebar-ring: 170 100% 47%;
+    --sidebar-background: 220 20% 5%;
+    --sidebar-foreground: 210 10% 78%;
+    --sidebar-primary: 174 85% 44%;
+    --sidebar-primary-foreground: 220 20% 6%;
+    --sidebar-accent: 220 14% 12%;
+    --sidebar-accent-foreground: 210 10% 78%;
+    --sidebar-border: 220 12% 16%;
+    --sidebar-ring: 174 85% 44%;
   }
 }
 
@@ -178,6 +203,17 @@
     box-shadow: var(--shadow-glow);
   }
 
+  /* IDE panel surface — subtle top-lighter gradient */
+  .ide-surface {
+    background: linear-gradient(180deg, hsl(var(--panel)) 0%, hsl(var(--card)) 100%);
+    border: 1px solid hsl(var(--border));
+  }
+
+  .ide-surface-active {
+    box-shadow: 0 0 16px hsl(var(--glow) / 0.1);
+    border-color: hsl(var(--primary) / 0.25);
+  }
+
   .animate-float {
     animation: float 6s ease-in-out infinite;
   }
@@ -213,10 +249,10 @@
 
   @keyframes pulse-glow {
     0%, 100% {
-      box-shadow: 0 0 20px hsl(170 100% 47% / 0.3);
+      box-shadow: 0 0 12px hsl(var(--glow) / 0.15);
     }
     50% {
-      box-shadow: 0 0 40px hsl(170 100% 47% / 0.5);
+      box-shadow: 0 0 24px hsl(var(--glow) / 0.3);
     }
   }
 
@@ -235,16 +271,6 @@
 
   .animate-spin-slow {
     animation: spin-slow 3s linear infinite;
-  }
-
-  /* Floating animation for mic button */
-  @keyframes float {
-    0%, 100% {
-      transform: translateY(0);
-    }
-    50% {
-      transform: translateY(-3px);
-    }
   }
 
   .lab-bg::before {

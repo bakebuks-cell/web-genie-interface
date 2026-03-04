@@ -68,7 +68,7 @@ export function CreditsDisplay({ onUpgradeClick }: CreditsDisplayProps) {
           <motion.div
             className={`h-full rounded-full ${
               creditsRemaining > 2 
-                ? 'bg-gradient-to-r from-primary to-accent-purple' 
+                ? 'bg-primary' 
                 : creditsRemaining > 0 
                   ? 'bg-amber-500' 
                   : 'bg-destructive'

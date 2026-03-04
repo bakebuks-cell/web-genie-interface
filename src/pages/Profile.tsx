@@ -117,8 +117,8 @@ const Profile = () => {
             >
               {/* User Info */}
               <div className="flex items-center gap-4">
-                <div className="w-16 h-16 rounded-full bg-primary/15 border border-primary/30 flex items-center justify-center">
-                  <User className="w-8 h-8 text-primary" />
+                <div className="w-16 h-16 rounded-full bg-gradient-to-br from-primary to-accent-purple flex items-center justify-center">
+                  <User className="w-8 h-8 text-primary-foreground" />
                 </div>
                 <div className="flex-1">
                   <h2 className="text-xl font-semibold text-foreground">
@@ -189,7 +189,7 @@ const Profile = () => {
                     <>
                       <div className="h-2 bg-secondary rounded-full overflow-hidden">
                         <motion.div
-                          className="h-full bg-primary"
+                          className="h-full bg-gradient-to-r from-primary to-accent-purple"
                           initial={{ width: 0 }}
                           animate={{ width: `${((userCredits?.credits_remaining ?? 0) / 5) * 100}%` }}
                           transition={{ duration: 0.5 }}

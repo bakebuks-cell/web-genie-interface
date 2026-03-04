@@ -201,7 +201,7 @@ const GenerateToolbar = ({
         <div className="w-px h-5 bg-border mx-1" />
 
         {/* User Avatar - Green background */}
-        <div className="w-7 h-7 rounded-full bg-primary/20 border border-primary/30 flex items-center justify-center text-primary text-xs font-semibold lowercase">
+        <div className="w-7 h-7 rounded-full bg-emerald-500 flex items-center justify-center text-white text-xs font-semibold lowercase">
           {userInitial}
         </div>
         
@@ -226,7 +226,7 @@ const GenerateToolbar = ({
         {/* Publish Button - Green */}
         <Button
           size="sm"
-          className="h-8 px-4 text-sm font-medium rounded-md bg-primary hover:bg-primary/90 text-primary-foreground shadow-[0_0_12px_hsl(var(--primary)/0.2)]"
+          className="h-8 px-4 text-sm font-medium rounded-lg bg-emerald-500 hover:bg-emerald-600 text-white shadow-sm"
         >
           Publish
         </Button>

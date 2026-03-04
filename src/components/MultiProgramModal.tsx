@@ -187,7 +187,8 @@ const MultiProgramModal = ({ open, onClose, selectedStacks, onApply }: MultiProg
                 </button>
                 <button
                   onClick={() => { onApply(selected); onClose(); }}
-                  className="px-5 py-2 rounded-lg text-sm font-medium text-primary-foreground bg-primary transition-all duration-200 hover:bg-primary/90 shadow-[0_0_12px_hsl(var(--primary)/0.2)]"
+                  className="px-5 py-2 rounded-xl text-sm font-medium text-primary-foreground transition-all hover:opacity-90 shadow-[0_0_20px_rgba(0,255,200,0.3)]"
+                  style={{ background: "linear-gradient(90deg, #00f0ff, #00c8a0)" }}
                 >
                   Apply Stack
                 </button>

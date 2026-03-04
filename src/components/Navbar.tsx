@@ -110,7 +110,7 @@ export const Navbar = () => {
                           <button onClick={() => { navigate("/pricing"); setIsProfileOpen(false); }} className="w-full flex items-center gap-2 px-4 py-2 text-sm text-muted-foreground hover:text-foreground hover:bg-primary/5 transition-colors">
                             <CreditCard className="w-4 h-4" /> Billing & Plan
                           </button>
-                          <button onClick={handleLogout} className="w-full flex items-center gap-2 px-4 py-2 text-sm text-destructive hover:text-destructive hover:bg-destructive/5 transition-colors">
+                          <button onClick={handleLogout} className="w-full flex items-center gap-2 px-4 py-2 text-sm text-red-400 hover:text-red-300 hover:bg-red-500/5 transition-colors">
                             <LogOut className="w-4 h-4" /> Logout
                           </button>
                         </div>
@@ -124,7 +124,7 @@ export const Navbar = () => {
                 <Button variant="ghost" size="sm" onClick={handleLogin} className="text-muted-foreground hover:text-foreground hover:bg-primary/5 rounded-full px-4 h-8 text-sm">
                   Login
                 </Button>
-                <button onClick={handleSignUp} className="rounded-full px-4 h-8 text-sm font-medium text-primary-foreground bg-primary shadow-[0_0_12px_hsl(var(--primary)/0.2)] transition-all duration-200 hover:shadow-[0_0_20px_hsl(var(--primary)/0.3)] hover:-translate-y-px">
+                <button onClick={handleSignUp} className="rounded-full px-4 h-8 text-sm font-medium text-primary-foreground shadow-[0_0_15px_rgba(0,255,200,0.25)] transition-all duration-300 hover:shadow-[0_0_25px_rgba(0,255,200,0.4)] hover:opacity-90" style={{ background: "linear-gradient(90deg, #00f0ff, #00c8a0)" }}>
                   Sign Up
                 </button>
               </>
@@ -165,14 +165,14 @@ export const Navbar = () => {
                     <Button variant="ghost" size="sm" onClick={() => { navigate("/profile"); setIsMobileMenuOpen(false); }} className="justify-start text-muted-foreground hover:bg-primary/5 rounded-lg gap-2">
                       <User className="w-4 h-4" /> Profile
                     </Button>
-                    <Button variant="ghost" size="sm" onClick={async () => { await signOut(); setIsMobileMenuOpen(false); navigate("/"); }} className="justify-start text-destructive hover:bg-destructive/5 rounded-lg gap-2">
+                    <Button variant="ghost" size="sm" onClick={async () => { await signOut(); setIsMobileMenuOpen(false); navigate("/"); }} className="justify-start text-red-400 hover:bg-red-500/5 rounded-lg gap-2">
                       <LogOut className="w-4 h-4" /> Logout
                     </Button>
                   </>
                 ) : (
                   <>
                     <Button variant="ghost" size="sm" onClick={handleLogin} className="justify-start text-muted-foreground hover:bg-primary/5 rounded-lg">Login</Button>
-                    <button onClick={handleSignUp} className="rounded-lg px-4 h-9 text-sm font-medium text-primary-foreground bg-primary shadow-[0_0_12px_hsl(var(--primary)/0.2)] hover:-translate-y-px transition-all duration-200">Sign Up</button>
+                    <button onClick={handleSignUp} className="rounded-lg px-4 h-9 text-sm font-medium text-primary-foreground" style={{ background: "linear-gradient(90deg, #00f0ff, #00c8a0)" }}>Sign Up</button>
                   </>
                 )}
               </div>

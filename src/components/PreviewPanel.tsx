@@ -39,15 +39,15 @@ export interface PreviewPanelProps {
 }
 
 // Get progressive status message based on elapsed time
-const getProgressiveMessage = (elapsedSeconds: number): { message: string } => {
+const getProgressiveMessage = (elapsedSeconds: number): { emoji: string; message: string } => {
   if (elapsedSeconds < 15) {
-    return { message: "Booting up the container..." };
+    return { emoji: "🐳", message: "Booting up the Container..." };
   } else if (elapsedSeconds < 60) {
-    return { message: "Installing dependencies (this happens once)..." };
+    return { emoji: "📦", message: "Installing Dependencies (This happens once)..." };
   } else if (elapsedSeconds < 120) {
-    return { message: "Starting the server... Almost there..." };
+    return { emoji: "⚙️", message: "Starting the Server... Almost there..." };
   } else {
-    return { message: "Heavy build detected. Still working, please hold on..." };
+    return { emoji: "🐢", message: "Heavy build detected! Still working, please hold on..." };
   }
 };
 // ── Publish Dropdown ──────────────────────
@@ -391,14 +391,14 @@ const PreviewPanel = ({
                 <>
                   <div className="w-3 h-3 bg-primary rounded-full animate-pulse" />
                   <span className="text-sm font-medium text-foreground">
-                    Your app is ready!
+                    ✅ Your app is ready!
                   </span>
                 </>
               ) : showHealthCheckError ? (
                 <>
                   <div className="w-3 h-3 bg-destructive rounded-full" />
                   <span className="text-sm font-medium text-foreground">
-                    {healthCheckStatus?.error}
+                    ⚠️ {healthCheckStatus?.error}
                   </span>
                 </>
               ) : (
@@ -409,7 +409,7 @@ const PreviewPanel = ({
                     transition={{ duration: 1.5, repeat: Infinity }}
                   />
                   <span className="text-sm font-medium text-foreground">
-                    {progressMessage?.message}
+                    {progressMessage?.emoji} {progressMessage?.message}
                   </span>
                   <span className="text-xs text-muted-foreground ml-2">
                     ({healthCheckStatus?.elapsedSeconds}s)
@@ -648,11 +648,17 @@ const PreviewPanel = ({
                         </>
                       ) : (
                         <>
-                          <motion.div
-                            className="w-16 h-16 rounded-2xl bg-primary/10 border border-primary/20 flex items-center justify-center mb-6"
-                          >
-                            <Loader2 className="w-8 h-8 text-primary animate-spin" />
-                          </motion.div>
+                          <AnimatePresence mode="wait">
+                            <motion.div
+                              key={progressMessage?.emoji}
+                              initial={{ opacity: 0, scale: 0.8 }}
+                              animate={{ opacity: 1, scale: 1 }}
+                              exit={{ opacity: 0, scale: 0.8 }}
+                              className="text-6xl mb-6"
+                            >
+                              {progressMessage?.emoji}
+                            </motion.div>
+                          </AnimatePresence>
 
                           <motion.div
                             className="w-16 h-16 rounded-2xl bg-warning/10 flex items-center justify-center mb-6"

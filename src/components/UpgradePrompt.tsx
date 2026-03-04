@@ -16,7 +16,7 @@ export function UpgradePrompt({ variant = 'inline' }: UpgradePromptProps) {
       <motion.div
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
-        className="bg-card border border-primary/20 rounded-lg p-6 space-y-4 shadow-[0_0_16px_hsl(var(--primary)/0.06)]"
+        className="bg-gradient-to-br from-primary/20 to-accent-purple/20 border border-primary/30 rounded-2xl p-6 space-y-4"
       >
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center">

@@ -138,19 +138,17 @@ export const HeroSection = () => {
         <div className="text-center mb-8 md:mb-10">
           {/* Main headline - stacked with animation */}
           <motion.h1
-            className="text-3xl md:text-4xl lg:text-5xl font-bold tracking-tight leading-tight text-foreground"
-            initial={{ opacity: 0, y: 20 }}
+            className="text-[1.75rem] md:text-3xl lg:text-4xl font-semibold tracking-tight leading-[1.2] text-foreground"
+            initial={{ opacity: 0, y: 14 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, ease: "easeOut" }}>
-            
+            transition={{ duration: 0.5, ease: "easeOut" }}>
             Build fast.
           </motion.h1>
           <motion.h1
-            className="text-3xl md:text-4xl lg:text-5xl font-bold tracking-tight leading-tight text-muted-foreground"
-            initial={{ opacity: 0, y: 20 }}
+            className="text-[1.75rem] md:text-3xl lg:text-4xl font-semibold tracking-tight leading-[1.2] text-muted-foreground"
+            initial={{ opacity: 0, y: 14 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.15, ease: "easeOut" }}>
-            
+            transition={{ duration: 0.5, delay: 0.12, ease: "easeOut" }}>
             Ship lean.
           </motion.h1>
 

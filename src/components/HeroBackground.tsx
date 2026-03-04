@@ -7,8 +7,8 @@ export const HeroBackground = () => {
   useEffect(() => {
     const handleMouseMove = (e: MouseEvent) => {
       setMousePosition({
-        x: (e.clientX / window.innerWidth - 0.5) * 30,
-        y: (e.clientY / window.innerHeight - 0.5) * 30,
+        x: (e.clientX / window.innerWidth - 0.5) * 20,
+        y: (e.clientY / window.innerHeight - 0.5) * 20,
       });
     };
     window.addEventListener("mousemove", handleMouseMove);
@@ -17,208 +17,88 @@ export const HeroBackground = () => {
 
   return (
     <div className="absolute inset-0 -z-10 overflow-hidden pointer-events-none">
-      {/* Animated grid lines */}
+      {/* Subtle grid */}
       <div className="absolute inset-0">
-        <svg className="w-full h-full opacity-[0.03]">
+        <svg className="w-full h-full opacity-[0.025]">
           <defs>
-            <pattern id="grid" width="60" height="60" patternUnits="userSpaceOnUse">
-              <path d="M 60 0 L 0 0 0 60" fill="none" stroke="currentColor" strokeWidth="1" />
+            <pattern id="grid" width="80" height="80" patternUnits="userSpaceOnUse">
+              <path d="M 80 0 L 0 0 0 80" fill="none" stroke="currentColor" strokeWidth="0.5" />
             </pattern>
           </defs>
           <rect width="100%" height="100%" fill="url(#grid)" />
         </svg>
       </div>
 
-      {/* Main teal gradient blob - follows mouse subtly */}
+      {/* Main gradient blob - follows mouse */}
       <motion.div
-        className="absolute -top-40 left-1/2 -translate-x-1/2 w-[900px] h-[500px] rounded-full"
+        className="absolute -top-40 left-1/2 -translate-x-1/2 w-[800px] h-[500px] rounded-full"
         style={{
-          background: "radial-gradient(ellipse, hsl(170 100% 47% / 0.18) 0%, hsl(170 100% 47% / 0.06) 40%, transparent 70%)",
+          background: "radial-gradient(ellipse, hsl(170 100% 47% / 0.14) 0%, hsl(170 100% 47% / 0.04) 40%, transparent 70%)",
         }}
         animate={{
           x: mousePosition.x,
           y: mousePosition.y,
-          scale: [1, 1.08, 1],
+          scale: [1, 1.05, 1],
         }}
         transition={{
-          x: { type: "spring", stiffness: 50, damping: 30 },
-          y: { type: "spring", stiffness: 50, damping: 30 },
-          scale: { duration: 10, repeat: Infinity, ease: "easeInOut" },
-        }}
-      />
-
-      {/* Orbiting accent rings */}
-      <motion.div
-        className="absolute top-1/2 left-1/2 w-[400px] h-[400px] -translate-x-1/2 -translate-y-1/2"
-        animate={{ rotate: 360 }}
-        transition={{ duration: 30, repeat: Infinity, ease: "linear" }}
-      >
-        <div className="absolute inset-0 border border-primary/10 rounded-full" />
-        <motion.div
-          className="absolute top-0 left-1/2 -translate-x-1/2 w-3 h-3 rounded-full bg-primary/40 blur-sm"
-          animate={{ scale: [1, 1.5, 1] }}
-          transition={{ duration: 2, repeat: Infinity }}
-        />
-      </motion.div>
-
-      <motion.div
-        className="absolute top-1/2 left-1/2 w-[550px] h-[550px] -translate-x-1/2 -translate-y-1/2"
-        animate={{ rotate: -360 }}
-        transition={{ duration: 45, repeat: Infinity, ease: "linear" }}
-      >
-        <div className="absolute inset-0 border border-primary/5 rounded-full" />
-        <motion.div
-          className="absolute bottom-0 left-1/2 -translate-x-1/2 w-2 h-2 rounded-full bg-primary/30 blur-sm"
-          animate={{ scale: [1, 1.3, 1] }}
-          transition={{ duration: 3, repeat: Infinity }}
-        />
-      </motion.div>
-
-      {/* Secondary teal accent - left */}
-      <motion.div
-        className="absolute top-1/3 -left-40 w-[400px] h-[400px] rounded-full"
-        style={{
-          background: "radial-gradient(circle, hsl(170 100% 47% / 0.12) 0%, transparent 70%)",
-        }}
-        animate={{
-          scale: [1, 1.15, 1],
-          y: [0, 30, 0],
-          x: mousePosition.x * 0.5,
-        }}
-        transition={{
-          scale: { duration: 14, repeat: Infinity, ease: "easeInOut" },
-          y: { duration: 14, repeat: Infinity, ease: "easeInOut", delay: 2 },
-          x: { type: "spring", stiffness: 30, damping: 30 },
-        }}
-      />
-
-      {/* Tertiary teal glow - right */}
-      <motion.div
-        className="absolute top-1/2 -right-40 w-[350px] h-[350px] rounded-full"
-        style={{
-          background: "radial-gradient(circle, hsl(165 100% 42% / 0.1) 0%, transparent 70%)",
-        }}
-        animate={{
-          scale: [1, 1.2, 1],
-          y: [0, -40, 0],
-          x: -mousePosition.x * 0.3,
-        }}
-        transition={{
+          x: { type: "spring", stiffness: 40, damping: 30 },
+          y: { type: "spring", stiffness: 40, damping: 30 },
           scale: { duration: 12, repeat: Infinity, ease: "easeInOut" },
-          y: { duration: 12, repeat: Infinity, ease: "easeInOut", delay: 4 },
+        }}
+      />
+
+      {/* Aurora glow behind the prompt box area */}
+      <motion.div
+        className="absolute top-[55%] left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[200px] rounded-full"
+        style={{
+          background: "radial-gradient(ellipse, hsl(170 100% 47% / 0.12) 0%, hsl(175 100% 50% / 0.05) 50%, transparent 80%)",
+          filter: "blur(40px)",
+        }}
+        animate={{
+          opacity: [0.5, 0.8, 0.5],
+          scaleX: [1, 1.1, 1],
+        }}
+        transition={{
+          duration: 5,
+          repeat: Infinity,
+          ease: "easeInOut",
+        }}
+      />
+
+      {/* Slow-moving gradient blobs */}
+      <motion.div
+        className="absolute top-1/4 -left-32 w-[350px] h-[350px] rounded-full"
+        style={{
+          background: "radial-gradient(circle, hsl(170 100% 47% / 0.08) 0%, transparent 70%)",
+        }}
+        animate={{
+          y: [0, 30, 0],
+          x: mousePosition.x * 0.3,
+        }}
+        transition={{
+          y: { duration: 16, repeat: Infinity, ease: "easeInOut" },
           x: { type: "spring", stiffness: 30, damping: 30 },
         }}
       />
 
-      {/* Animated shooting lines */}
-      {[...Array(3)].map((_, i) => (
-        <motion.div
-          key={`line-${i}`}
-          className="absolute h-px bg-gradient-to-r from-transparent via-primary/30 to-transparent"
-          style={{
-            width: `${150 + i * 50}px`,
-            top: `${25 + i * 20}%`,
-            left: "-200px",
-          }}
-          animate={{
-            x: [0, window.innerWidth + 400],
-            opacity: [0, 1, 1, 0],
-          }}
-          transition={{
-            duration: 3 + i,
-            repeat: Infinity,
-            delay: i * 2,
-            ease: "linear",
-          }}
-        />
-      ))}
-
-      {/* Floating glowing orbs - all teal */}
-      {[...Array(8)].map((_, i) => (
-        <motion.div
-          key={i}
-          className="absolute rounded-full"
-          style={{
-            width: `${8 + (i % 3) * 4}px`,
-            height: `${8 + (i % 3) * 4}px`,
-            left: `${10 + i * 11}%`,
-            top: `${15 + (i % 4) * 20}%`,
-            background: i % 2 === 0 
-              ? "radial-gradient(circle, hsl(170 100% 47% / 0.6), transparent)"
-              : "radial-gradient(circle, hsl(165 100% 42% / 0.5), transparent)",
-            boxShadow: i % 2 === 0
-              ? "0 0 20px hsl(170 100% 47% / 0.4)"
-              : "0 0 15px hsl(165 100% 42% / 0.3)",
-          }}
-          animate={{
-            y: [0, -40 - i * 5, 0],
-            x: [0, (i % 2 === 0 ? 20 : -20), 0],
-            opacity: [0.3, 0.8, 0.3],
-            scale: [1, 1.2, 1],
-          }}
-          transition={{
-            duration: 5 + i * 0.8,
-            repeat: Infinity,
-            ease: "easeInOut",
-            delay: i * 0.6,
-          }}
-        />
-      ))}
-
-      {/* Pulsing center glow */}
       <motion.div
-        className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[300px] h-[300px] rounded-full"
+        className="absolute top-1/2 -right-32 w-[300px] h-[300px] rounded-full"
         style={{
-          background: "radial-gradient(circle, hsl(170 100% 47% / 0.08) 0%, transparent 60%)",
+          background: "radial-gradient(circle, hsl(165 100% 42% / 0.07) 0%, transparent 70%)",
         }}
         animate={{
-          scale: [1, 1.5, 1],
-          opacity: [0.5, 0.8, 0.5],
+          y: [0, -30, 0],
+          x: -mousePosition.x * 0.2,
         }}
         transition={{
-          duration: 4,
-          repeat: Infinity,
-          ease: "easeInOut",
-        }}
-      />
-
-      {/* Bottom accent glow */}
-      <motion.div
-        className="absolute -bottom-60 left-1/3 w-[600px] h-[350px] rounded-full"
-        style={{
-          background: "radial-gradient(ellipse, hsl(170 100% 47% / 0.1) 0%, transparent 60%)",
-        }}
-        animate={{
-          scale: [1, 1.1, 1],
-          x: [0, 50, 0],
-        }}
-        transition={{
-          duration: 16,
-          repeat: Infinity,
-          ease: "easeInOut",
-          delay: 1,
-        }}
-      />
-
-      {/* Subtle light wave effect */}
-      <motion.div
-        className="absolute inset-0"
-        style={{
-          background: "linear-gradient(180deg, transparent 0%, hsl(170 100% 47% / 0.02) 50%, transparent 100%)",
-        }}
-        animate={{
-          opacity: [0.3, 0.7, 0.3],
-        }}
-        transition={{
-          duration: 6,
-          repeat: Infinity,
-          ease: "easeInOut",
+          y: { duration: 14, repeat: Infinity, ease: "easeInOut", delay: 3 },
+          x: { type: "spring", stiffness: 30, damping: 30 },
         }}
       />
 
       {/* Very subtle noise texture */}
       <div 
-        className="absolute inset-0 opacity-[0.02]"
+        className="absolute inset-0 opacity-[0.015]"
         style={{
           backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E")`,
         }}

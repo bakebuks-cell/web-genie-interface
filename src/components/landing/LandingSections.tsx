@@ -2,8 +2,7 @@ import { motion, useInView } from "framer-motion";
 import { useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import {
-  AlertTriangle, CheckCircle, Lightbulb, Layers, Wand2, Rocket,
-  Eye, Code, FolderKanban, Share2, CreditCard, Monitor,
+  Zap, Clock, Puzzle, Eye, Code, Layers, FolderKanban, Share2, CreditCard,
   GraduationCap, Building2, Users, ArrowRight, LayoutGrid
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -12,99 +11,82 @@ import productScreenshot from "@/assets/product-screenshot.png";
 /* ─── animation helpers ─── */
 function Section({ children, className = "" }: { children: React.ReactNode; className?: string }) {
   const ref = useRef(null);
-  const inView = useInView(ref, { once: true, margin: "-80px" });
+  const inView = useInView(ref, { once: true, margin: "-60px" });
   return (
     <motion.section
       ref={ref}
-      initial={{ opacity: 0, y: 40 }}
+      initial={{ opacity: 0, y: 10 }}
       animate={inView ? { opacity: 1, y: 0 } : {}}
-      transition={{ duration: 0.7, ease: "easeOut" }}
-      className={`py-20 md:py-28 ${className}`}
+      transition={{ duration: 0.5, ease: "easeOut" }}
+      className={`py-24 md:py-32 ${className}`}
     >
       {children}
     </motion.section>
   );
 }
 
-function StaggerItem({ children, index }: { children: React.ReactNode; index: number }) {
+function FadeIn({ children, delay = 0 }: { children: React.ReactNode; delay?: number }) {
   const ref = useRef(null);
-  const inView = useInView(ref, { once: true, margin: "-60px" });
+  const inView = useInView(ref, { once: true, margin: "-40px" });
   return (
     <motion.div
       ref={ref}
-      initial={{ opacity: 0, y: 30 }}
+      initial={{ opacity: 0, y: 8 }}
       animate={inView ? { opacity: 1, y: 0 } : {}}
-      transition={{ duration: 0.5, delay: index * 0.12, ease: "easeOut" }}
+      transition={{ duration: 0.45, delay, ease: "easeOut" }}
     >
       {children}
     </motion.div>
   );
 }
 
-const glassCard = "rounded-xl border border-border/60 bg-card/60 backdrop-blur-md p-6 shadow-soft";
+const card = "rounded-xl border border-border/40 bg-card/40 backdrop-blur-sm p-6 transition-all duration-300 hover:border-border/60 hover:bg-card/50 hover:translate-y-[-2px]";
 
 /* ─── 1. Why MyCodex ─── */
 function WhySection() {
-  const problems = [
-    { icon: AlertTriangle, text: "Building from scratch takes weeks" },
-    { icon: AlertTriangle, text: "Switching between tools kills flow" },
-    { icon: AlertTriangle, text: "Deployment is still painful" },
-  ];
-  const solutions = [
-    { icon: CheckCircle, text: "Generate production code in seconds" },
-    { icon: CheckCircle, text: "Unified editor, preview & deploy" },
-    { icon: CheckCircle, text: "One-click publish to the web" },
+  const features = [
+    { icon: Zap, title: "Instant generation", desc: "Describe your idea, get production-ready code in seconds." },
+    { icon: Clock, title: "Ship faster", desc: "Skip weeks of boilerplate. Focus on what makes your product unique." },
+    { icon: Puzzle, title: "All-in-one workspace", desc: "Editor, preview, and deployment in a single unified environment." },
   ];
 
   return (
     <Section>
-      <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-        <h2 className="text-3xl md:text-4xl font-bold text-center mb-4 text-foreground">
-          Why <span className="gradient-text">MyCodex</span>?
-        </h2>
-        <p className="text-muted-foreground text-center max-w-xl mx-auto mb-14 text-sm md:text-base">
-          Traditional development is slow, fragmented, and frustrating. We fixed that.
-        </p>
+      <div className="container mx-auto px-6 lg:px-8 max-w-6xl">
+        <div className="grid lg:grid-cols-2 gap-16 items-center">
+          <div>
+            <FadeIn>
+              <p className="text-xs font-medium tracking-widest uppercase text-primary mb-4">Why MyCodex</p>
+              <h2 className="text-2xl md:text-3xl font-semibold text-foreground mb-6 leading-tight">
+                Stop building from scratch.
+              </h2>
+              <p className="text-muted-foreground text-sm leading-relaxed mb-10 max-w-md">
+                Traditional development is slow, fragmented, and frustrating. MyCodex unifies the entire workflow.
+              </p>
+            </FadeIn>
+            <div className="space-y-5">
+              {features.map((f, i) => (
+                <FadeIn key={i} delay={i * 0.08}>
+                  <div className="flex items-start gap-4">
+                    <div className="w-9 h-9 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
+                      <f.icon className="w-4 h-4 text-primary" />
+                    </div>
+                    <div>
+                      <h3 className="text-sm font-medium text-foreground mb-0.5">{f.title}</h3>
+                      <p className="text-sm text-muted-foreground leading-relaxed">{f.desc}</p>
+                    </div>
+                  </div>
+                </FadeIn>
+              ))}
+            </div>
+          </div>
 
-        <div className="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto mb-14">
-          {/* Problems */}
-          <div className={`${glassCard} space-y-5`}>
-            <h3 className="text-lg font-semibold text-destructive/80 flex items-center gap-2">
-              <AlertTriangle className="w-5 h-5" /> The Problem
-            </h3>
-            {problems.map((p, i) => (
-              <StaggerItem key={i} index={i}>
-                <div className="flex items-start gap-3 text-muted-foreground">
-                  <p.icon className="w-4 h-4 mt-0.5 text-destructive/60 shrink-0" />
-                  <span className="text-sm">{p.text}</span>
-                </div>
-              </StaggerItem>
-            ))}
-          </div>
-          {/* Solutions */}
-          <div className={`${glassCard} space-y-5 border-primary/30`}>
-            <h3 className="text-lg font-semibold text-primary flex items-center gap-2">
-              <CheckCircle className="w-5 h-5" /> The Solution
-            </h3>
-            {solutions.map((s, i) => (
-              <StaggerItem key={i} index={i}>
-                <div className="flex items-start gap-3 text-foreground/80">
-                  <s.icon className="w-4 h-4 mt-0.5 text-primary shrink-0" />
-                  <span className="text-sm">{s.text}</span>
-                </div>
-              </StaggerItem>
-            ))}
-          </div>
+          <FadeIn delay={0.15}>
+            <div className="rounded-xl overflow-hidden border border-border/30 shadow-lg">
+              <img src={productScreenshot} alt="MyCodex IDE with live preview" className="w-full" loading="lazy" />
+            </div>
+          </FadeIn>
         </div>
-
-        {/* Product screenshot */}
-        <motion.div
-          className="max-w-4xl mx-auto rounded-xl overflow-hidden border border-border/40 shadow-large"
-          whileHover={{ scale: 1.01 }}
-          transition={{ duration: 0.3 }}
-        >
-          <img src={productScreenshot} alt="MyCodex IDE with live preview" className="w-full" loading="lazy" />
-        </motion.div>
       </div>
     </Section>
   );
@@ -113,30 +95,30 @@ function WhySection() {
 /* ─── 2. How it Works ─── */
 function HowItWorks() {
   const steps = [
-    { icon: Lightbulb, title: "Describe your idea", desc: "Type a prompt describing what you want to build." },
-    { icon: Layers, title: "Choose your stack", desc: "Pick a single language or a multi-program stack." },
-    { icon: Wand2, title: "Generate & edit", desc: "AI writes the code — preview and edit in real time." },
-    { icon: Rocket, title: "Publish", desc: "Deploy your project with one click and share it." },
+    { num: "01", title: "Describe", desc: "Type what you want to build" },
+    { num: "02", title: "Configure", desc: "Pick your language or stack" },
+    { num: "03", title: "Generate", desc: "AI writes and previews code" },
+    { num: "04", title: "Publish", desc: "Deploy with a single click" },
   ];
 
   return (
-    <Section className="bg-secondary/30">
-      <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-        <h2 className="text-3xl md:text-4xl font-bold text-center mb-14 text-foreground">
-          How it <span className="gradient-text">Works</span>
-        </h2>
-        <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6 max-w-5xl mx-auto">
+    <Section className="border-t border-border/20">
+      <div className="container mx-auto px-6 lg:px-8 max-w-5xl">
+        <FadeIn>
+          <p className="text-xs font-medium tracking-widest uppercase text-primary mb-4 text-center">How it works</p>
+          <h2 className="text-2xl md:text-3xl font-semibold text-foreground text-center mb-16">
+            Four steps to production.
+          </h2>
+        </FadeIn>
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
           {steps.map((s, i) => (
-            <StaggerItem key={i} index={i}>
-              <div className={`${glassCard} text-center group hover:border-primary/40 transition-colors duration-300`}>
-                <div className="mx-auto mb-4 w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center group-hover:bg-primary/20 transition-colors">
-                  <s.icon className="w-5 h-5 text-primary" />
-                </div>
-                <span className="text-xs font-bold text-primary/60 mb-2 block">Step {i + 1}</span>
-                <h3 className="text-base font-semibold text-foreground mb-2">{s.title}</h3>
-                <p className="text-sm text-muted-foreground leading-relaxed">{s.desc}</p>
+            <FadeIn key={i} delay={i * 0.08}>
+              <div className="text-center lg:text-left">
+                <span className="text-2xl font-bold text-primary/30 block mb-3">{s.num}</span>
+                <h3 className="text-sm font-medium text-foreground mb-1">{s.title}</h3>
+                <p className="text-xs text-muted-foreground leading-relaxed">{s.desc}</p>
               </div>
-            </StaggerItem>
+            </FadeIn>
           ))}
         </div>
       </div>
@@ -147,34 +129,31 @@ function HowItWorks() {
 /* ─── 3. What You Can Build ─── */
 function TemplatesGrid() {
   const templates = [
-    { name: "Portfolio", color: "from-primary/20 to-primary/5" },
-    { name: "E-commerce", color: "from-primary/15 to-accent/5" },
-    { name: "Dashboard", color: "from-accent/20 to-primary/5" },
-    { name: "Landing Page", color: "from-primary/10 to-secondary" },
-    { name: "SaaS Starter", color: "from-accent/15 to-primary/10" },
+    "Portfolio", "E-commerce", "Dashboard", "Landing Page", "SaaS Starter", "Blog",
   ];
 
   return (
-    <Section>
-      <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-        <h2 className="text-3xl md:text-4xl font-bold text-center mb-4 text-foreground">
-          What you can <span className="gradient-text">build</span>
-        </h2>
-        <p className="text-muted-foreground text-center max-w-lg mx-auto mb-14 text-sm md:text-base">
-          From simple landing pages to full-stack SaaS — start with a template or your own idea.
-        </p>
-        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5 max-w-4xl mx-auto">
+    <Section className="border-t border-border/20">
+      <div className="container mx-auto px-6 lg:px-8 max-w-5xl">
+        <FadeIn>
+          <p className="text-xs font-medium tracking-widest uppercase text-primary mb-4">Templates</p>
+          <h2 className="text-2xl md:text-3xl font-semibold text-foreground mb-4">
+            What you can build.
+          </h2>
+          <p className="text-muted-foreground text-sm max-w-md mb-14">
+            From simple landing pages to full-stack applications — start with a template or your own idea.
+          </p>
+        </FadeIn>
+        <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
           {templates.map((t, i) => (
-            <StaggerItem key={i} index={i}>
-              <div
-                className={`${glassCard} group cursor-pointer hover:shadow-glow hover:border-primary/40 transition-all duration-300`}
-              >
-                <div className={`h-28 rounded-lg bg-gradient-to-br ${t.color} mb-4 flex items-center justify-center`}>
-                  <LayoutGrid className="w-8 h-8 text-primary/40 group-hover:text-primary/70 transition-colors" />
+            <FadeIn key={i} delay={i * 0.06}>
+              <div className={card}>
+                <div className="h-20 rounded-lg bg-muted/30 mb-4 flex items-center justify-center">
+                  <LayoutGrid className="w-5 h-5 text-muted-foreground/40" />
                 </div>
-                <h3 className="font-semibold text-foreground">{t.name}</h3>
+                <h3 className="text-sm font-medium text-foreground">{t}</h3>
               </div>
-            </StaggerItem>
+            </FadeIn>
           ))}
         </div>
       </div>
@@ -185,34 +164,39 @@ function TemplatesGrid() {
 /* ─── 4. Key Features ─── */
 function KeyFeatures() {
   const features = [
-    { icon: Eye, title: "Live Preview", desc: "See your app render in real time as code is generated." },
-    { icon: Code, title: "Built-in Code IDE", desc: "Edit, refine, and iterate — all in one window." },
-    { icon: Layers, title: "Multi-program Stacks", desc: "Combine frontend, backend, and database in a single project." },
-    { icon: FolderKanban, title: "Project Saving", desc: "Your work is saved and accessible from any device." },
-    { icon: Share2, title: "Publish & Share", desc: "Deploy with one click and share a live URL." },
-    { icon: CreditCard, title: "Flexible Plans", desc: "Start free. Scale when you're ready." },
+    { icon: Eye, label: "Live preview" },
+    { icon: Code, label: "Built-in code editor" },
+    { icon: Layers, label: "Multi-program stacks" },
+    { icon: FolderKanban, label: "Project management" },
+    { icon: Share2, label: "One-click publish" },
+    { icon: CreditCard, label: "Flexible plans" },
   ];
 
   return (
-    <Section className="bg-secondary/30">
-      <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-        <h2 className="text-3xl md:text-4xl font-bold text-center mb-14 text-foreground">
-          Key <span className="gradient-text">Features</span>
-        </h2>
-        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6 max-w-5xl mx-auto">
-          {features.map((f, i) => (
-            <StaggerItem key={i} index={i}>
-              <div className="flex items-start gap-4 group">
-                <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center shrink-0 group-hover:bg-primary/20 transition-colors">
-                  <f.icon className="w-5 h-5 text-primary" />
+    <Section className="border-t border-border/20">
+      <div className="container mx-auto px-6 lg:px-8 max-w-5xl">
+        <div className="grid lg:grid-cols-2 gap-16 items-start">
+          <div>
+            <FadeIn>
+              <p className="text-xs font-medium tracking-widest uppercase text-primary mb-4">Features</p>
+              <h2 className="text-2xl md:text-3xl font-semibold text-foreground mb-4 leading-tight">
+                Everything you need to build and ship.
+              </h2>
+              <p className="text-muted-foreground text-sm max-w-sm leading-relaxed">
+                A complete development environment designed for speed.
+              </p>
+            </FadeIn>
+          </div>
+          <div className="grid grid-cols-2 gap-4">
+            {features.map((f, i) => (
+              <FadeIn key={i} delay={i * 0.06}>
+                <div className="flex items-center gap-3 py-3">
+                  <f.icon className="w-4 h-4 text-primary shrink-0" />
+                  <span className="text-sm text-foreground/80">{f.label}</span>
                 </div>
-                <div>
-                  <h3 className="font-semibold text-foreground mb-1">{f.title}</h3>
-                  <p className="text-sm text-muted-foreground leading-relaxed">{f.desc}</p>
-                </div>
-              </div>
-            </StaggerItem>
-          ))}
+              </FadeIn>
+            ))}
+          </div>
         </div>
       </div>
     </Section>
@@ -222,32 +206,29 @@ function KeyFeatures() {
 /* ─── 5. Use Cases ─── */
 function UseCases() {
   const cases = [
-    { icon: GraduationCap, title: "Students", desc: "Learn by building. Turn class projects into real apps in minutes." },
-    { icon: Building2, title: "Startups", desc: "Ship MVPs fast. Validate ideas without hiring a full dev team." },
-    { icon: Users, title: "Teams", desc: "Prototype together. Iterate rapidly with shared project access." },
+    { icon: GraduationCap, title: "Students", desc: "Learn by building real apps, not toy examples." },
+    { icon: Building2, title: "Startups", desc: "Ship MVPs fast without hiring a full team." },
+    { icon: Users, title: "Teams", desc: "Prototype and iterate with shared access." },
   ];
 
   return (
-    <Section>
-      <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-        <h2 className="text-3xl md:text-4xl font-bold text-center mb-14 text-foreground">
-          Built for <span className="gradient-text">everyone</span>
-        </h2>
-        <div className="grid sm:grid-cols-3 gap-6 max-w-4xl mx-auto">
+    <Section className="border-t border-border/20">
+      <div className="container mx-auto px-6 lg:px-8 max-w-5xl">
+        <FadeIn>
+          <p className="text-xs font-medium tracking-widest uppercase text-primary mb-4 text-center">Use cases</p>
+          <h2 className="text-2xl md:text-3xl font-semibold text-foreground text-center mb-14">
+            Built for builders.
+          </h2>
+        </FadeIn>
+        <div className="grid md:grid-cols-3 gap-6">
           {cases.map((c, i) => (
-            <StaggerItem key={i} index={i}>
-              <div className={`${glassCard} text-center relative overflow-hidden group hover:border-primary/30 transition-colors`}>
-                {/* shimmer bg */}
-                <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-accent/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-                <div className="relative z-10">
-                  <div className="mx-auto mb-4 w-14 h-14 rounded-full bg-primary/10 flex items-center justify-center">
-                    <c.icon className="w-6 h-6 text-primary" />
-                  </div>
-                  <h3 className="font-semibold text-foreground mb-2">{c.title}</h3>
-                  <p className="text-sm text-muted-foreground leading-relaxed">{c.desc}</p>
-                </div>
+            <FadeIn key={i} delay={i * 0.08}>
+              <div className={card}>
+                <c.icon className="w-5 h-5 text-primary mb-4" />
+                <h3 className="text-sm font-medium text-foreground mb-2">{c.title}</h3>
+                <p className="text-xs text-muted-foreground leading-relaxed">{c.desc}</p>
               </div>
-            </StaggerItem>
+            </FadeIn>
           ))}
         </div>
       </div>
@@ -259,21 +240,23 @@ function UseCases() {
 function PricingTeaser() {
   const navigate = useNavigate();
   return (
-    <Section className="bg-secondary/30">
-      <div className="container mx-auto px-4 sm:px-6 lg:px-8 text-center">
-        <h2 className="text-2xl md:text-3xl font-bold text-foreground mb-4">
-          Ready to start building?
-        </h2>
-        <p className="text-muted-foreground max-w-md mx-auto mb-8 text-sm md:text-base">
-          Start free with 5 daily credits. Upgrade anytime for unlimited access.
-        </p>
-        <Button
-          size="lg"
-          onClick={() => navigate("/pricing")}
-          className="gap-2 shadow-glow"
-        >
-          View Plans <ArrowRight className="w-4 h-4" />
-        </Button>
+    <Section className="border-t border-border/20">
+      <div className="container mx-auto px-6 lg:px-8 max-w-3xl text-center">
+        <FadeIn>
+          <h2 className="text-2xl md:text-3xl font-semibold text-foreground mb-3">
+            Ready to start building?
+          </h2>
+          <p className="text-muted-foreground text-sm mb-8">
+            Start free with 5 daily credits. Upgrade anytime.
+          </p>
+          <Button
+            size="lg"
+            onClick={() => navigate("/pricing")}
+            className="gap-2"
+          >
+            View Plans <ArrowRight className="w-4 h-4" />
+          </Button>
+        </FadeIn>
       </div>
     </Section>
   );

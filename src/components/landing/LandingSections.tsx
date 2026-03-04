@@ -1,10 +1,11 @@
 import { motion, useInView } from "framer-motion";
-import { useRef } from "react";
+import { useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
-  Zap, Clock, Puzzle, Eye, Code, Layers, FolderKanban, Share2, CreditCard,
-  GraduationCap, Building2, Users, ArrowRight, ListChecks, Monitor, Rocket,
-  Timer, BarChart3, Workflow, HelpCircle
+  Zap, Clock, Puzzle, ArrowRight, ListChecks, Monitor, Rocket,
+  Layers, FolderKanban, Share2, Code, Eye, CreditCard,
+  Check, MessageSquare, Settings2, Sparkles, Send,
+  HelpCircle, User, Briefcase, GraduationCap
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
@@ -12,71 +13,56 @@ import productScreenshot from "@/assets/product-screenshot.png";
 import builderPreview from "@/assets/builder-preview.png";
 
 /* ─── animation helpers ─── */
-function Section({ children, className = "" }: { children: React.ReactNode; className?: string }) {
-  const ref = useRef(null);
-  const inView = useInView(ref, { once: true, margin: "-60px" });
-  return (
-    <motion.section
-      ref={ref}
-      initial={{ opacity: 0, y: 10 }}
-      animate={inView ? { opacity: 1, y: 0 } : {}}
-      transition={{ duration: 0.5, ease: "easeOut" }}
-      className={`py-24 md:py-32 ${className}`}
-    >
-      {children}
-    </motion.section>
-  );
-}
-
-function FadeIn({ children, delay = 0 }: { children: React.ReactNode; delay?: number }) {
+function FadeIn({ children, delay = 0, className = "" }: { children: React.ReactNode; delay?: number; className?: string }) {
   const ref = useRef(null);
   const inView = useInView(ref, { once: true, margin: "-40px" });
   return (
     <motion.div
       ref={ref}
-      initial={{ opacity: 0, y: 8 }}
+      initial={{ opacity: 0, y: 10 }}
       animate={inView ? { opacity: 1, y: 0 } : {}}
-      transition={{ duration: 0.45, delay, ease: "easeOut" }}
+      transition={{ duration: 0.5, delay, ease: "easeOut" }}
+      className={className}
     >
       {children}
     </motion.div>
   );
 }
 
-const card = "rounded-xl border border-border/40 bg-card/40 backdrop-blur-sm p-6 transition-all duration-300 hover:border-border/60 hover:bg-card/50 hover:translate-y-[-2px]";
+const glassCard = "rounded-xl border border-border/30 bg-card/30 backdrop-blur-sm p-6 transition-all duration-300 hover:border-primary/20 hover:translate-y-[-2px]";
 
 /* ─── 1. Why MyCodex ─── */
 function WhySection() {
   const features = [
-    { icon: Zap, title: "Instant generation", desc: "Describe your idea, get production-ready code in seconds." },
-    { icon: Clock, title: "Ship faster", desc: "Skip weeks of boilerplate. Focus on what makes your product unique." },
-    { icon: Puzzle, title: "All-in-one workspace", desc: "Editor, preview, and deployment in a single unified environment." },
+    { icon: Zap, title: "Instant generation", desc: "From idea to working code in seconds." },
+    { icon: Clock, title: "Ship faster", desc: "Skip boilerplate. Focus on what's unique." },
+    { icon: Puzzle, title: "All-in-one workspace", desc: "Editor, preview, deploy — unified." },
   ];
 
   return (
-    <Section>
+    <section className="py-28 md:py-36">
       <div className="container mx-auto px-6 lg:px-8 max-w-6xl">
-        <div className="grid lg:grid-cols-2 gap-16 items-center">
+        <div className="grid lg:grid-cols-[1fr_1.1fr] gap-16 lg:gap-20 items-center">
           <div>
             <FadeIn>
-              <p className="text-xs font-medium tracking-widest uppercase text-primary mb-4">Why MyCodex</p>
-              <h2 className="text-2xl md:text-3xl font-semibold text-foreground mb-6 leading-tight">
+              <p className="text-xs font-medium tracking-[0.2em] uppercase text-primary mb-5">Why MyCodex</p>
+              <h2 className="text-2xl md:text-[1.75rem] font-semibold text-foreground mb-5 leading-snug">
                 Stop building from scratch.
               </h2>
-              <p className="text-muted-foreground text-sm leading-relaxed mb-10 max-w-md">
-                Traditional development is slow, fragmented, and frustrating. MyCodex unifies the entire workflow.
+              <p className="text-muted-foreground text-sm leading-relaxed max-w-sm">
+                Traditional development is slow and fragmented. MyCodex unifies the entire workflow.
               </p>
             </FadeIn>
-            <div className="space-y-5">
+            <div className="mt-10 space-y-6">
               {features.map((f, i) => (
                 <FadeIn key={i} delay={i * 0.08}>
-                  <div className="flex items-start gap-4">
-                    <div className="w-9 h-9 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
+                  <div className="flex items-start gap-4 group">
+                    <div className="w-9 h-9 rounded-lg bg-primary/10 flex items-center justify-center shrink-0 transition-colors group-hover:bg-primary/15">
                       <f.icon className="w-4 h-4 text-primary" />
                     </div>
                     <div>
                       <h3 className="text-sm font-medium text-foreground mb-0.5">{f.title}</h3>
-                      <p className="text-sm text-muted-foreground leading-relaxed">{f.desc}</p>
+                      <p className="text-sm text-muted-foreground">{f.desc}</p>
                     </div>
                   </div>
                 </FadeIn>
@@ -85,79 +71,146 @@ function WhySection() {
           </div>
 
           <FadeIn delay={0.15}>
-            <div className="rounded-xl overflow-hidden border border-border/30 shadow-lg">
-              <img src={productScreenshot} alt="MyCodex IDE with live preview" className="w-full" loading="lazy" />
+            <div className="rounded-xl overflow-hidden border border-border/20 shadow-lg">
+              <img src={productScreenshot} alt="MyCodex workspace" className="w-full" loading="lazy" />
             </div>
           </FadeIn>
         </div>
       </div>
-    </Section>
+    </section>
   );
 }
 
-/* ─── 2. How it Works ─── */
+/* ─── 2. How MyCodex Works (animated stepper) ─── */
 function HowItWorks() {
   const steps = [
-    { num: "01", title: "Describe", desc: "Type what you want to build" },
-    { num: "02", title: "Configure", desc: "Pick your language or stack" },
-    { num: "03", title: "Generate", desc: "AI writes and previews code" },
-    { num: "04", title: "Publish", desc: "Deploy with a single click" },
+    { icon: MessageSquare, title: "Describe your idea", desc: "Type what you want to build in plain language." },
+    { icon: Settings2, title: "Choose your stack", desc: "Pick a single language or go multi-program." },
+    { icon: Sparkles, title: "Generate & refine", desc: "AI writes structured code with live preview." },
+    { icon: Code, title: "Edit in IDE", desc: "Fine-tune code directly in the built-in editor." },
+    { icon: Send, title: "Publish & share", desc: "Deploy with one click and share a live link." },
   ];
 
   return (
-    <Section className="border-t border-border/20">
+    <section className="py-28 md:py-36 border-t border-border/10">
       <div className="container mx-auto px-6 lg:px-8 max-w-5xl">
         <FadeIn>
-          <p className="text-xs font-medium tracking-widest uppercase text-primary mb-4 text-center">How it works</p>
-          <h2 className="text-2xl md:text-3xl font-semibold text-foreground text-center mb-16">
-            Four steps to production.
+          <p className="text-xs font-medium tracking-[0.2em] uppercase text-primary mb-5 text-center">Workflow</p>
+          <h2 className="text-2xl md:text-[1.75rem] font-semibold text-foreground text-center mb-4">
+            How MyCodex works
           </h2>
+          <p className="text-muted-foreground text-sm text-center max-w-md mx-auto mb-16">
+            Five steps from idea to deployed application.
+          </p>
         </FadeIn>
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
+
+        {/* Desktop: horizontal */}
+        <div className="hidden md:grid grid-cols-5 gap-4">
           {steps.map((s, i) => (
             <FadeIn key={i} delay={i * 0.08}>
-              <div className="text-center lg:text-left">
-                <span className="text-2xl font-bold text-primary/30 block mb-3">{s.num}</span>
-                <h3 className="text-sm font-medium text-foreground mb-1">{s.title}</h3>
-                <p className="text-xs text-muted-foreground leading-relaxed">{s.desc}</p>
+              <StepCard step={s} index={i} total={steps.length} />
+            </FadeIn>
+          ))}
+        </div>
+
+        {/* Mobile: vertical */}
+        <div className="md:hidden space-y-4">
+          {steps.map((s, i) => (
+            <FadeIn key={i} delay={i * 0.06}>
+              <div className="flex items-start gap-4">
+                <div className="flex flex-col items-center">
+                  <div className="w-9 h-9 rounded-lg bg-primary/10 border border-primary/20 flex items-center justify-center shrink-0">
+                    <s.icon className="w-4 h-4 text-primary" />
+                  </div>
+                  {i < steps.length - 1 && <div className="w-px h-8 bg-border/30 mt-2" />}
+                </div>
+                <div className="pt-1">
+                  <p className="text-xs text-primary/60 font-medium mb-0.5">Step {i + 1}</p>
+                  <h3 className="text-sm font-medium text-foreground mb-0.5">{s.title}</h3>
+                  <p className="text-xs text-muted-foreground">{s.desc}</p>
+                </div>
               </div>
             </FadeIn>
           ))}
         </div>
       </div>
-    </Section>
+    </section>
   );
 }
 
-/* ─── 3. Live Builder Experience (replaces Templates) ─── */
-function LiveBuilderExperience() {
-  const bullets = [
-    { icon: ListChecks, label: "Prompt → structured plan" },
-    { icon: Layers, label: "Multi-program stacks (frontend + backend + database)" },
-    { icon: Monitor, label: "Real-time Preview + Code IDE" },
-    { icon: FolderKanban, label: "Projects reopen where you left off" },
-    { icon: Rocket, label: "One-click Publish + Share link" },
-  ];
+function StepCard({ step, index, total }: { step: { icon: any; title: string; desc: string }; index: number; total: number }) {
+  const ref = useRef(null);
+  const inView = useInView(ref, { once: true, margin: "-40px" });
 
   return (
-    <Section className="border-t border-border/20">
+    <div ref={ref} className="relative text-center group">
+      {/* Connector line */}
+      {index < total - 1 && (
+        <motion.div
+          className="absolute top-5 left-[60%] right-0 h-px bg-gradient-to-r from-primary/30 to-primary/10 hidden md:block"
+          initial={{ scaleX: 0 }}
+          animate={inView ? { scaleX: 1 } : {}}
+          transition={{ duration: 0.6, delay: 0.3 + index * 0.1 }}
+          style={{ transformOrigin: "left" }}
+        />
+      )}
+      <div className="w-10 h-10 rounded-lg bg-primary/10 border border-primary/20 flex items-center justify-center mx-auto mb-3 transition-all group-hover:bg-primary/15 group-hover:border-primary/30">
+        <step.icon className="w-4 h-4 text-primary" />
+      </div>
+      <p className="text-[10px] text-primary/50 font-medium mb-1">{String(index + 1).padStart(2, "0")}</p>
+      <h3 className="text-xs font-medium text-foreground mb-1">{step.title}</h3>
+      <p className="text-[11px] text-muted-foreground leading-relaxed">{step.desc}</p>
+    </div>
+  );
+}
+
+/* ─── 3. Inside the Builder ─── */
+function InsideTheBuilder() {
+  const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
+  const imageRef = useRef<HTMLDivElement>(null);
+  const [tilt, setTilt] = useState({ x: 0, y: 0 });
+
+  const bullets = [
+    { icon: ListChecks, label: "Structured generation steps" },
+    { icon: Layers, label: "Multi-Program stack selection" },
+    { icon: Monitor, label: "Preview + IDE Code view" },
+    { icon: FolderKanban, label: "Projects reopen anytime" },
+    { icon: Rocket, label: "Publish + Share link" },
+  ];
+
+  const handleMouseMove = (e: React.MouseEvent) => {
+    if (!imageRef.current) return;
+    const rect = imageRef.current.getBoundingClientRect();
+    const x = ((e.clientX - rect.left) / rect.width - 0.5) * 4;
+    const y = ((e.clientY - rect.top) / rect.height - 0.5) * 4;
+    setTilt({ x: -y, y: x });
+  };
+
+  return (
+    <section className="py-28 md:py-36 border-t border-border/10">
       <div className="container mx-auto px-6 lg:px-8 max-w-6xl">
         <FadeIn>
-          <p className="text-xs font-medium tracking-widest uppercase text-primary mb-4">Workspace</p>
-          <h2 className="text-2xl md:text-3xl font-semibold text-foreground mb-3 leading-tight">
-            Live builder experience
+          <p className="text-xs font-medium tracking-[0.2em] uppercase text-primary mb-5">Workspace</p>
+          <h2 className="text-2xl md:text-[1.75rem] font-semibold text-foreground mb-3">
+            Inside the Builder
           </h2>
           <p className="text-muted-foreground text-sm max-w-lg mb-14">
-            Generate, edit, preview, and publish — all in one workspace.
+            Prompt → Plan → Preview → Code → Publish — without leaving the workspace.
           </p>
         </FadeIn>
 
         <div className="grid lg:grid-cols-[5fr_7fr] gap-12 lg:gap-16 items-center">
-          <div className="space-y-4">
+          <div className="space-y-2">
             {bullets.map((b, i) => (
-              <FadeIn key={i} delay={i * 0.07}>
-                <div className="flex items-center gap-3 py-2.5">
-                  <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
+              <FadeIn key={i} delay={i * 0.06}>
+                <div
+                  className="flex items-center gap-3 py-3 px-3 rounded-lg transition-all duration-200 cursor-default hover:bg-primary/5"
+                  onMouseEnter={() => setHoveredIndex(i)}
+                  onMouseLeave={() => setHoveredIndex(null)}
+                >
+                  <div className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 transition-colors duration-200 ${
+                    hoveredIndex === i ? "bg-primary/20" : "bg-primary/10"
+                  }`}>
                     <b.icon className="w-4 h-4 text-primary" />
                   </div>
                   <span className="text-sm text-foreground/80">{b.label}</span>
@@ -166,19 +219,27 @@ function LiveBuilderExperience() {
             ))}
           </div>
 
-          <FadeIn delay={0.12}>
-            <div className="rounded-xl overflow-hidden border border-primary/20 shadow-[0_0_40px_-12px_hsl(var(--primary)/0.15)]">
-              <img
+          <FadeIn delay={0.1}>
+            <div
+              ref={imageRef}
+              className="rounded-xl overflow-hidden border border-primary/15 shadow-[0_0_60px_-15px_hsl(var(--primary)/0.12)] transition-shadow duration-300 hover:shadow-[0_0_80px_-15px_hsl(var(--primary)/0.18)]"
+              onMouseMove={handleMouseMove}
+              onMouseLeave={() => setTilt({ x: 0, y: 0 })}
+            >
+              <motion.img
                 src={builderPreview}
-                alt="MyCodex builder workspace with code and live preview"
+                alt="MyCodex builder workspace"
                 className="w-full"
                 loading="lazy"
+                animate={{ rotateX: tilt.x, rotateY: tilt.y }}
+                transition={{ type: "spring", stiffness: 200, damping: 30 }}
+                style={{ transformStyle: "preserve-3d" }}
               />
             </div>
           </FadeIn>
         </div>
       </div>
-    </Section>
+    </section>
   );
 }
 
@@ -194,25 +255,25 @@ function KeyFeatures() {
   ];
 
   return (
-    <Section className="border-t border-border/20">
+    <section className="py-28 md:py-36 border-t border-border/10">
       <div className="container mx-auto px-6 lg:px-8 max-w-5xl">
         <div className="grid lg:grid-cols-2 gap-16 items-start">
           <div>
             <FadeIn>
-              <p className="text-xs font-medium tracking-widest uppercase text-primary mb-4">Features</p>
-              <h2 className="text-2xl md:text-3xl font-semibold text-foreground mb-4 leading-tight">
+              <p className="text-xs font-medium tracking-[0.2em] uppercase text-primary mb-5">Features</p>
+              <h2 className="text-2xl md:text-[1.75rem] font-semibold text-foreground mb-4 leading-snug">
                 Everything you need to build and ship.
               </h2>
-              <p className="text-muted-foreground text-sm max-w-sm leading-relaxed">
+              <p className="text-muted-foreground text-sm max-w-sm">
                 A complete development environment designed for speed.
               </p>
             </FadeIn>
           </div>
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-2 gap-x-6 gap-y-5">
             {features.map((f, i) => (
-              <FadeIn key={i} delay={i * 0.06}>
-                <div className="flex items-center gap-3 py-3">
-                  <f.icon className="w-4 h-4 text-primary shrink-0" />
+              <FadeIn key={i} delay={i * 0.05}>
+                <div className="flex items-center gap-3 py-2 group">
+                  <f.icon className="w-4 h-4 text-primary shrink-0 transition-colors group-hover:text-primary/80" />
                   <span className="text-sm text-foreground/80">{f.label}</span>
                 </div>
               </FadeIn>
@@ -220,119 +281,104 @@ function KeyFeatures() {
           </div>
         </div>
       </div>
-    </Section>
+    </section>
   );
 }
 
-/* ─── 5. Use Cases ─── */
-function UseCases() {
-  const cases = [
-    { icon: GraduationCap, title: "Students", desc: "Learn by building real apps, not toy examples." },
-    { icon: Building2, title: "Startups", desc: "Ship MVPs fast without hiring a full team." },
-    { icon: Users, title: "Teams", desc: "Prototype and iterate with shared access." },
+/* ─── 5. Why Developers Love It (testimonials) ─── */
+function TestimonialsSection() {
+  const testimonials = [
+    {
+      icon: User,
+      role: "Frontend Developer",
+      quote: "I prototype UI ideas in minutes instead of days. The live preview alone saves me hours of context switching.",
+    },
+    {
+      icon: Briefcase,
+      role: "Startup Founder",
+      quote: "We shipped our MVP in a weekend. Multi-program mode let us scaffold frontend and backend together.",
+    },
+    {
+      icon: GraduationCap,
+      role: "Student Builder",
+      quote: "Learning by building real apps changed everything. I can experiment with stacks I've never tried before.",
+    },
   ];
 
   return (
-    <Section className="border-t border-border/20">
+    <section className="py-28 md:py-36 border-t border-border/10">
       <div className="container mx-auto px-6 lg:px-8 max-w-5xl">
         <FadeIn>
-          <p className="text-xs font-medium tracking-widest uppercase text-primary mb-4 text-center">Use cases</p>
-          <h2 className="text-2xl md:text-3xl font-semibold text-foreground text-center mb-14">
-            Built for builders.
+          <p className="text-xs font-medium tracking-[0.2em] uppercase text-primary mb-5 text-center">Community</p>
+          <h2 className="text-2xl md:text-[1.75rem] font-semibold text-foreground text-center mb-14">
+            Why developers love it
           </h2>
         </FadeIn>
         <div className="grid md:grid-cols-3 gap-6">
-          {cases.map((c, i) => (
+          {testimonials.map((t, i) => (
             <FadeIn key={i} delay={i * 0.08}>
-              <div className={card}>
-                <c.icon className="w-5 h-5 text-primary mb-4" />
-                <h3 className="text-sm font-medium text-foreground mb-2">{c.title}</h3>
-                <p className="text-xs text-muted-foreground leading-relaxed">{c.desc}</p>
+              <div className={glassCard}>
+                <div className="flex items-center gap-3 mb-4">
+                  <div className="w-9 h-9 rounded-full bg-primary/10 flex items-center justify-center">
+                    <t.icon className="w-4 h-4 text-primary" />
+                  </div>
+                  <span className="text-xs font-medium text-primary/70">{t.role}</span>
+                </div>
+                <p className="text-sm text-muted-foreground leading-relaxed italic">"{t.quote}"</p>
               </div>
             </FadeIn>
           ))}
         </div>
       </div>
-    </Section>
+    </section>
   );
 }
 
-/* ─── 6. Built for Speed & Clarity (Metrics) ─── */
-function MetricsSection() {
-  const stats = [
-    { icon: Timer, value: "Minutes", label: "to first draft", desc: "From idea to working code — not hours." },
-    { icon: Workflow, value: "Multi-stack", label: "ready", desc: "Frontend, backend, and database in one project." },
-    { icon: BarChart3, value: "Preview + Code", label: "workflow", desc: "See changes live as you build." },
-  ];
-
-  return (
-    <Section className="border-t border-border/20">
-      <div className="container mx-auto px-6 lg:px-8 max-w-5xl">
-        <FadeIn>
-          <p className="text-xs font-medium tracking-widest uppercase text-primary mb-4 text-center">Performance</p>
-          <h2 className="text-2xl md:text-3xl font-semibold text-foreground text-center mb-14">
-            Built for speed & clarity.
-          </h2>
-        </FadeIn>
-        <div className="grid md:grid-cols-3 gap-6">
-          {stats.map((s, i) => (
-            <FadeIn key={i} delay={i * 0.08}>
-              <div className={card}>
-                <s.icon className="w-5 h-5 text-primary mb-4" />
-                <p className="text-lg font-semibold text-foreground">{s.value}</p>
-                <p className="text-xs font-medium text-primary/70 mb-2">{s.label}</p>
-                <p className="text-xs text-muted-foreground leading-relaxed">{s.desc}</p>
-              </div>
-            </FadeIn>
-          ))}
-        </div>
-      </div>
-    </Section>
-  );
-}
-
-/* ─── 7. FAQ ─── */
+/* ─── 6. FAQ ─── */
 function FAQSection() {
   const faqs = [
     {
-      q: "Do I need to pick a language every time?",
-      a: "No. You can choose a default stack or switch between languages per project. Multi-Program mode also lets you combine multiple technologies in one build.",
+      q: "Do I need to select a language every time?",
+      a: "No. You can choose a default stack or switch per project. Multi-Program mode combines multiple technologies in one build.",
     },
     {
       q: "What is Multi-Program mode?",
-      a: "It lets you generate a full stack — frontend, backend, and database — in a single project instead of writing each layer separately.",
+      a: "It generates a full stack — frontend, backend, and database — in a single project instead of separate layers.",
     },
     {
-      q: "Can I reopen my projects later?",
-      a: "Yes. All your projects are saved and accessible from the Projects page. They reopen exactly where you left off.",
+      q: "Where do my projects save?",
+      a: "All projects are saved to your account and accessible from the Projects page. They reopen exactly where you left off.",
     },
     {
       q: "How do credits work?",
-      a: "Free accounts get 5 credits per day. Each generation uses one credit. Upgrading to Pro or Enterprise gives you more credits and additional features.",
+      a: "Free accounts get 5 credits per day. Each generation uses one credit. Pro and Enterprise plans include more credits.",
     },
     {
-      q: "Can I export code to GitHub?",
-      a: "Not yet, but it's on the roadmap. For now you can copy code directly from the built-in editor or use the Publish feature to share a live link.",
+      q: "Can I export code?",
+      a: "GitHub export is on the roadmap. For now, copy code from the built-in editor or use Publish to share a live link.",
     },
   ];
 
   return (
-    <Section className="border-t border-border/20">
+    <section className="py-28 md:py-36 border-t border-border/10">
       <div className="container mx-auto px-6 lg:px-8 max-w-2xl">
         <FadeIn>
-          <p className="text-xs font-medium tracking-widest uppercase text-primary mb-4 text-center">FAQ</p>
-          <h2 className="text-2xl md:text-3xl font-semibold text-foreground text-center mb-12">
+          <div className="flex items-center justify-center gap-2 mb-5">
+            <HelpCircle className="w-4 h-4 text-primary" />
+            <p className="text-xs font-medium tracking-[0.2em] uppercase text-primary">FAQ</p>
+          </div>
+          <h2 className="text-2xl md:text-[1.75rem] font-semibold text-foreground text-center mb-12">
             Common questions
           </h2>
         </FadeIn>
         <FadeIn delay={0.1}>
           <Accordion type="single" collapsible className="w-full">
             {faqs.map((faq, i) => (
-              <AccordionItem key={i} value={`faq-${i}`} className="border-border/30">
-                <AccordionTrigger className="text-sm text-foreground hover:no-underline hover:text-primary transition-colors py-5">
+              <AccordionItem key={i} value={`faq-${i}`} className="border-border/20">
+                <AccordionTrigger className="text-sm text-foreground hover:no-underline hover:text-primary transition-colors py-5 text-left">
                   {faq.q}
                 </AccordionTrigger>
-                <AccordionContent className="text-sm text-muted-foreground leading-relaxed">
+                <AccordionContent className="text-sm text-muted-foreground leading-relaxed pb-5">
                   {faq.a}
                 </AccordionContent>
               </AccordionItem>
@@ -340,33 +386,53 @@ function FAQSection() {
           </Accordion>
         </FadeIn>
       </div>
-    </Section>
+    </section>
   );
 }
 
-/* ─── 8. Pricing Teaser ─── */
-function PricingTeaser() {
+/* ─── 7. Final CTA ─── */
+function FinalCTA() {
   const navigate = useNavigate();
   return (
-    <Section className="border-t border-border/20">
-      <div className="container mx-auto px-6 lg:px-8 max-w-3xl text-center">
+    <section className="py-28 md:py-36 border-t border-border/10 relative overflow-hidden">
+      {/* Aurora background */}
+      <div className="absolute inset-0 pointer-events-none">
+        <div
+          className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[200px] rounded-full opacity-30"
+          style={{
+            background: "radial-gradient(ellipse, hsl(170 100% 47% / 0.2) 0%, transparent 70%)",
+            filter: "blur(60px)",
+          }}
+        />
+      </div>
+
+      <div className="container mx-auto px-6 lg:px-8 max-w-xl text-center relative z-10">
         <FadeIn>
-          <h2 className="text-2xl md:text-3xl font-semibold text-foreground mb-3">
-            Ready to start building?
+          <h2 className="text-2xl md:text-3xl font-semibold text-foreground mb-4">
+            Ready to build?
           </h2>
-          <p className="text-muted-foreground text-sm mb-8">
-            Start free with 5 daily credits. Upgrade anytime.
+          <p className="text-muted-foreground text-sm mb-8 max-w-sm mx-auto">
+            Start free with 5 daily credits. No setup required.
           </p>
-          <Button
-            size="lg"
-            onClick={() => navigate("/pricing")}
-            className="gap-2"
-          >
-            View Plans <ArrowRight className="w-4 h-4" />
-          </Button>
+          <div className="flex items-center justify-center gap-3">
+            <Button
+              size="lg"
+              onClick={() => navigate("/signup")}
+              className="gap-2"
+            >
+              Start building <ArrowRight className="w-4 h-4" />
+            </Button>
+            <Button
+              size="lg"
+              variant="outline"
+              onClick={() => navigate("/pricing")}
+            >
+              View pricing
+            </Button>
+          </div>
         </FadeIn>
       </div>
-    </Section>
+    </section>
   );
 }
 
@@ -376,12 +442,11 @@ export default function LandingSections() {
     <div>
       <WhySection />
       <HowItWorks />
-      <LiveBuilderExperience />
+      <InsideTheBuilder />
       <KeyFeatures />
-      <UseCases />
-      <MetricsSection />
+      <TestimonialsSection />
       <FAQSection />
-      <PricingTeaser />
+      <FinalCTA />
     </div>
   );
 }

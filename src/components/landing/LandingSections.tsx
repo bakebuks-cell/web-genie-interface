@@ -1,4 +1,4 @@
-import { motion, useInView } from "framer-motion";
+import { motion, useInView, useScroll, useTransform } from "framer-motion";
 import { useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
@@ -11,6 +11,8 @@ import { Button } from "@/components/ui/button";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import productScreenshot from "@/assets/product-screenshot.png";
 import builderPreview from "@/assets/builder-preview.png";
+import workflowVisual from "@/assets/workflow-visual.png";
+import dashboardPreview from "@/assets/dashboard-preview.png";
 
 /* ─── animation helpers ─── */
 function FadeIn({ children, delay = 0, className = "" }: { children: React.ReactNode; delay?: number; className?: string }) {
@@ -29,9 +31,22 @@ function FadeIn({ children, delay = 0, className = "" }: { children: React.React
   );
 }
 
-const glassCard = "rounded-xl border border-border/30 bg-card/30 backdrop-blur-sm p-6 transition-all duration-300 hover:border-primary/20 hover:translate-y-[-2px]";
+function ParallaxImage({ src, alt, className = "" }: { src: string; alt: string; className?: string }) {
+  const ref = useRef(null);
+  const { scrollYProgress } = useScroll({ target: ref, offset: ["start end", "end start"] });
+  const y = useTransform(scrollYProgress, [0, 1], [20, -20]);
 
-/* ─── 1. Why MyCodex ─── */
+  return (
+    <motion.div ref={ref} style={{ y }} className={className}>
+      <img src={src} alt={alt} className="w-full h-auto" loading="lazy" />
+    </motion.div>
+  );
+}
+
+const glassCard = "rounded-xl border border-border/30 bg-card/30 backdrop-blur-sm p-6 transition-all duration-300 hover:border-primary/20 hover:translate-y-[-2px]";
+const glassFrame = "rounded-xl overflow-hidden border border-primary/15 shadow-[0_0_60px_-15px_hsl(var(--primary)/0.12)] transition-shadow duration-300 hover:shadow-[0_0_80px_-15px_hsl(var(--primary)/0.18)]";
+
+/* ─── 1. Why MyCodex — text left, large image right ─── */
 function WhySection() {
   const features = [
     { icon: Zap, title: "Instant generation", desc: "From idea to working code in seconds." },
@@ -42,7 +57,7 @@ function WhySection() {
   return (
     <section className="py-28 md:py-36">
       <div className="container mx-auto px-6 lg:px-8 max-w-6xl">
-        <div className="grid lg:grid-cols-[1fr_1.1fr] gap-16 lg:gap-20 items-center">
+        <div className="grid lg:grid-cols-[1fr_1.2fr] gap-16 lg:gap-20 items-center">
           <div>
             <FadeIn>
               <p className="text-xs font-medium tracking-[0.2em] uppercase text-primary mb-5">Why MyCodex</p>
@@ -71,8 +86,8 @@ function WhySection() {
           </div>
 
           <FadeIn delay={0.15}>
-            <div className="rounded-xl overflow-hidden border border-border/20 shadow-lg">
-              <img src={productScreenshot} alt="MyCodex workspace" className="w-full" loading="lazy" />
+            <div className={glassFrame}>
+              <ParallaxImage src={productScreenshot} alt="MyCodex workspace" />
             </div>
           </FadeIn>
         </div>
@@ -81,94 +96,42 @@ function WhySection() {
   );
 }
 
-/* ─── 2. How MyCodex Works (animated stepper) ─── */
-function HowItWorks() {
-  const steps = [
-    { icon: MessageSquare, title: "Describe your idea", desc: "Type what you want to build in plain language." },
-    { icon: Settings2, title: "Choose your stack", desc: "Pick a single language or go multi-program." },
-    { icon: Sparkles, title: "Generate & refine", desc: "AI writes structured code with live preview." },
-    { icon: Code, title: "Edit in IDE", desc: "Fine-tune code directly in the built-in editor." },
-    { icon: Send, title: "Publish & share", desc: "Deploy with one click and share a live link." },
-  ];
-
+/* ─── 2. Full-width workflow visual with text overlay ─── */
+function WorkflowBanner() {
   return (
-    <section className="py-28 md:py-36 border-t border-border/10">
-      <div className="container mx-auto px-6 lg:px-8 max-w-5xl">
+    <section className="py-20 md:py-28 border-t border-border/10 relative overflow-hidden">
+      <div className="container mx-auto px-6 lg:px-8 max-w-6xl">
         <FadeIn>
-          <p className="text-xs font-medium tracking-[0.2em] uppercase text-primary mb-5 text-center">Workflow</p>
-          <h2 className="text-2xl md:text-[1.75rem] font-semibold text-foreground text-center mb-4">
-            How MyCodex works
-          </h2>
-          <p className="text-muted-foreground text-sm text-center max-w-md mx-auto mb-16">
-            Five steps from idea to deployed application.
-          </p>
-        </FadeIn>
-
-        {/* Desktop: horizontal */}
-        <div className="hidden md:grid grid-cols-5 gap-4">
-          {steps.map((s, i) => (
-            <FadeIn key={i} delay={i * 0.08}>
-              <StepCard step={s} index={i} total={steps.length} />
-            </FadeIn>
-          ))}
-        </div>
-
-        {/* Mobile: vertical */}
-        <div className="md:hidden space-y-4">
-          {steps.map((s, i) => (
-            <FadeIn key={i} delay={i * 0.06}>
-              <div className="flex items-start gap-4">
-                <div className="flex flex-col items-center">
-                  <div className="w-9 h-9 rounded-lg bg-primary/10 border border-primary/20 flex items-center justify-center shrink-0">
-                    <s.icon className="w-4 h-4 text-primary" />
-                  </div>
-                  {i < steps.length - 1 && <div className="w-px h-8 bg-border/30 mt-2" />}
-                </div>
-                <div className="pt-1">
-                  <p className="text-xs text-primary/60 font-medium mb-0.5">Step {i + 1}</p>
-                  <h3 className="text-sm font-medium text-foreground mb-0.5">{s.title}</h3>
-                  <p className="text-xs text-muted-foreground">{s.desc}</p>
-                </div>
+          <div className="relative rounded-2xl overflow-hidden">
+            <img
+              src={workflowVisual}
+              alt="Code generation workflow"
+              className="w-full h-[280px] md:h-[360px] object-cover"
+              loading="lazy"
+            />
+            {/* Gradient overlay */}
+            <div className="absolute inset-0 bg-gradient-to-r from-background/90 via-background/60 to-transparent" />
+            <div className="absolute inset-0 flex items-center">
+              <div className="px-8 md:px-12 max-w-lg">
+                <p className="text-xs font-medium tracking-[0.2em] uppercase text-primary mb-4">Workflow</p>
+                <h2 className="text-xl md:text-2xl font-semibold text-foreground mb-3 leading-snug">
+                  Five steps from idea to deployed application.
+                </h2>
+                <p className="text-sm text-muted-foreground leading-relaxed">
+                  Describe → Choose stack → Generate → Edit → Publish. All inside one workspace.
+                </p>
               </div>
-            </FadeIn>
-          ))}
-        </div>
+            </div>
+          </div>
+        </FadeIn>
       </div>
     </section>
   );
 }
 
-function StepCard({ step, index, total }: { step: { icon: any; title: string; desc: string }; index: number; total: number }) {
-  const ref = useRef(null);
-  const inView = useInView(ref, { once: true, margin: "-40px" });
-
-  return (
-    <div ref={ref} className="relative text-center group">
-      {/* Connector line */}
-      {index < total - 1 && (
-        <motion.div
-          className="absolute top-5 left-[60%] right-0 h-px bg-gradient-to-r from-primary/30 to-primary/10 hidden md:block"
-          initial={{ scaleX: 0 }}
-          animate={inView ? { scaleX: 1 } : {}}
-          transition={{ duration: 0.6, delay: 0.3 + index * 0.1 }}
-          style={{ transformOrigin: "left" }}
-        />
-      )}
-      <div className="w-10 h-10 rounded-lg bg-primary/10 border border-primary/20 flex items-center justify-center mx-auto mb-3 transition-all group-hover:bg-primary/15 group-hover:border-primary/30">
-        <step.icon className="w-4 h-4 text-primary" />
-      </div>
-      <p className="text-[10px] text-primary/50 font-medium mb-1">{String(index + 1).padStart(2, "0")}</p>
-      <h3 className="text-xs font-medium text-foreground mb-1">{step.title}</h3>
-      <p className="text-[11px] text-muted-foreground leading-relaxed">{step.desc}</p>
-    </div>
-  );
-}
-
-/* ─── 3. Inside the Builder ─── */
+/* ─── 3. Inside the Builder — image left, text right ─── */
 function InsideTheBuilder() {
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
-  const imageRef = useRef<HTMLDivElement>(null);
-  const [tilt, setTilt] = useState({ x: 0, y: 0 });
 
   const bullets = [
     { icon: ListChecks, label: "Structured generation steps" },
@@ -178,107 +141,111 @@ function InsideTheBuilder() {
     { icon: Rocket, label: "Publish + Share link" },
   ];
 
-  const handleMouseMove = (e: React.MouseEvent) => {
-    if (!imageRef.current) return;
-    const rect = imageRef.current.getBoundingClientRect();
-    const x = ((e.clientX - rect.left) / rect.width - 0.5) * 4;
-    const y = ((e.clientY - rect.top) / rect.height - 0.5) * 4;
-    setTilt({ x: -y, y: x });
-  };
-
   return (
     <section className="py-28 md:py-36 border-t border-border/10">
       <div className="container mx-auto px-6 lg:px-8 max-w-6xl">
-        <FadeIn>
-          <p className="text-xs font-medium tracking-[0.2em] uppercase text-primary mb-5">Workspace</p>
-          <h2 className="text-2xl md:text-[1.75rem] font-semibold text-foreground mb-3">
-            Inside the Builder
-          </h2>
-          <p className="text-muted-foreground text-sm max-w-lg mb-14">
-            Prompt → Plan → Preview → Code → Publish — without leaving the workspace.
-          </p>
-        </FadeIn>
-
-        <div className="grid lg:grid-cols-[5fr_7fr] gap-12 lg:gap-16 items-center">
-          <div className="space-y-2">
-            {bullets.map((b, i) => (
-              <FadeIn key={i} delay={i * 0.06}>
-                <div
-                  className="flex items-center gap-3 py-3 px-3 rounded-lg transition-all duration-200 cursor-default hover:bg-primary/5"
-                  onMouseEnter={() => setHoveredIndex(i)}
-                  onMouseLeave={() => setHoveredIndex(null)}
-                >
-                  <div className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 transition-colors duration-200 ${
-                    hoveredIndex === i ? "bg-primary/20" : "bg-primary/10"
-                  }`}>
-                    <b.icon className="w-4 h-4 text-primary" />
-                  </div>
-                  <span className="text-sm text-foreground/80">{b.label}</span>
-                </div>
-              </FadeIn>
-            ))}
-          </div>
-
-          <FadeIn delay={0.1}>
-            <div
-              ref={imageRef}
-              className="rounded-xl overflow-hidden border border-primary/15 shadow-[0_0_60px_-15px_hsl(var(--primary)/0.12)] transition-shadow duration-300 hover:shadow-[0_0_80px_-15px_hsl(var(--primary)/0.18)]"
-              onMouseMove={handleMouseMove}
-              onMouseLeave={() => setTilt({ x: 0, y: 0 })}
-            >
-              <motion.img
-                src={builderPreview}
-                alt="MyCodex builder workspace"
-                className="w-full"
-                loading="lazy"
-                animate={{ rotateX: tilt.x, rotateY: tilt.y }}
-                transition={{ type: "spring", stiffness: 200, damping: 30 }}
-                style={{ transformStyle: "preserve-3d" }}
-              />
+        <div className="grid lg:grid-cols-[7fr_5fr] gap-12 lg:gap-16 items-center">
+          {/* Image LEFT */}
+          <FadeIn>
+            <div className={glassFrame}>
+              <ParallaxImage src={builderPreview} alt="MyCodex builder workspace" />
             </div>
           </FadeIn>
+
+          {/* Text RIGHT */}
+          <div>
+            <FadeIn delay={0.1}>
+              <p className="text-xs font-medium tracking-[0.2em] uppercase text-primary mb-5">Workspace</p>
+              <h2 className="text-2xl md:text-[1.75rem] font-semibold text-foreground mb-3">
+                Inside the Builder
+              </h2>
+              <p className="text-muted-foreground text-sm max-w-md mb-10">
+                Prompt → Plan → Preview → Code → Publish — without leaving the workspace.
+              </p>
+            </FadeIn>
+
+            <div className="space-y-2">
+              {bullets.map((b, i) => (
+                <FadeIn key={i} delay={0.15 + i * 0.06}>
+                  <div
+                    className="flex items-center gap-3 py-3 px-3 rounded-lg transition-all duration-200 cursor-default hover:bg-primary/5"
+                    onMouseEnter={() => setHoveredIndex(i)}
+                    onMouseLeave={() => setHoveredIndex(null)}
+                  >
+                    <div className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 transition-colors duration-200 ${
+                      hoveredIndex === i ? "bg-primary/20" : "bg-primary/10"
+                    }`}>
+                      <b.icon className="w-4 h-4 text-primary" />
+                    </div>
+                    <span className="text-sm text-foreground/80">{b.label}</span>
+                  </div>
+                </FadeIn>
+              ))}
+            </div>
+          </div>
         </div>
       </div>
     </section>
   );
 }
 
-/* ─── 4. Key Features ─── */
+/* ─── 4. Key Features — small floating images with cards ─── */
 function KeyFeatures() {
   const features = [
-    { icon: Eye, label: "Live preview" },
-    { icon: Code, label: "Built-in code editor" },
-    { icon: Layers, label: "Multi-program stacks" },
-    { icon: FolderKanban, label: "Project management" },
-    { icon: Share2, label: "One-click publish" },
-    { icon: CreditCard, label: "Flexible plans" },
+    { icon: Eye, label: "Live preview", desc: "See your changes in real time." },
+    { icon: Code, label: "Built-in code editor", desc: "Full IDE without leaving the workspace." },
+    { icon: Layers, label: "Multi-program stacks", desc: "Frontend, backend, database in one project." },
+    { icon: FolderKanban, label: "Project management", desc: "Organize and reopen any time." },
+    { icon: Share2, label: "One-click publish", desc: "Share a live link instantly." },
+    { icon: CreditCard, label: "Flexible plans", desc: "Start free, upgrade when ready." },
   ];
 
   return (
     <section className="py-28 md:py-36 border-t border-border/10">
-      <div className="container mx-auto px-6 lg:px-8 max-w-5xl">
-        <div className="grid lg:grid-cols-2 gap-16 items-start">
+      <div className="container mx-auto px-6 lg:px-8 max-w-6xl">
+        <div className="grid lg:grid-cols-[1.1fr_1fr] gap-16 items-start">
           <div>
             <FadeIn>
               <p className="text-xs font-medium tracking-[0.2em] uppercase text-primary mb-5">Features</p>
               <h2 className="text-2xl md:text-[1.75rem] font-semibold text-foreground mb-4 leading-snug">
                 Everything you need to build and ship.
               </h2>
-              <p className="text-muted-foreground text-sm max-w-sm">
+              <p className="text-muted-foreground text-sm max-w-sm mb-10">
                 A complete development environment designed for speed.
               </p>
             </FadeIn>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              {features.map((f, i) => (
+                <FadeIn key={i} delay={i * 0.05}>
+                  <div className={glassCard + " p-4"}>
+                    <div className="flex items-center gap-3 mb-2">
+                      <f.icon className="w-4 h-4 text-primary shrink-0" />
+                      <span className="text-sm font-medium text-foreground">{f.label}</span>
+                    </div>
+                    <p className="text-xs text-muted-foreground">{f.desc}</p>
+                  </div>
+                </FadeIn>
+              ))}
+            </div>
           </div>
-          <div className="grid grid-cols-2 gap-x-6 gap-y-5">
-            {features.map((f, i) => (
-              <FadeIn key={i} delay={i * 0.05}>
-                <div className="flex items-center gap-3 py-2 group">
-                  <f.icon className="w-4 h-4 text-primary shrink-0 transition-colors group-hover:text-primary/80" />
-                  <span className="text-sm text-foreground/80">{f.label}</span>
-                </div>
-              </FadeIn>
-            ))}
-          </div>
+
+          {/* Floating dashboard preview */}
+          <FadeIn delay={0.2} className="hidden lg:block">
+            <div className="relative mt-8">
+              <div className={glassFrame}>
+                <ParallaxImage src={dashboardPreview} alt="Project dashboard" />
+              </div>
+              {/* Floating accent */}
+              <div
+                className="absolute -bottom-4 -left-4 w-24 h-24 rounded-full opacity-20 pointer-events-none"
+                style={{
+                  background: "radial-gradient(circle, hsl(var(--primary)) 0%, transparent 70%)",
+                  filter: "blur(20px)",
+                }}
+              />
+            </div>
+          </FadeIn>
         </div>
       </div>
     </section>
@@ -395,7 +362,6 @@ function FinalCTA() {
   const navigate = useNavigate();
   return (
     <section className="py-28 md:py-36 border-t border-border/10 relative overflow-hidden">
-      {/* Aurora background */}
       <div className="absolute inset-0 pointer-events-none">
         <div
           className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[200px] rounded-full opacity-30"
@@ -415,18 +381,10 @@ function FinalCTA() {
             Start free with 5 daily credits. No setup required.
           </p>
           <div className="flex items-center justify-center gap-3">
-            <Button
-              size="lg"
-              onClick={() => navigate("/signup")}
-              className="gap-2"
-            >
+            <Button size="lg" onClick={() => navigate("/signup")} className="gap-2">
               Start building <ArrowRight className="w-4 h-4" />
             </Button>
-            <Button
-              size="lg"
-              variant="outline"
-              onClick={() => navigate("/pricing")}
-            >
+            <Button size="lg" variant="outline" onClick={() => navigate("/pricing")}>
               View pricing
             </Button>
           </div>
@@ -441,7 +399,7 @@ export default function LandingSections() {
   return (
     <div>
       <WhySection />
-      <HowItWorks />
+      <WorkflowBanner />
       <InsideTheBuilder />
       <KeyFeatures />
       <TestimonialsSection />

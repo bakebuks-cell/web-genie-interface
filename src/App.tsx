@@ -14,6 +14,7 @@ import Technologies from "./pages/Technologies";
 import Pricing from "./pages/Pricing";
 import Login from "./pages/Login";
 import SignUp from "./pages/SignUp";
+import AuthCallback from "./pages/AuthCallback";
 import Profile from "./pages/Profile";
 import NotFound from "./pages/NotFound";
 import AuthGate from "./pages/AuthGate";
@@ -41,6 +42,7 @@ const App = () => (
             <Route path="/login" element={<Layout><Login /></Layout>} />
             <Route path="/signup" element={<Layout><SignUp /></Layout>} />
             <Route path="/auth-gate" element={<AuthGate />} />
+            <Route path="/auth/callback" element={<AuthCallback />} />
             <Route path="/projects" element={<Layout><Projects /></Layout>} />
             <Route path="/profile" element={<Profile />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}

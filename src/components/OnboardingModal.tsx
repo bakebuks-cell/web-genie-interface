@@ -95,7 +95,7 @@ export const OnboardingModal = ({ isOpen, onClose, userName }: OnboardingModalPr
                 initial={{ scale: 0 }}
                 animate={{ scale: 1 }}
                 transition={{ type: 'spring', duration: 0.5 }}
-                className="mx-auto w-16 h-16 rounded-2xl bg-gradient-to-br from-primary to-accent-purple flex items-center justify-center"
+                className="mx-auto w-16 h-16 rounded-2xl bg-primary/15 border border-primary/30 flex items-center justify-center"
               >
                 <CurrentIcon className="w-8 h-8 text-primary-foreground" />
               </motion.div>

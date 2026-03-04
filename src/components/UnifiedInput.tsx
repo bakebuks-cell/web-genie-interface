@@ -271,18 +271,15 @@ const UnifiedInput = ({
       <div
         className={`
           relative flex flex-col p-4
-          rounded-2xl
+          rounded-lg
+          bg-card border border-border
           backdrop-blur-lg
-          transition-all duration-300 ease-out
+          transition-all duration-200 ease-out
           ${isFocused 
-            ? "shadow-[0_0_50px_rgba(0,255,200,0.35),0_0_80px_rgba(0,255,200,0.15),inset_0_0_30px_rgba(0,255,200,0.05)]" 
-            : "shadow-[0_0_40px_rgba(0,255,200,0.2),0_0_60px_rgba(0,255,200,0.08)]"
+            ? "shadow-[0_0_24px_hsl(var(--primary)/0.15)] border-primary/30" 
+            : "shadow-soft"
           }
         `}
-        style={{
-          background: "rgba(30, 30, 30, 0.6)",
-          border: "1px solid rgba(0, 230, 210, 0.25)",
-        }}
       >
         {/* Hidden file input */}
         <input
@@ -331,7 +328,7 @@ const UnifiedInput = ({
                           ? "bg-secondary/20 border-border/30 text-muted-foreground/50 opacity-60"
                           : "bg-secondary/30 border-border/50 text-muted-foreground hover:border-primary/40 hover:bg-secondary/50"
                       }
-                      ${attentionPulse && !isMultiMode ? "animate-[pulse_0.5s_ease-in-out_2] border-primary shadow-[0_0_16px_rgba(0,230,210,0.5)]" : ""}
+                      ${attentionPulse && !isMultiMode ? "animate-[pulse_0.5s_ease-in-out_2] border-primary shadow-[0_0_16px_hsl(var(--primary)/0.4)]" : ""}
                     `}
                   >
                     <span className="font-medium">
@@ -376,7 +373,7 @@ const UnifiedInput = ({
                     ? "bg-primary/10 border-primary/30 text-foreground"
                     : "bg-secondary/30 border-border/50 text-muted-foreground hover:border-primary/40 hover:bg-secondary/50"
                   }
-                  ${attentionPulse && !selectedLanguage && !isMultiMode ? "animate-[pulse_0.5s_ease-in-out_2] border-primary shadow-[0_0_16px_rgba(0,230,210,0.5)]" : ""}
+                  ${attentionPulse && !selectedLanguage && !isMultiMode ? "animate-[pulse_0.5s_ease-in-out_2] border-primary shadow-[0_0_16px_hsl(var(--primary)/0.4)]" : ""}
                 `}
               >
                 <Layers className="w-4 h-4" />
@@ -395,7 +392,7 @@ const UnifiedInput = ({
                   initial={{ opacity: 0, y: -4 }}
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: -4 }}
-                  className="text-xs text-red-400 pl-1"
+                  className="text-xs text-destructive pl-1"
                 >
                   {validationError}
                 </motion.p>
@@ -437,16 +434,13 @@ const UnifiedInput = ({
             <button
               onClick={handleGenerate}
               className={`
-                flex items-center justify-center p-2.5 rounded-xl 
-                transition-all duration-300 active:scale-95
+                flex items-center justify-center p-2.5 rounded-md 
+                transition-all duration-200 active:scale-95
                 ${isGenerateEnabled
-                  ? "text-primary-foreground hover:opacity-90 shadow-[0_0_20px_rgba(0,255,200,0.3)]"
+                  ? "text-primary-foreground bg-primary hover:bg-primary/90 shadow-[0_0_12px_hsl(var(--primary)/0.2)]"
                   : "bg-muted text-muted-foreground cursor-not-allowed opacity-50"
                 }
               `}
-              style={isGenerateEnabled ? {
-                background: "linear-gradient(90deg, #00f0ff, #00c8a0)",
-              } : undefined}
               title={isGenerateEnabled ? "Generate Application" : "Select language and describe your idea first"}
             >
               <ArrowUp className="w-5 h-5" />

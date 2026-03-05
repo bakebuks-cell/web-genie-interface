@@ -1,283 +1,226 @@
-import { motion } from "framer-motion";
-import { 
-  Zap, 
-  Globe2, 
-  Sparkles, 
-  Code2,
-  Gauge, 
-  Target, 
-  Shield,
-  Layers
-} from "lucide-react";
+import { motion, useInView } from "framer-motion";
+import { useRef } from "react";
+import { Zap, Layers, Code2, ArrowRight } from "lucide-react";
+import { Link } from "react-router-dom";
+import aboutVisionVisual from "@/assets/about-vision-visual.jpg";
 
-const providesFeatures = [
-  {
-    icon: Zap,
-    title: "Prompt to Production",
-    description: "Turn ideas into structured, deployable outputs with speed and clarity.",
-  },
-  {
-    icon: Globe2,
-    title: "Multi-Language Intelligence",
-    description: "Supports programming and natural languages seamlessly.",
-  },
-  {
-    icon: Layers,
-    title: "Full-Stack Generation",
-    description: "Frontend, backend, and database — all from a single prompt.",
-  },
-  {
-    icon: Code2,
-    title: "Clean Code Output",
-    description: "Well-structured, maintainable code following best practices.",
-  },
-];
-
-const whyChooseFeatures = [
-  {
-    icon: Gauge,
-    title: "Built for Speed",
-    description: "Optimized for fast iteration and rapid shipping.",
-  },
-  {
-    icon: Target,
-    title: "Precision-Driven",
-    description: "Structured, predictable, and clean results every time.",
-  },
-  {
-    icon: Shield,
-    title: "Production Ready",
-    description: "Scalable architecture from day one.",
-  },
-  {
-    icon: Sparkles,
-    title: "Developer-First",
-    description: "No clutter, no templates — just focused generation.",
-  },
-];
-
-const containerVariants = {
-  hidden: { opacity: 0 },
-  visible: {
-    opacity: 1,
-    transition: {
-      staggerChildren: 0.08,
-      delayChildren: 0.1,
-    },
-  },
-};
-
-const cardVariants = {
-  hidden: { opacity: 0, y: 20 },
-  visible: {
-    opacity: 1,
-    y: 0,
-    transition: {
-      duration: 0.5,
-      ease: "easeOut" as const,
-    },
-  },
-};
-
-const FeatureCard = ({ feature }: { feature: { icon: typeof Zap; title: string; description: string } }) => {
-  const IconComponent = feature.icon;
-  
+/* ── FadeIn helper ── */
+const FadeIn = ({
+  children,
+  delay = 0,
+  className = "",
+}: {
+  children: React.ReactNode;
+  delay?: number;
+  className?: string;
+}) => {
+  const ref = useRef<HTMLDivElement>(null);
+  const inView = useInView(ref, { once: true, margin: "-60px" });
   return (
     <motion.div
-      variants={cardVariants}
-      whileHover={{ 
-        y: -4,
-        transition: { duration: 0.25, ease: "easeOut" }
-      }}
-      className="group relative p-6 rounded-xl 
-        bg-white/[0.02]
-        backdrop-blur-sm
-        border border-white/[0.06]
-        hover:border-white/[0.12]
-        hover:bg-white/[0.04]
-        hover:shadow-xl hover:shadow-purple-500/[0.03]
-        transition-all duration-300 ease-out
-        cursor-default"
+      ref={ref}
+      initial={{ opacity: 0, y: 14 }}
+      animate={inView ? { opacity: 1, y: 0 } : {}}
+      transition={{ duration: 0.5, delay, ease: "easeOut" }}
+      className={className}
     >
-      <div className="absolute inset-0 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300 bg-gradient-to-br from-purple-500/[0.03] via-transparent to-transparent pointer-events-none" />
-      
-      <div className="relative z-10">
-        <div className="w-10 h-10 rounded-lg bg-white/[0.04] border border-white/[0.06] flex items-center justify-center mb-5 group-hover:bg-white/[0.06] group-hover:border-white/[0.1] transition-all duration-300">
-          <IconComponent className="w-5 h-5 text-white/50 group-hover:text-white/70 transition-colors duration-300" strokeWidth={1.5} />
-        </div>
-        
-        <h3 className="text-base font-semibold text-white/90 group-hover:text-white mb-2 transition-colors duration-300">
-          {feature.title}
-        </h3>
-        
-        <p className="text-sm text-white/40 group-hover:text-white/55 leading-relaxed transition-colors duration-300">
-          {feature.description}
-        </p>
-      </div>
+      {children}
     </motion.div>
   );
 };
 
+/* ── Mission cards ── */
+const missionCards = [
+  {
+    icon: Zap,
+    title: "Speed",
+    description: "Build applications in minutes instead of hours.",
+  },
+  {
+    icon: Layers,
+    title: "Flexibility",
+    description: "Choose single language or multi-program stacks.",
+  },
+  {
+    icon: Code2,
+    title: "Developer-friendly",
+    description: "Preview, edit, and publish from one workspace.",
+  },
+];
+
 const About = () => {
   return (
-    <div className="min-h-screen bg-black relative overflow-hidden">
-      {/* Dot grid background */}
-      <div 
-        className="fixed inset-0 pointer-events-none opacity-[0.02]"
+    <div className="min-h-screen bg-background relative overflow-hidden">
+      {/* grid bg */}
+      <div
+        className="fixed inset-0 pointer-events-none opacity-[0.025]"
         style={{
-          backgroundImage: `radial-gradient(circle at 1px 1px, white 1px, transparent 0)`,
-          backgroundSize: '32px 32px',
+          backgroundImage: `radial-gradient(circle at 1px 1px, hsl(var(--foreground)) 0.5px, transparent 0)`,
+          backgroundSize: "40px 40px",
         }}
       />
-      
-      {/* Ambient gradient effects */}
-      <div className="fixed inset-0 pointer-events-none overflow-hidden">
-        <motion.div 
-          className="absolute -top-40 -left-40 w-[500px] h-[500px] rounded-full"
+
+      {/* ambient glow */}
+      <div className="fixed inset-0 pointer-events-none">
+        <motion.div
+          className="absolute -top-20 left-1/2 -translate-x-1/2 w-[800px] h-[450px]"
           style={{
-            background: 'radial-gradient(circle, hsl(250 70% 50% / 0.06) 0%, transparent 70%)',
+            background:
+              "radial-gradient(ellipse, hsl(170 100% 47% / 0.06) 0%, transparent 70%)",
           }}
-          animate={{ 
-            scale: [1, 1.1, 1],
-            opacity: [0.5, 0.7, 0.5],
-          }}
+          animate={{ opacity: [0.4, 0.7, 0.4] }}
           transition={{ duration: 10, repeat: Infinity, ease: "easeInOut" }}
         />
-        <motion.div 
-          className="absolute -bottom-40 -right-40 w-[600px] h-[600px] rounded-full"
+        <motion.div
+          className="absolute bottom-0 right-0 w-[600px] h-[400px]"
           style={{
-            background: 'radial-gradient(circle, hsl(280 70% 45% / 0.05) 0%, transparent 70%)',
+            background:
+              "radial-gradient(ellipse, hsl(170 80% 40% / 0.04) 0%, transparent 70%)",
           }}
-          animate={{ 
-            scale: [1.1, 1, 1.1],
-            opacity: [0.4, 0.6, 0.4],
-          }}
+          animate={{ opacity: [0.3, 0.5, 0.3] }}
           transition={{ duration: 12, repeat: Infinity, ease: "easeInOut" }}
-        />
-        <div 
-          className="absolute top-1/3 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[900px] h-[500px]"
-          style={{
-            background: 'radial-gradient(ellipse, hsl(260 60% 50% / 0.04) 0%, transparent 60%)',
-          }}
         />
       </div>
 
       <main className="relative z-10 pt-28 pb-24 px-6">
         <div className="max-w-4xl mx-auto">
-          
-          {/* Hero Introduction Section */}
-          <motion.section 
-            className="mb-20"
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.7 }}
-          >
-            <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-white mb-8 leading-tight">
+          {/* ── Hero ── */}
+          <FadeIn className="text-center mb-20">
+            <span className="inline-block text-[11px] font-medium tracking-[0.2em] uppercase text-primary/70 mb-4">
               About
+            </span>
+            <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-foreground mb-6 leading-tight">
+              About <span className="gradient-text">MyCodex</span>
             </h1>
-            
-            <div className="space-y-5">
-              <p className="text-lg md:text-xl text-white/60 leading-relaxed">
-                MyCodex is an AI-powered prompt-to-application platform that converts ideas into full web applications. It allows users to choose their preferred technology stack and generate scalable, production-ready code.
-              </p>
-              <p className="text-lg md:text-xl text-white/50 leading-relaxed">
-                The platform is built to reduce development friction, accelerate workflows, and maintain clean architecture — enabling developers and teams to ship faster without compromising on quality.
-              </p>
-            </div>
-          </motion.section>
+            <p className="text-foreground/45 text-base md:text-lg max-w-2xl mx-auto leading-relaxed">
+              MyCodex is an AI-powered builder that transforms simple prompts
+              into full applications — from frontend to backend to database.
+            </p>
+          </FadeIn>
 
-          {/* Divider */}
-          <motion.div 
-            className="w-full h-px bg-gradient-to-r from-transparent via-white/10 to-transparent mb-16"
-            initial={{ opacity: 0, scaleX: 0 }}
-            animate={{ opacity: 1, scaleX: 1 }}
-            transition={{ duration: 0.8, delay: 0.3 }}
+          {/* ── divider ── */}
+          <motion.div
+            className="w-full h-px bg-gradient-to-r from-transparent via-border to-transparent mb-20"
+            initial={{ scaleX: 0 }}
+            animate={{ scaleX: 1 }}
+            transition={{ duration: 0.8, delay: 0.2 }}
           />
 
-          {/* What MyCodex Provides */}
-          <motion.section 
-            className="mb-20"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 0.6, delay: 0.4 }}
-          >
-            <div className="mb-10">
-              <span className="inline-block text-xs font-medium tracking-widest text-white/30 uppercase mb-3">
-                Capabilities
+          {/* ── Story ── */}
+          <FadeIn className="mb-20">
+            <span className="inline-block text-[11px] font-medium tracking-[0.2em] uppercase text-primary/70 mb-3">
+              The Problem
+            </span>
+            <div className="space-y-5 max-w-3xl">
+              <p className="text-lg text-foreground/55 leading-relaxed">
+                Developers spend too much time setting up projects, wiring
+                stacks, and writing repetitive code. Boilerplate eats into the
+                hours meant for building real features.
+              </p>
+              <p className="text-lg text-foreground/45 leading-relaxed">
+                MyCodex solves this by turning natural language prompts into
+                structured applications with modern stacks — clean
+                architecture, sensible defaults, and production-ready output
+                from the first line.
+              </p>
+            </div>
+          </FadeIn>
+
+          {/* ── Mission Cards ── */}
+          <FadeIn className="mb-24">
+            <span className="inline-block text-[11px] font-medium tracking-[0.2em] uppercase text-primary/70 mb-6">
+              Core Principles
+            </span>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              {missionCards.map((card, i) => {
+                const Icon = card.icon;
+                return (
+                  <motion.div
+                    key={card.title}
+                    initial={{ opacity: 0, y: 16 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.4, delay: 0.1 * i }}
+                    whileHover={{ y: -4, transition: { duration: 0.2 } }}
+                    className="group p-6 rounded-xl bg-secondary/30 backdrop-blur-sm
+                      border border-border/40 hover:border-primary/30
+                      hover:shadow-[0_0_30px_hsl(170_100%_47%/0.06)]
+                      transition-all duration-300 cursor-default"
+                  >
+                    <div className="w-9 h-9 rounded-lg bg-primary/10 border border-primary/15 flex items-center justify-center mb-4 group-hover:bg-primary/15 transition-colors">
+                      <Icon
+                        className="w-4 h-4 text-primary/70 group-hover:text-primary transition-colors"
+                        strokeWidth={1.5}
+                      />
+                    </div>
+                    <h3 className="text-sm font-semibold text-foreground/90 mb-1.5 group-hover:text-foreground transition-colors">
+                      {card.title}
+                    </h3>
+                    <p className="text-xs text-muted-foreground leading-relaxed group-hover:text-foreground/50 transition-colors">
+                      {card.description}
+                    </p>
+                  </motion.div>
+                );
+              })}
+            </div>
+          </FadeIn>
+
+          {/* ── Vision ── */}
+          <FadeIn className="mb-24">
+            <div className="text-center mb-10">
+              <span className="inline-block text-[11px] font-medium tracking-[0.2em] uppercase text-primary/70 mb-3">
+                Vision
               </span>
-              <h2 className="text-2xl md:text-3xl font-bold text-white">
-                What MyCodex Provides
+              <h2 className="text-2xl md:text-3xl font-bold text-foreground mb-4">
+                The Future of Building Software
               </h2>
+              <p className="text-foreground/40 text-base max-w-xl mx-auto">
+                MyCodex aims to make application development as simple as
+                describing what you want — letting AI handle the architecture,
+                boilerplate, and wiring.
+              </p>
             </div>
-
-            <motion.div 
-              className="grid grid-cols-1 sm:grid-cols-2 gap-4"
-              variants={containerVariants}
-              initial="hidden"
-              animate="visible"
-            >
-              {providesFeatures.map((feature) => (
-                <FeatureCard key={feature.title} feature={feature} />
-              ))}
-            </motion.div>
-          </motion.section>
-
-          {/* Why Choose MyCodex */}
-          <motion.section
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 0.6, delay: 0.6 }}
-          >
-            <div className="mb-10">
-              <span className="inline-block text-xs font-medium tracking-widest text-white/30 uppercase mb-3">
-                Advantages
-              </span>
-              <h2 className="text-2xl md:text-3xl font-bold text-white mb-8">
-                Why Choose MyCodex
-              </h2>
+            <div className="relative rounded-2xl overflow-hidden border border-border/30">
+              <div className="absolute inset-0 bg-gradient-to-t from-background via-transparent to-transparent z-10" />
+              <img
+                src={aboutVisionVisual}
+                alt="The future of AI-powered software development"
+                className="w-full h-auto object-cover opacity-75"
+                loading="lazy"
+              />
             </div>
+          </FadeIn>
 
-            {/* Premium paragraph content */}
-            <div className="space-y-6 mb-12">
-              <motion.p 
-                className="text-lg md:text-xl text-white/60 leading-relaxed"
-                initial={{ opacity: 0, y: 15 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5, delay: 0.7 }}
-              >
-                Unlike generic AI tools that produce fragmented or boilerplate code, MyCodex is purpose-built for real-world software development. Every output is structured around clean architecture principles — separating concerns, enforcing modularity, and ensuring that generated applications are maintainable from the first line of code.
-              </motion.p>
-              
-              <motion.p 
-                className="text-lg md:text-xl text-white/55 leading-relaxed"
-                initial={{ opacity: 0, y: 15 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5, delay: 0.85 }}
-              >
-                The platform offers genuine multi-technology support across React, Node.js/TypeScript, PHP, Golang, and Python. This means developers can choose the stack that fits their project requirements without compromising on code quality or architectural consistency. Whether you're building enterprise backends or modern frontends, MyCodex adapts to your workflow.
-              </motion.p>
-              
-              <motion.p 
-                className="text-lg md:text-xl text-white/50 leading-relaxed"
-                initial={{ opacity: 0, y: 15 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5, delay: 1 }}
-              >
-                Speed and clarity are at the core of the experience. The platform eliminates the noise of traditional development by giving you exactly what you need — production-ready code with clear structure, sensible defaults, and room for customization. Developers retain full control over the output while benefiting from AI-accelerated generation that respects industry standards and scalability requirements.
-              </motion.p>
+          {/* ── CTA ── */}
+          <FadeIn className="text-center">
+            <div className="relative py-16 px-8 rounded-2xl border border-border/30 bg-secondary/20 backdrop-blur-sm overflow-hidden">
+              <div
+                className="absolute inset-0 pointer-events-none"
+                style={{
+                  background:
+                    "radial-gradient(ellipse at center, hsl(170 100% 47% / 0.04), transparent 70%)",
+                }}
+              />
+              <div className="relative z-10">
+                <h2 className="text-2xl md:text-3xl font-bold text-foreground mb-3">
+                  Start building with MyCodex
+                </h2>
+                <p className="text-foreground/40 text-sm mb-8 max-w-md mx-auto">
+                  Turn your ideas into production-ready applications.
+                </p>
+                <Link
+                  to="/"
+                  className="inline-flex items-center gap-2 px-6 py-3 rounded-lg text-sm font-medium
+                    text-primary-foreground
+                    bg-[image:var(--gradient-primary)]
+                    hover:brightness-110 transition-all duration-200
+                    shadow-[0_0_20px_hsl(170_100%_47%/0.2)]"
+                >
+                  Get Started
+                  <ArrowRight className="w-4 h-4" />
+                </Link>
+              </div>
             </div>
-
-            <motion.div 
-              className="grid grid-cols-1 sm:grid-cols-2 gap-4"
-              variants={containerVariants}
-              initial="hidden"
-              animate="visible"
-            >
-              {whyChooseFeatures.map((feature) => (
-                <FeatureCard key={feature.title} feature={feature} />
-              ))}
-            </motion.div>
-          </motion.section>
+          </FadeIn>
         </div>
       </main>
     </div>

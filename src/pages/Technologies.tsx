@@ -1,93 +1,74 @@
-import { motion } from "framer-motion";
-import { 
-  Rocket, 
-  Settings, 
-  Bot, 
-  BarChart3, 
-  Shield, 
-  Globe,
-  Loader2 
+import { motion, useInView } from "framer-motion";
+import { useRef } from "react";
+import {
+  Loader2,
+  ArrowRight,
+  Monitor,
+  Server,
+  Database,
 } from "lucide-react";
 import { useTechnologiesWithStyles } from "@/hooks/useTechnologies";
+import techHeroVisual from "@/assets/tech-hero-visual.jpg";
 
-const buildFeatures = [
-  {
-    icon: Rocket,
-    title: "Full-Stack Web Applications",
-    items: [
-      "From idea to production-ready apps",
-      "Frontend + backend handled end-to-end",
-    ],
-  },
-  {
-    icon: Settings,
-    title: "Custom Backend & APIs",
-    items: [
-      "Secure REST APIs",
-      "Scalable architecture",
-      "High performance systems",
-    ],
-  },
-  {
-    icon: Bot,
-    title: "AI-Powered Applications",
-    items: [
-      "Prompt-driven workflows",
-      "AI integrations",
-      "Smart automation tools",
-    ],
-  },
-  {
-    icon: BarChart3,
-    title: "Business & Admin Dashboards",
-    items: [
-      "Analytics dashboards",
-      "Internal tools",
-      "Role-based access systems",
-    ],
-  },
-  {
-    icon: Shield,
-    title: "Enterprise-Grade Systems",
-    items: [
-      "Secure authentication",
-      "Scalable infrastructure",
-      "Production-ready deployments",
-    ],
-  },
-  {
-    icon: Globe,
-    title: "Multi-Technology Support",
-    items: [
-      "Choose the best tech per project",
-      "Mix frontend & backend stacks seamlessly",
-    ],
-  },
+/* ── animation helpers ── */
+const FadeIn = ({
+  children,
+  delay = 0,
+  className = "",
+}: {
+  children: React.ReactNode;
+  delay?: number;
+  className?: string;
+}) => {
+  const ref = useRef<HTMLDivElement>(null);
+  const inView = useInView(ref, { once: true, margin: "-60px" });
+  return (
+    <motion.div
+      ref={ref}
+      initial={{ opacity: 0, y: 14 }}
+      animate={inView ? { opacity: 1, y: 0 } : {}}
+      transition={{ duration: 0.5, delay, ease: "easeOut" }}
+      className={className}
+    >
+      {children}
+    </motion.div>
+  );
+};
+
+/* ── static data ── */
+const techCategories = [
+  { label: "Frontend", icon: Monitor },
+  { label: "Backend", icon: Server },
+  { label: "Database", icon: Database },
+] as const;
+
+const categoryMap: Record<string, string> = {
+  React: "Frontend",
+  "Next.js": "Frontend",
+  "Plain HTML/CSS/JS": "Frontend",
+  HTML: "Frontend",
+  CSS: "Frontend",
+  JavaScript: "Frontend",
+  "Node/TS": "Backend",
+  Python: "Backend",
+  "Java (Enterprise)": "Backend",
+  "ASP.NET (C#)": "Backend",
+  PHP: "Backend",
+  Golang: "Backend",
+  Supabase: "Database",
+  PostgreSQL: "Database",
+  MongoDB: "Database",
+};
+
+const flowSteps = [
+  { label: "Prompt", sub: "Describe your app" },
+  { label: "AI Engine", sub: "Analyze & plan" },
+  { label: "Code Generation", sub: "Structured output" },
+  { label: "Database Setup", sub: "Schema & tables" },
+  { label: "Deploy Ready", sub: "Ship instantly" },
 ];
 
-const containerVariants = {
-  hidden: { opacity: 0 },
-  visible: {
-    opacity: 1,
-    transition: {
-      staggerChildren: 0.08,
-      delayChildren: 0.2,
-    },
-  },
-};
-
-const cardVariants = {
-  hidden: { opacity: 0, y: 20 },
-  visible: {
-    opacity: 1,
-    y: 0,
-    transition: {
-      duration: 0.5,
-      ease: "easeOut" as const,
-    },
-  },
-};
-
+/* ── tech card ── */
 interface TechCardProps {
   tech: {
     name: string;
@@ -96,219 +77,168 @@ interface TechCardProps {
     color: string;
     glowColor: string;
     borderColor: string;
-    useCases: string[];
-    benefits: string[];
-    projectTypes: string;
   };
+  index: number;
 }
 
-const TechCard = ({ tech }: TechCardProps) => {
-  return (
-    <motion.div
-      variants={cardVariants}
-      whileHover={{ 
-        y: -6,
-        transition: { duration: 0.25, ease: "easeOut" }
-      }}
-      className={`group relative p-6 rounded-xl 
-        bg-gradient-to-br ${tech.color}
-        backdrop-blur-sm
-        border border-white/[0.08]
-        ${tech.borderColor}
-        ${tech.glowColor}
-        hover:shadow-xl
-        transition-all duration-300 ease-out
-        cursor-default`}
-    >
-      <div className="absolute inset-0 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300 bg-gradient-to-br from-white/[0.03] via-transparent to-transparent pointer-events-none" />
-      
-      <div className="relative z-10">
-        {/* Header with icon and name */}
-        <div className="flex items-center gap-3 mb-3">
-          <span className="text-2xl">{tech.icon}</span>
-          <h3 className="text-lg font-semibold text-white/90 group-hover:text-white transition-colors duration-300">
-            {tech.name}
-          </h3>
-        </div>
-        
-        {/* Description */}
-        <p className="text-sm text-white/50 group-hover:text-white/70 transition-colors duration-300 mb-4">
-          {tech.description}
-        </p>
-        
-        {/* Use Cases */}
-        <div className="mb-4">
-          <h4 className="text-xs font-medium text-white/40 uppercase tracking-wide mb-2">Use Cases</h4>
-          <ul className="space-y-1.5">
-            {tech.useCases.map((useCase, index) => (
-              <li 
-                key={index}
-                className="text-sm text-white/50 group-hover:text-white/70 transition-colors duration-300 flex items-start gap-2"
-              >
-                <span className="w-1 h-1 rounded-full bg-white/30 mt-2 flex-shrink-0" />
-                {useCase}
-              </li>
-            ))}
-          </ul>
-        </div>
-        
-        {/* Benefits */}
-        <div className="mb-4">
-          <h4 className="text-xs font-medium text-white/40 uppercase tracking-wide mb-2">Key Benefits</h4>
-          <ul className="space-y-1.5">
-            {tech.benefits.map((benefit, index) => (
-              <li 
-                key={index}
-                className="text-sm text-white/50 group-hover:text-white/70 transition-colors duration-300 flex items-start gap-2"
-              >
-                <span className="w-1 h-1 rounded-full bg-primary/50 mt-2 flex-shrink-0" />
-                {benefit}
-              </li>
-            ))}
-          </ul>
-        </div>
-        
-        {/* Project Types */}
-        <div>
-          <h4 className="text-xs font-medium text-white/40 uppercase tracking-wide mb-2">Typical Projects</h4>
-          <p className="text-xs text-white/40 group-hover:text-white/60 transition-colors duration-300">
-            {tech.projectTypes}
-          </p>
-        </div>
-      </div>
-    </motion.div>
-  );
-};
+const TechCard = ({ tech, index }: TechCardProps) => (
+  <motion.div
+    initial={{ opacity: 0, y: 16 }}
+    animate={{ opacity: 1, y: 0 }}
+    transition={{ duration: 0.4, delay: index * 0.05 }}
+    whileHover={{
+      y: -5,
+      transition: { duration: 0.2 },
+    }}
+    className={`group relative p-5 rounded-xl
+      bg-secondary/30 backdrop-blur-sm
+      border border-border/40
+      hover:border-primary/40
+      hover:shadow-[0_0_30px_hsl(170_100%_47%/0.08)]
+      transition-all duration-300 cursor-default`}
+  >
+    <div className="flex items-center gap-3 mb-2">
+      <span className="text-xl">{tech.icon}</span>
+      <h3 className="text-sm font-semibold text-foreground/90 group-hover:text-foreground transition-colors">
+        {tech.name}
+      </h3>
+    </div>
+    <p className="text-xs text-muted-foreground leading-relaxed group-hover:text-foreground/60 transition-colors">
+      {tech.description}
+    </p>
+  </motion.div>
+);
 
-const BuildFeatureCard = ({ feature }: { feature: typeof buildFeatures[0] }) => {
-  const IconComponent = feature.icon;
-  
-  return (
-    <motion.div
-      variants={cardVariants}
-      whileHover={{ 
-        y: -4,
-        transition: { duration: 0.25, ease: "easeOut" }
-      }}
-      className="group relative p-6 rounded-xl 
-        bg-white/[0.02]
-        backdrop-blur-sm
-        border border-white/[0.08]
-        hover:border-white/[0.15]
-        hover:bg-white/[0.04]
-        hover:shadow-xl hover:shadow-white/[0.02]
-        transition-all duration-300 ease-out
-        cursor-default"
-    >
-      <div className="relative z-10">
-        <div className="w-10 h-10 rounded-lg bg-white/[0.05] flex items-center justify-center mb-4 group-hover:bg-white/[0.08] transition-colors duration-300">
-          <IconComponent className="w-5 h-5 text-white/60 group-hover:text-white/80 transition-colors duration-300" />
-        </div>
-        
-        <h3 className="text-base font-semibold text-white/90 group-hover:text-white mb-3 transition-colors duration-300">
-          {feature.title}
-        </h3>
-        
-        <ul className="space-y-1.5">
-          {feature.items.map((item, index) => (
-            <li 
-              key={index}
-              className="text-sm text-white/40 group-hover:text-white/60 transition-colors duration-300"
-            >
-              {item}
-            </li>
-          ))}
-        </ul>
+/* ── flow step ── */
+const FlowStep = ({ step, index }: { step: typeof flowSteps[0]; index: number }) => (
+  <FadeIn delay={0.1 * index} className="flex items-center gap-3 md:gap-4">
+    <div className="flex flex-col items-center text-center min-w-[100px]">
+      <div className="w-10 h-10 rounded-lg bg-primary/10 border border-primary/20 flex items-center justify-center mb-2">
+        <span className="text-xs font-bold text-primary">{index + 1}</span>
       </div>
-    </motion.div>
-  );
-};
+      <span className="text-sm font-medium text-foreground/90">{step.label}</span>
+      <span className="text-[11px] text-muted-foreground mt-0.5">{step.sub}</span>
+    </div>
+    {index < flowSteps.length - 1 && (
+      <ArrowRight className="w-4 h-4 text-primary/40 flex-shrink-0 hidden md:block" />
+    )}
+  </FadeIn>
+);
 
+/* ── page ── */
 const Technologies = () => {
   const { technologies, isLoading } = useTechnologiesWithStyles();
 
+  const grouped = technologies?.reduce<Record<string, typeof technologies>>(
+    (acc, tech) => {
+      const cat = categoryMap[tech.name] || "Backend";
+      if (!acc[cat]) acc[cat] = [];
+      acc[cat].push(tech);
+      return acc;
+    },
+    {}
+  );
+
   return (
-    <div className="min-h-screen bg-black relative overflow-hidden">
-      {/* Dot grid background */}
-      <div 
-        className="fixed inset-0 pointer-events-none opacity-[0.03]"
+    <div className="min-h-screen bg-background relative overflow-hidden">
+      {/* grid bg */}
+      <div
+        className="fixed inset-0 pointer-events-none opacity-[0.025]"
         style={{
-          backgroundImage: `radial-gradient(circle at 1px 1px, white 1px, transparent 0)`,
-          backgroundSize: '32px 32px',
+          backgroundImage: `radial-gradient(circle at 1px 1px, hsl(var(--foreground)) 0.5px, transparent 0)`,
+          backgroundSize: "40px 40px",
         }}
       />
-      
-      {/* Subtle ambient glow */}
-      <div className="fixed inset-0 pointer-events-none overflow-hidden">
-        <div 
-          className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[400px]"
+
+      {/* ambient glow */}
+      <div className="fixed inset-0 pointer-events-none">
+        <motion.div
+          className="absolute top-0 left-1/2 -translate-x-1/2 w-[900px] h-[500px]"
           style={{
-            background: 'radial-gradient(ellipse, hsl(250 60% 50% / 0.08) 0%, transparent 70%)',
+            background:
+              "radial-gradient(ellipse, hsl(170 100% 47% / 0.07) 0%, transparent 70%)",
           }}
+          animate={{ opacity: [0.5, 0.8, 0.5] }}
+          transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }}
         />
       </div>
 
       <main className="relative z-10 pt-28 pb-24 px-6">
-        <div className="max-w-5xl mx-auto">
-          {/* Page Header */}
-          <motion.div 
-            className="text-center mb-14"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6 }}
-          >
-            <h1 className="text-3xl md:text-4xl font-bold text-white mb-4">
-              Technologies We Work With
+        <div className="max-w-6xl mx-auto">
+          {/* ── Hero ── */}
+          <FadeIn className="text-center mb-20">
+            <span className="inline-block text-[11px] font-medium tracking-[0.2em] uppercase text-primary/70 mb-4">
+              Technology Stack
+            </span>
+            <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-foreground mb-5 leading-tight">
+              Built on modern,{" "}
+              <span className="gradient-text">reliable</span> technologies
             </h1>
-            <p className="text-white/40 text-base max-w-lg mx-auto">
-              Build, scale, and ship products using modern and reliable technologies.
+            <p className="text-foreground/45 text-base md:text-lg max-w-2xl mx-auto leading-relaxed">
+              MyCodex uses modern technologies to generate fast, scalable
+              applications — from frontend interfaces to backend APIs and
+              databases.
             </p>
-          </motion.div>
+          </FadeIn>
 
-          {/* Technology Cards Grid */}
+          {/* ── Tech Grid by Category ── */}
           {isLoading ? (
             <div className="flex items-center justify-center py-20">
-              <Loader2 className="w-8 h-8 text-white/40 animate-spin" />
+              <Loader2 className="w-6 h-6 text-muted-foreground animate-spin" />
             </div>
           ) : (
-            <motion.div 
-              className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-24"
-              variants={containerVariants}
-              initial="hidden"
-              animate="visible"
-            >
-              {technologies?.map((tech) => (
-                <TechCard key={tech.name} tech={tech} />
-              ))}
-            </motion.div>
+            <div className="space-y-16 mb-28">
+              {techCategories.map(({ label, icon: Icon }) => {
+                const techs = grouped?.[label];
+                if (!techs?.length) return null;
+                return (
+                  <FadeIn key={label}>
+                    <div className="flex items-center gap-2 mb-6">
+                      <Icon className="w-4 h-4 text-primary/60" strokeWidth={1.5} />
+                      <h2 className="text-xs font-semibold tracking-[0.15em] uppercase text-foreground/40">
+                        {label}
+                      </h2>
+                    </div>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
+                      {techs.map((tech, i) => (
+                        <TechCard key={tech.name} tech={tech} index={i} />
+                      ))}
+                    </div>
+                  </FadeIn>
+                );
+              })}
+            </div>
           )}
 
-          {/* What You Can Build Section */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.4 }}
-          >
-            <div className="text-center mb-12">
-              <h2 className="text-2xl md:text-3xl font-bold text-white mb-3">
-                What You Can Build with MyCodex
-              </h2>
-              <p className="text-white/40 text-sm max-w-md mx-auto">
-                From simple apps to enterprise systems — powered by your choice of technology.
-              </p>
+          {/* ── Visual Section ── */}
+          <FadeIn className="mb-28">
+            <div className="relative rounded-2xl overflow-hidden border border-border/30">
+              <div className="absolute inset-0 bg-gradient-to-t from-background via-transparent to-transparent z-10" />
+              <img
+                src={techHeroVisual}
+                alt="AI generating code architecture visualization"
+                className="w-full h-auto object-cover opacity-80"
+                loading="lazy"
+              />
             </div>
+          </FadeIn>
 
-            <motion.div 
-              className="grid grid-cols-1 md:grid-cols-2 gap-4"
-              variants={containerVariants}
-              initial="hidden"
-              animate="visible"
-            >
-              {buildFeatures.map((feature) => (
-                <BuildFeatureCard key={feature.title} feature={feature} />
+          {/* ── Architecture Flow ── */}
+          <FadeIn className="mb-20">
+            <div className="text-center mb-12">
+              <span className="inline-block text-[11px] font-medium tracking-[0.2em] uppercase text-primary/70 mb-3">
+                How it works
+              </span>
+              <h2 className="text-2xl md:text-3xl font-bold text-foreground">
+                How MyCodex Generates Applications
+              </h2>
+            </div>
+            <div className="flex flex-wrap justify-center items-start gap-4 md:gap-2">
+              {flowSteps.map((step, i) => (
+                <FlowStep key={step.label} step={step} index={i} />
               ))}
-            </motion.div>
-          </motion.div>
+            </div>
+          </FadeIn>
         </div>
       </main>
     </div>

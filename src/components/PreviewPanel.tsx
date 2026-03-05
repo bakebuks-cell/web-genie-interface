@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from "react";
-import { ExternalLink, RefreshCw, MousePointer2, Github, Laptop, Tablet, Smartphone, ChevronDown, Share2, Copy, Check, Loader2, Link as LinkIcon } from "lucide-react";
+import { ExternalLink, RefreshCw, MousePointer2, Github, Laptop, Tablet, Smartphone, ChevronDown, Share2, Copy, Check, Loader2, Link as LinkIcon, Database } from "lucide-react";
 import IdePanel from "@/components/code/IdePanel";
+import SupabaseModal from "@/components/SupabaseModal";
 import { motion, AnimatePresence } from "framer-motion";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
@@ -167,6 +168,10 @@ const PreviewPanel = ({
   const [selectedDevice, setSelectedDevice] = useState<"desktop" | "tablet" | "mobile">("desktop");
   const [selectedRoute, setSelectedRoute] = useState("/");
   const [publishedUrl, setPublishedUrl] = useState<string | null>(null);
+  const [supabaseModalOpen, setSupabaseModalOpen] = useState(false);
+  const [supabaseConnected, setSupabaseConnected] = useState(false);
+  const [supabaseUrl, setSupabaseUrl] = useState("");
+  const [supabaseAnonKey, setSupabaseAnonKey] = useState("");
   const iframeRef = useRef<HTMLIFrameElement>(null);
 
   const appRoutes = ["/", "/about", "/pricing", "/technologies", "/profile"];
@@ -485,7 +490,25 @@ const PreviewPanel = ({
                 : "text-muted-foreground hover:text-foreground hover:bg-secondary/40 border border-transparent"
             }`}
           >
-            Code
+           Code
+          </button>
+
+          {/* Supabase Button */}
+          <button
+            onClick={() => setSupabaseModalOpen(true)}
+            className={`
+              flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium rounded-lg transition-all duration-200 border
+              ${supabaseConnected
+                ? "bg-primary/15 text-primary border-primary/30 shadow-[0_0_12px_rgba(0,230,210,0.2)]"
+                : "text-muted-foreground hover:text-foreground hover:bg-secondary/40 border-transparent hover:border-border/50"
+              }
+            `}
+          >
+            <Database className="w-3.5 h-3.5" />
+            <span>Supabase</span>
+            {supabaseConnected && (
+              <div className="w-2 h-2 rounded-full bg-primary ml-0.5" />
+            )}
           </button>
         </div>
 
@@ -707,6 +730,17 @@ const PreviewPanel = ({
           )}
         </div>
       </div>
+
+      <SupabaseModal
+        open={supabaseModalOpen}
+        onClose={() => setSupabaseModalOpen(false)}
+        connected={supabaseConnected}
+        onToggleConnection={setSupabaseConnected}
+        supabaseUrl={supabaseUrl}
+        onSupabaseUrlChange={setSupabaseUrl}
+        supabaseAnonKey={supabaseAnonKey}
+        onSupabaseAnonKeyChange={setSupabaseAnonKey}
+      />
     </div>
   );
 };

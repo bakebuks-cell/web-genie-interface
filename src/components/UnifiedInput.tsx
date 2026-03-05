@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Paperclip, Mic, ChevronDown, ChevronRight, Check, ArrowUp, Layers } from "lucide-react";
+import { Paperclip, Mic, ChevronDown, ChevronRight, Check, ArrowUp } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import MultiProgramModal from "./MultiProgramModal";
 
@@ -355,30 +355,18 @@ const UnifiedInput = ({
               ref={programButtonRef}
               onClick={() => { setProgramMenuOpen(prev => !prev); setShowLangSubmenu(false); }}
               className={`
-                group flex items-center gap-2 px-3.5 py-2
-                rounded-xl text-sm max-w-[300px]
-                border backdrop-blur-md
-                transition-all duration-200
-                hover:-translate-y-[1px] hover:shadow-[0_0_20px_rgba(0,230,210,0.25),0_4px_16px_rgba(0,0,0,0.3)]
-                active:translate-y-[1px] active:shadow-[inset_0_2px_4px_rgba(0,0,0,0.3)]
+                flex items-center gap-2 px-3 py-2
+                rounded-lg border transition-all duration-200
+                text-sm max-w-[280px]
                 ${hasSelection
-                  ? "border-primary/40 text-foreground shadow-[0_0_12px_rgba(0,230,210,0.15),0_2px_8px_rgba(0,0,0,0.2)]"
-                  : "border-white/10 text-muted-foreground hover:border-primary/40"
+                  ? "bg-primary/10 border-primary/30 text-foreground"
+                  : "bg-secondary/30 border-border/50 text-muted-foreground hover:border-primary/40 hover:bg-secondary/50"
                 }
                 ${attentionPulse ? "animate-[pulse_0.5s_ease-in-out_2] border-primary shadow-[0_0_16px_rgba(0,230,210,0.5)]" : ""}
               `}
-              style={{
-                background: hasSelection
-                  ? "linear-gradient(135deg, rgba(0,230,210,0.12) 0%, rgba(20,24,30,0.85) 100%)"
-                  : "linear-gradient(135deg, rgba(40,44,52,0.8) 0%, rgba(20,24,30,0.9) 100%)",
-                boxShadow: hasSelection
-                  ? "inset 0 1px 0 rgba(255,255,255,0.06), 0 0 12px rgba(0,230,210,0.12)"
-                  : "inset 0 1px 0 rgba(255,255,255,0.06)",
-              }}
             >
-              <Layers className="w-4 h-4 shrink-0 text-primary/70 group-hover:text-primary transition-colors" />
               <span className="font-medium truncate">{getProgramLabel()}</span>
-              <ChevronDown className={`w-3.5 h-3.5 opacity-50 shrink-0 transition-transform duration-200 ${programMenuOpen ? "rotate-180" : ""}`} />
+              <ChevronDown className={`w-4 h-4 opacity-50 shrink-0 transition-transform ${programMenuOpen ? "rotate-180" : ""}`} />
             </button>
 
             {/* Dropdown menu */}

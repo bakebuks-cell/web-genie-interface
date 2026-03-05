@@ -1,6 +1,11 @@
-import { Database, Server, Check, XCircle } from "lucide-react";
+import { Database, Server, Check, XCircle, AlertTriangle } from "lucide-react";
 import { useDbStore } from "@/stores/useDbStore";
 import { ScrollArea } from "@/components/ui/scroll-area";
+
+function maskKey(key: string): string {
+  if (key.length <= 12) return "****";
+  return key.slice(0, 8) + "..." + key.slice(-4);
+}
 
 interface Props {
   projectId: string;
@@ -38,17 +43,21 @@ const DatabasePanel = ({ projectId }: Props) => {
       </div>
 
       {/* Info */}
-      <div className="px-4 py-3 border-b border-border space-y-1">
+      <div className="px-4 py-3 border-b border-border space-y-1.5">
         <div className="flex items-center gap-2 text-xs">
           <span className="text-muted-foreground">Provider:</span>
           <span className="text-foreground font-medium">Supabase</span>
         </div>
         <div className="flex items-center gap-2 text-xs">
+          <span className="text-muted-foreground">Anon Key:</span>
+          <span className="text-foreground font-mono">{maskKey(db.supabaseAnonKey)}</span>
+        </div>
+        <div className="flex items-center gap-2 text-xs">
           <span className="text-muted-foreground">Schema:</span>
           {db.schemaApplied ? (
-            <span className="flex items-center gap-1 text-primary font-medium"><Check className="w-3 h-3" /> Applied</span>
+            <span className="flex items-center gap-1 text-primary font-medium"><Check className="w-3 h-3" /> Applied (confirmed)</span>
           ) : (
-            <span className="flex items-center gap-1 text-muted-foreground"><XCircle className="w-3 h-3" /> Not applied</span>
+            <span className="flex items-center gap-1 text-amber-400 font-medium"><AlertTriangle className="w-3 h-3" /> Not applied</span>
           )}
         </div>
       </div>
@@ -71,9 +80,9 @@ const DatabasePanel = ({ projectId }: Props) => {
         </div>
       </ScrollArea>
 
-      {/* Keys notice */}
+      {/* Security notice */}
       <div className="px-4 py-2.5 border-t border-border bg-secondary/20">
-        <p className="text-[11px] text-muted-foreground">Keys are stored securely per project.</p>
+        <p className="text-[11px] text-muted-foreground">Only the public anon key is stored. Service role keys are never collected.</p>
       </div>
     </div>
   );

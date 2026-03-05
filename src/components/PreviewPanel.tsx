@@ -56,7 +56,7 @@ const getProgressiveMessage = (elapsedSeconds: number): { emoji: string; message
   }
 };
 // ── Publish Dropdown ──────────────────────
-const PublishDropdown = ({ dbConnected }: { dbConnected?: boolean }) => {
+const PublishDropdown = ({ dbConnected, schemaApplied }: { dbConnected?: boolean; schemaApplied?: boolean }) => {
   const [publishState, setPublishState] = useState<"idle" | "publishing" | "done">("idle");
   const [generatedUrl, setGeneratedUrl] = useState("");
 
@@ -85,12 +85,23 @@ const PublishDropdown = ({ dbConnected }: { dbConnected?: boolean }) => {
         {publishState === "idle" && (
           <div className="space-y-3">
             <p className="text-sm font-semibold text-foreground">Publish your project</p>
-            <div className="flex items-center gap-2 text-xs text-muted-foreground border border-border/50 rounded-md px-3 py-2 bg-secondary/20">
-              <Database className="w-3.5 h-3.5 flex-shrink-0" />
-              {dbConnected ? (
-                <span className="flex items-center gap-1 text-primary">Database: Supabase Connected <Check className="w-3 h-3" /></span>
-              ) : (
-                <span>Database: None</span>
+            <div className="space-y-1.5">
+              <div className="flex items-center gap-2 text-xs text-muted-foreground border border-border/50 rounded-md px-3 py-2 bg-secondary/20">
+                <Database className="w-3.5 h-3.5 flex-shrink-0" />
+                {dbConnected ? (
+                  <span className="flex items-center gap-1 text-primary">Database: Supabase Connected <Check className="w-3 h-3" /></span>
+                ) : (
+                  <span>Database: None</span>
+                )}
+              </div>
+              {dbConnected && (
+                <div className="flex items-center gap-2 text-xs border border-border/50 rounded-md px-3 py-2 bg-secondary/20">
+                  {schemaApplied ? (
+                    <span className="flex items-center gap-1 text-primary"><Check className="w-3 h-3" /> Schema: Applied (confirmed)</span>
+                  ) : (
+                    <span className="text-amber-400">Schema: Not applied - your database tables may not exist yet.</span>
+                  )}
+                </div>
               )}
             </div>
             <Button onClick={handlePublish} className="w-full">
@@ -631,7 +642,7 @@ const PreviewPanel = ({
           </button>
 
           {/* Publish Dropdown */}
-          <PublishDropdown dbConnected={db.supabaseConnected} />
+          <PublishDropdown dbConnected={db.supabaseConnected} schemaApplied={db.schemaApplied} />
 
           {/* Share Button */}
           <ShareButton publishedUrl={publishedUrl} />

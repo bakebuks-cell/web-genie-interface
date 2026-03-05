@@ -1,6 +1,6 @@
 import { useState, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { X, Database, Server, ChevronRight, ChevronDown, Check, ArrowLeft, Loader2, Copy } from "lucide-react";
+import { X, Database, Server, ChevronRight, ChevronDown, Check, ArrowLeft, Loader2, Copy, ExternalLink, ClipboardCheck } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
@@ -37,7 +37,6 @@ function generateSchema(prompt: string): { tables: SchemaTable[]; sql: string } 
       { name: "messages", fields: [{ name: "id", type: "uuid" }, { name: "conversation_id", type: "uuid" }, { name: "sender_id", type: "uuid" }, { name: "content", type: "text" }, { name: "created_at", type: "timestamptz" }] },
     ];
   } else {
-    // Generic fallback
     tables = [
       { name: "users", fields: [{ name: "id", type: "uuid" }, { name: "email", type: "text" }, { name: "name", type: "text", nullable: true }, { name: "created_at", type: "timestamptz" }] },
       { name: "items", fields: [{ name: "id", type: "uuid" }, { name: "user_id", type: "uuid" }, { name: "title", type: "text" }, { name: "description", type: "text", nullable: true }, { name: "status", type: "text" }, { name: "created_at", type: "timestamptz" }] },
@@ -47,22 +46,29 @@ function generateSchema(prompt: string): { tables: SchemaTable[]; sql: string } 
   const sql = tables
     .map(
       (t) =>
-        `CREATE TABLE public.${t.name} (\n${t.fields
-          .map((f) => `  ${f.name} ${f.type}${f.name === "id" ? " PRIMARY KEY DEFAULT gen_random_uuid()" : ""}${!f.nullable && f.name !== "id" ? " NOT NULL" : ""}`)
+        `CREATE TABLE IF NOT EXISTS public.${t.name} (\n${t.fields
+          .map((f) => `  ${f.name} ${f.type}${f.name === "id" ? " PRIMARY KEY DEFAULT gen_random_uuid()" : ""}${!f.nullable && f.name !== "id" ? " NOT NULL" : ""}${f.name === "created_at" ? " DEFAULT now()" : ""}`)
           .join(",\n")}\n);`
     )
-    .join("\n\n");
+    .join("\n\n") + "\n\n-- Enable Row Level Security\n" + tables.map(t => `ALTER TABLE public.${t.name} ENABLE ROW LEVEL SECURITY;`).join("\n");
 
   return { tables, sql };
 }
 
-// ── Regions ──
-const REGIONS = [
-  { value: "us-east-1", label: "US East (N. Virginia)" },
-  { value: "us-west-1", label: "US West (N. California)" },
-  { value: "eu-west-1", label: "EU West (Ireland)" },
-  { value: "ap-southeast-1", label: "Asia Pacific (Singapore)" },
-];
+// ── URL validation ──
+function isValidSupabaseUrl(url: string): boolean {
+  try {
+    const u = new URL(url.trim());
+    return u.hostname.endsWith("supabase.co");
+  } catch {
+    return false;
+  }
+}
+
+function maskKey(key: string): string {
+  if (key.length <= 12) return "****";
+  return key.slice(0, 8) + "..." + key.slice(-4);
+}
 
 interface Props {
   open: boolean;
@@ -76,53 +82,74 @@ const DatabaseConnectModal = ({ open, onClose, projectId, prompt }: Props) => {
   const db = getProjectDb(projectId);
 
   const [step, setStep] = useState<"connect" | "schema">(db.supabaseConnected ? "schema" : "connect");
-  const [tab, setTab] = useState<"create" | "existing">("create");
-
-  // Create new
-  const [dbName, setDbName] = useState("");
-  const [region, setRegion] = useState(REGIONS[0].value);
-  const [creating, setCreating] = useState(false);
 
   // Connect existing
-  const [extUrl, setExtUrl] = useState("");
-  const [extKey, setExtKey] = useState("");
+  const [extUrl, setExtUrl] = useState(db.supabaseUrl || "");
+  const [extKey, setExtKey] = useState(db.supabaseAnonKey || "");
+  const [urlError, setUrlError] = useState("");
+  const [keyError, setKeyError] = useState("");
 
   // Schema
   const schema = useMemo(() => generateSchema(prompt), [prompt]);
-  const [showSql, setShowSql] = useState(false);
+  const [schemaTab, setSchemaTab] = useState<"preview" | "sql">("preview");
   const [expandedTable, setExpandedTable] = useState<string | null>(null);
-  const [applying, setApplying] = useState(false);
-
-  const handleCreate = async () => {
-    if (!dbName.trim()) { toast.error("Enter a project name."); return; }
-    setCreating(true);
-    // Mock creation
-    await new Promise((r) => setTimeout(r, 1500));
-    const mockUrl = `https://${dbName.toLowerCase().replace(/\s+/g, "-")}.supabase.co`;
-    const mockKey = "eyJ...mock_anon_key";
-    connectSupabase(projectId, mockUrl, mockKey);
-    setCreating(false);
-    setStep("schema");
-  };
+  const [sqlCopied, setSqlCopied] = useState(false);
 
   const handleConnect = () => {
-    if (!extUrl.trim() || !extKey.trim()) { toast.error("Both fields are required."); return; }
-    connectSupabase(projectId, extUrl.trim(), extKey.trim());
-    setStep("schema");
-  };
+    const url = extUrl.trim();
+    const key = extKey.trim();
+    let valid = true;
 
-  const handleApplySchema = async () => {
-    setApplying(true);
-    await new Promise((r) => setTimeout(r, 1200));
-    applySchema(projectId, schema.tables, schema.sql);
-    setApplying(false);
-    toast.success("Database schema applied.");
-    onClose();
+    if (!url) {
+      setUrlError("Project URL is required.");
+      valid = false;
+    } else if (!isValidSupabaseUrl(url)) {
+      setUrlError("URL must be a valid Supabase project URL (*.supabase.co).");
+      valid = false;
+    } else {
+      setUrlError("");
+    }
+
+    if (!key) {
+      setKeyError("Anon key is required.");
+      valid = false;
+    } else if (key.length < 20) {
+      setKeyError("This doesn't look like a valid anon key.");
+      valid = false;
+    } else {
+      setKeyError("");
+    }
+
+    if (!valid) return;
+
+    connectSupabase(projectId, url, key);
+    toast.success("Supabase connected successfully.");
+    setStep("schema");
   };
 
   const handleCopySql = async () => {
     await navigator.clipboard.writeText(schema.sql);
-    toast.success("SQL copied.");
+    setSqlCopied(true);
+    toast.success("SQL copied to clipboard.");
+    setTimeout(() => setSqlCopied(false), 3000);
+  };
+
+  const handleOpenSqlEditor = () => {
+    const url = db.supabaseUrl || extUrl.trim();
+    // Extract project ref from URL
+    try {
+      const hostname = new URL(url).hostname;
+      const ref = hostname.split(".")[0];
+      window.open(`https://supabase.com/dashboard/project/${ref}/sql/new`, "_blank");
+    } catch {
+      window.open("https://supabase.com/dashboard/project/_/sql/new", "_blank");
+    }
+  };
+
+  const handleConfirmRan = () => {
+    applySchema(projectId, schema.tables, schema.sql);
+    toast.success("Schema applied (confirmed).");
+    onClose();
   };
 
   if (!open) return null;
@@ -159,143 +186,157 @@ const DatabaseConnectModal = ({ open, onClose, projectId, prompt }: Props) => {
 
             {step === "connect" ? (
               <div className="p-6 space-y-5">
-                {/* Tabs */}
+                <p className="text-sm text-muted-foreground">
+                  Enter your Supabase project credentials. You can find these in your Supabase Dashboard under Settings &rarr; API.
+                </p>
+
+                {/* URL field */}
+                <div className="space-y-1.5">
+                  <label className="text-sm font-medium text-foreground">Supabase Project URL</label>
+                  <Input
+                    value={extUrl}
+                    onChange={(e) => { setExtUrl(e.target.value); setUrlError(""); }}
+                    placeholder="https://your-project.supabase.co"
+                    className={`bg-secondary/30 border-border ${urlError ? "border-destructive focus-visible:ring-destructive" : ""}`}
+                  />
+                  {urlError && <p className="text-xs text-destructive">{urlError}</p>}
+                </div>
+
+                {/* Key field */}
+                <div className="space-y-1.5">
+                  <label className="text-sm font-medium text-foreground">Supabase Anon Key</label>
+                  <Input
+                    value={extKey}
+                    onChange={(e) => { setExtKey(e.target.value); setKeyError(""); }}
+                    placeholder="eyJhbGciOiJIUzI1NiIs..."
+                    className={`bg-secondary/30 border-border font-mono text-xs ${keyError ? "border-destructive focus-visible:ring-destructive" : ""}`}
+                  />
+                  {keyError && <p className="text-xs text-destructive">{keyError}</p>}
+                  <p className="text-[11px] text-muted-foreground">
+                    Only the public anon key is needed. Never share your service role key.
+                  </p>
+                </div>
+
+                <Button onClick={handleConnect} className="w-full">Connect</Button>
+              </div>
+            ) : (
+              /* Schema step */
+              <div className="p-6 space-y-4">
+                {/* Connected badge */}
+                {db.supabaseConnected && (
+                  <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-primary/10 border border-primary/20">
+                    <div className="w-2 h-2 rounded-full bg-primary" />
+                    <span className="text-xs font-medium text-primary">Connected to Supabase</span>
+                    <span className="text-xs text-muted-foreground ml-auto font-mono">{maskKey(db.supabaseAnonKey)}</span>
+                  </div>
+                )}
+
+                <p className="text-sm text-muted-foreground">
+                  We generated a schema based on your prompt. Copy the SQL and run it in your Supabase SQL Editor.
+                </p>
+
+                {/* Schema / SQL tabs */}
                 <div className="flex gap-1 p-1 bg-secondary/40 rounded-lg">
-                  {(["create", "existing"] as const).map((t) => (
+                  {(["preview", "sql"] as const).map((t) => (
                     <button
                       key={t}
-                      onClick={() => setTab(t)}
+                      onClick={() => setSchemaTab(t)}
                       className={`flex-1 py-2 text-sm font-medium rounded-md transition-all duration-200 ${
-                        tab === t
+                        schemaTab === t
                           ? "bg-primary/15 text-primary border border-primary/30 shadow-[0_0_10px_rgba(0,230,210,0.15)]"
                           : "text-muted-foreground hover:text-foreground"
                       }`}
                     >
-                      {t === "create" ? "Create new database" : "Connect existing"}
+                      {t === "preview" ? "Schema Preview" : "SQL Migration"}
                     </button>
                   ))}
                 </div>
 
-                {tab === "create" ? (
-                  <div className="space-y-4">
-                    <p className="text-sm text-muted-foreground">MyCodex will create a Supabase project for you.</p>
-                    <div className="space-y-2">
-                      <label className="text-sm font-medium text-foreground">Project name</label>
-                      <Input value={dbName} onChange={(e) => setDbName(e.target.value)} placeholder="my-awesome-db" className="bg-secondary/30 border-border" />
-                    </div>
-                    <div className="space-y-2">
-                      <label className="text-sm font-medium text-foreground">Region</label>
-                      <select
-                        value={region}
-                        onChange={(e) => setRegion(e.target.value)}
-                        className="w-full h-10 rounded-md border border-border bg-secondary/30 px-3 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
-                      >
-                        {REGIONS.map((r) => (
-                          <option key={r.value} value={r.value}>{r.label}</option>
-                        ))}
-                      </select>
-                    </div>
-                    <Button onClick={handleCreate} disabled={creating} className="w-full">
-                      {creating ? <><Loader2 className="w-4 h-4 animate-spin mr-2" />Creating...</> : "Create Database"}
-                    </Button>
+                {schemaTab === "preview" ? (
+                  /* Tables list */
+                  <div className="space-y-2 max-h-56 overflow-y-auto pr-1">
+                    {schema.tables.map((table) => (
+                      <div key={table.name} className="border border-border rounded-lg overflow-hidden">
+                        <button
+                          onClick={() => setExpandedTable(expandedTable === table.name ? null : table.name)}
+                          className="w-full flex items-center justify-between px-4 py-2.5 text-sm font-medium text-foreground hover:bg-secondary/30 transition-colors"
+                        >
+                          <div className="flex items-center gap-2">
+                            <Server className="w-3.5 h-3.5 text-primary" />
+                            <span>{table.name}</span>
+                            <span className="text-xs text-muted-foreground">({table.fields.length} columns)</span>
+                          </div>
+                          {expandedTable === table.name ? <ChevronDown className="w-4 h-4 text-muted-foreground" /> : <ChevronRight className="w-4 h-4 text-muted-foreground" />}
+                        </button>
+                        <AnimatePresence>
+                          {expandedTable === table.name && (
+                            <motion.div
+                              initial={{ height: 0, opacity: 0 }}
+                              animate={{ height: "auto", opacity: 1 }}
+                              exit={{ height: 0, opacity: 0 }}
+                              transition={{ duration: 0.15 }}
+                              className="overflow-hidden"
+                            >
+                              <div className="px-4 pb-3 space-y-1 border-t border-border/50 pt-2">
+                                {table.fields.map((f) => (
+                                  <div key={f.name} className="flex items-center gap-3 text-xs">
+                                    <span className="text-foreground/80 font-mono w-32 truncate">{f.name}</span>
+                                    <span className="text-muted-foreground">{f.type}</span>
+                                    {f.nullable && <span className="text-muted-foreground/50 text-[10px]">nullable</span>}
+                                  </div>
+                                ))}
+                              </div>
+                            </motion.div>
+                          )}
+                        </AnimatePresence>
+                      </div>
+                    ))}
                   </div>
                 ) : (
-                  <div className="space-y-4">
-                    <p className="text-sm text-muted-foreground">Enter your Supabase project credentials.</p>
-                    <div className="space-y-2">
-                      <label className="text-sm font-medium text-foreground">Supabase Project URL</label>
-                      <Input value={extUrl} onChange={(e) => setExtUrl(e.target.value)} placeholder="https://xyz.supabase.co" className="bg-secondary/30 border-border" />
+                  /* SQL view */
+                  <div className="space-y-3">
+                    <div className="relative">
+                      <pre className="text-xs font-mono text-foreground/70 bg-secondary/30 border border-border rounded-lg p-3 max-h-48 overflow-auto whitespace-pre-wrap">
+                        {schema.sql}
+                      </pre>
                     </div>
-                    <div className="space-y-2">
-                      <label className="text-sm font-medium text-foreground">Supabase Anon Key</label>
-                      <Input value={extKey} onChange={(e) => setExtKey(e.target.value)} placeholder="eyJ..." className="bg-secondary/30 border-border font-mono text-xs" />
+
+                    <div className="flex items-center gap-2">
+                      <Button variant="outline" size="sm" onClick={handleCopySql} className="flex items-center gap-2">
+                        {sqlCopied ? <ClipboardCheck className="w-3.5 h-3.5 text-primary" /> : <Copy className="w-3.5 h-3.5" />}
+                        {sqlCopied ? "Copied" : "Copy SQL"}
+                      </Button>
+                      <Button variant="outline" size="sm" onClick={handleOpenSqlEditor} className="flex items-center gap-2">
+                        <ExternalLink className="w-3.5 h-3.5" />
+                        Open SQL Editor
+                      </Button>
                     </div>
-                    <Button onClick={handleConnect} className="w-full">Connect</Button>
                   </div>
                 )}
-              </div>
-            ) : (
-              /* Schema step */
-              <div className="p-6 space-y-5">
-                <p className="text-sm text-muted-foreground">We will create tables based on your prompt.</p>
 
-                {/* Tables list */}
-                <div className="space-y-2 max-h-64 overflow-y-auto pr-1">
-                  {schema.tables.map((table) => (
-                    <div key={table.name} className="border border-border rounded-lg overflow-hidden">
-                      <button
-                        onClick={() => setExpandedTable(expandedTable === table.name ? null : table.name)}
-                        className="w-full flex items-center justify-between px-4 py-2.5 text-sm font-medium text-foreground hover:bg-secondary/30 transition-colors"
-                      >
-                        <div className="flex items-center gap-2">
-                          <Server className="w-3.5 h-3.5 text-primary" />
-                          <span>{table.name}</span>
-                          <span className="text-xs text-muted-foreground">({table.fields.length} columns)</span>
-                        </div>
-                        {expandedTable === table.name ? <ChevronDown className="w-4 h-4 text-muted-foreground" /> : <ChevronRight className="w-4 h-4 text-muted-foreground" />}
-                      </button>
-                      <AnimatePresence>
-                        {expandedTable === table.name && (
-                          <motion.div
-                            initial={{ height: 0, opacity: 0 }}
-                            animate={{ height: "auto", opacity: 1 }}
-                            exit={{ height: 0, opacity: 0 }}
-                            transition={{ duration: 0.15 }}
-                            className="overflow-hidden"
-                          >
-                            <div className="px-4 pb-3 space-y-1 border-t border-border/50 pt-2">
-                              {table.fields.map((f) => (
-                                <div key={f.name} className="flex items-center gap-3 text-xs">
-                                  <span className="text-foreground/80 font-mono w-32 truncate">{f.name}</span>
-                                  <span className="text-muted-foreground">{f.type}</span>
-                                  {f.nullable && <span className="text-muted-foreground/50 text-[10px]">nullable</span>}
-                                </div>
-                              ))}
-                            </div>
-                          </motion.div>
-                        )}
-                      </AnimatePresence>
-                    </div>
-                  ))}
-                </div>
-
-                {/* SQL toggle */}
-                <div>
-                  <button
-                    onClick={() => setShowSql(!showSql)}
-                    className="text-xs text-primary hover:underline flex items-center gap-1"
-                  >
-                    {showSql ? <ChevronDown className="w-3 h-3" /> : <ChevronRight className="w-3 h-3" />}
-                    {showSql ? "Hide SQL preview" : "Show SQL preview"}
-                  </button>
-                  <AnimatePresence>
-                    {showSql && (
-                      <motion.div
-                        initial={{ height: 0, opacity: 0 }}
-                        animate={{ height: "auto", opacity: 1 }}
-                        exit={{ height: 0, opacity: 0 }}
-                        className="overflow-hidden"
-                      >
-                        <div className="relative mt-2">
-                          <pre className="text-xs font-mono text-foreground/70 bg-secondary/30 border border-border rounded-lg p-3 max-h-40 overflow-auto whitespace-pre-wrap">
-                            {schema.sql}
-                          </pre>
-                          <button onClick={handleCopySql} className="absolute top-2 right-2 p-1 rounded text-muted-foreground hover:text-primary transition-colors" title="Copy SQL">
-                            <Copy className="w-3.5 h-3.5" />
-                          </button>
-                        </div>
-                      </motion.div>
-                    )}
-                  </AnimatePresence>
+                {/* Instructions */}
+                <div className="bg-secondary/20 border border-border/50 rounded-lg p-3 space-y-1.5">
+                  <p className="text-xs font-semibold text-foreground">How to apply:</p>
+                  <ol className="text-xs text-muted-foreground list-decimal list-inside space-y-1">
+                    <li>Open your Supabase Dashboard &rarr; SQL Editor</li>
+                    <li>Paste the SQL from the "SQL Migration" tab</li>
+                    <li>Click "Run" in the SQL Editor</li>
+                    <li>Come back here and click "I ran it"</li>
+                  </ol>
                 </div>
 
                 {/* Actions */}
-                <div className="flex items-center gap-3 pt-2">
+                <div className="flex items-center gap-3 pt-1">
                   <Button variant="outline" onClick={() => setStep("connect")} className="flex items-center gap-2">
                     <ArrowLeft className="w-4 h-4" /> Back
                   </Button>
-                  <Button onClick={handleApplySchema} disabled={applying} className="flex-1">
-                    {applying ? <><Loader2 className="w-4 h-4 animate-spin mr-2" />Applying...</> : "Apply to database"}
+                  <Button variant="outline" size="sm" onClick={handleCopySql} className="flex items-center gap-2">
+                    {sqlCopied ? <ClipboardCheck className="w-3.5 h-3.5 text-primary" /> : <Copy className="w-3.5 h-3.5" />}
+                    Copy SQL
+                  </Button>
+                  <Button onClick={handleConfirmRan} className="flex-1 flex items-center justify-center gap-2">
+                    <Check className="w-4 h-4" />
+                    I ran it
                   </Button>
                 </div>
               </div>

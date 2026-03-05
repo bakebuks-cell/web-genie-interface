@@ -1,13 +1,7 @@
 import { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Paperclip, Mic, ChevronDown, Check, X, Layers, ArrowUp } from "lucide-react";
+import { Paperclip, Mic, ChevronDown, ChevronRight, Check, ArrowUp } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 import MultiProgramModal from "./MultiProgramModal";
 
 export interface GenerationMode {
@@ -52,12 +46,14 @@ const UnifiedInput = ({
   const [displayText, setDisplayText] = useState("");
   const [validationError, setValidationError] = useState("");
   const [attentionPulse, setAttentionPulse] = useState(false);
-  const [langDropdownOpen, setLangDropdownOpen] = useState(false);
+  const [programMenuOpen, setProgramMenuOpen] = useState(false);
+  const [showLangSubmenu, setShowLangSubmenu] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const recognitionRef = useRef<any>(null);
   const silenceTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const finalizeTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const langButtonRef = useRef<HTMLButtonElement>(null);
+  const programButtonRef = useRef<HTMLButtonElement>(null);
+  const menuRef = useRef<HTMLDivElement>(null);
 
   // Refs for speech state
   const isRecordingRef = useRef(false);
@@ -250,11 +246,11 @@ const UnifiedInput = ({
 
   const handleGenerate = () => {
     if (!hasSelection) {
-      setValidationError("Please select a language or choose a Multi-Program stack.");
+      setValidationError("Please select Single Language or Multi Program to continue.");
       setAttentionPulse(true);
       setTimeout(() => setAttentionPulse(false), 1000);
-      langButtonRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
-      setLangDropdownOpen(true);
+      programButtonRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
+      setProgramMenuOpen(true);
       return;
     }
 
@@ -265,9 +261,50 @@ const UnifiedInput = ({
     onGenerate(generationMode);
   };
 
+  // Close menu on outside click
+  useEffect(() => {
+    if (!programMenuOpen) { setShowLangSubmenu(false); return; }
+    const handler = (e: MouseEvent) => {
+      if (menuRef.current && !menuRef.current.contains(e.target as Node) &&
+          programButtonRef.current && !programButtonRef.current.contains(e.target as Node)) {
+        setProgramMenuOpen(false);
+        setShowLangSubmenu(false);
+      }
+    };
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, [programMenuOpen]);
+
+  // Close on ESC
+  useEffect(() => {
+    if (!programMenuOpen) return;
+    const handler = (e: KeyboardEvent) => {
+      if (e.key === "Escape") { setProgramMenuOpen(false); setShowLangSubmenu(false); }
+    };
+    window.addEventListener("keydown", handler);
+    return () => window.removeEventListener("keydown", handler);
+  }, [programMenuOpen]);
+
+  // Derive button label
+  const allMultiItems = [
+    { id: "react", name: "React" }, { id: "vue", name: "Vue.js" }, { id: "angular", name: "Angular" }, { id: "nextjs", name: "Next.js" },
+    { id: "nodejs", name: "Node.js" }, { id: "django", name: "Django" }, { id: "springboot", name: "Spring Boot" }, { id: "aspnet", name: "ASP.NET" }, { id: "laravel", name: "PHP (Laravel)" },
+    { id: "postgresql", name: "PostgreSQL" }, { id: "mysql", name: "MySQL" }, { id: "mongodb", name: "MongoDB" }, { id: "supabase", name: "Supabase" },
+  ];
+
+  const getProgramLabel = () => {
+    if (isMultiMode) {
+      const names = multiStack.map(id => allMultiItems.find(i => i.id === id)?.name || id);
+      return `Multi: ${names.join(" \u2022 ")}`;
+    }
+    if (selectedLang) {
+      return `Single: ${selectedLang.name}`;
+    }
+    return "Select Program";
+  };
+
   return (
     <div className="w-full max-w-2xl mx-auto">
-      {/* Main unified container - futuristic teal glow */}
       <div
         className={`
           relative flex flex-col p-4
@@ -284,7 +321,6 @@ const UnifiedInput = ({
           border: "1px solid rgba(0, 230, 210, 0.25)",
         }}
       >
-        {/* Hidden file input */}
         <input
           ref={fileInputRef}
           type="file"
@@ -294,7 +330,6 @@ const UnifiedInput = ({
           className="hidden"
         />
 
-        {/* Textarea */}
         <textarea
           value={displayText}
           onChange={(e) => { if (!isRecording) { onIdeaChange(e.target.value); } }}
@@ -314,80 +349,117 @@ const UnifiedInput = ({
 
         {/* Bottom bar */}
         <div className="flex items-center justify-between mt-4 pt-4 border-t border-border/30">
-          {/* Language Dropdown + Multi-Program in same row */}
-          <div className="flex flex-col gap-1">
-            <div className="flex items-center gap-2 flex-wrap">
-              <DropdownMenu open={langDropdownOpen} onOpenChange={setLangDropdownOpen}>
-                <DropdownMenuTrigger asChild>
-                  <button
-                    ref={langButtonRef}
-                    className={`
-                      flex items-center gap-2 px-3 py-2
-                      rounded-lg border transition-all duration-200
-                      text-sm
-                      ${selectedLanguage 
-                        ? "bg-primary/10 border-primary/30 text-foreground" 
-                        : isMultiMode
-                          ? "bg-secondary/20 border-border/30 text-muted-foreground/50 opacity-60"
-                          : "bg-secondary/30 border-border/50 text-muted-foreground hover:border-primary/40 hover:bg-secondary/50"
-                      }
-                      ${attentionPulse && !isMultiMode ? "animate-[pulse_0.5s_ease-in-out_2] border-primary shadow-[0_0_16px_rgba(0,230,210,0.5)]" : ""}
-                    `}
-                  >
-                    <span className="font-medium">
-                      {selectedLang ? selectedLang.name : "Select Language"}
-                    </span>
-                    <ChevronDown className="w-4 h-4 opacity-50" />
-                  </button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent 
-                  align="start" 
-                  className="w-56 bg-popover/95 backdrop-blur-xl border-border z-50"
-                >
-                  {languages.map((lang) => (
-                    <DropdownMenuItem
-                      key={lang.id}
-                      onClick={() => handleLanguageSelect(lang.id)}
-                      className={`
-                        flex items-center gap-3 px-3 py-3 cursor-pointer
-                        transition-colors duration-150
-                        ${selectedLanguage === lang.id 
-                          ? "bg-primary/10 text-primary" 
-                          : "hover:bg-accent/10"
-                        }
-                      `}
-                    >
-                      <span className="font-medium">{lang.name}</span>
-                      {selectedLanguage === lang.id && (
-                        <Check className="w-4 h-4 ml-auto text-primary" />
-                      )}
-                    </DropdownMenuItem>
-                  ))}
-                </DropdownMenuContent>
-              </DropdownMenu>
+          {/* Select Program unified button */}
+          <div className="flex flex-col gap-1 relative">
+            <button
+              ref={programButtonRef}
+              onClick={() => { setProgramMenuOpen(prev => !prev); setShowLangSubmenu(false); }}
+              className={`
+                flex items-center gap-2 px-3 py-2
+                rounded-lg border transition-all duration-200
+                text-sm max-w-[280px]
+                ${hasSelection
+                  ? "bg-primary/10 border-primary/30 text-foreground"
+                  : "bg-secondary/30 border-border/50 text-muted-foreground hover:border-primary/40 hover:bg-secondary/50"
+                }
+                ${attentionPulse ? "animate-[pulse_0.5s_ease-in-out_2] border-primary shadow-[0_0_16px_rgba(0,230,210,0.5)]" : ""}
+              `}
+            >
+              <span className="font-medium truncate">{getProgramLabel()}</span>
+              <ChevronDown className={`w-4 h-4 opacity-50 shrink-0 transition-transform ${programMenuOpen ? "rotate-180" : ""}`} />
+            </button>
 
-              {/* Multi-Program Button */}
-              <button
-                onClick={() => setMultiProgramOpen(true)}
-                className={`
-                  flex items-center gap-2 px-3 py-2
-                  rounded-lg border transition-all duration-200 text-sm
-                  ${isMultiMode
-                    ? "bg-primary/10 border-primary/30 text-foreground"
-                    : "bg-secondary/30 border-border/50 text-muted-foreground hover:border-primary/40 hover:bg-secondary/50"
-                  }
-                  ${attentionPulse && !selectedLanguage && !isMultiMode ? "animate-[pulse_0.5s_ease-in-out_2] border-primary shadow-[0_0_16px_rgba(0,230,210,0.5)]" : ""}
-                `}
-              >
-                <Layers className="w-4 h-4" />
-                <span className="font-medium">
-                  {isMultiMode
-                    ? `Multi-Program (${multiStack.length} selected)`
-                    : "Multi-Program"
-                  }
-                </span>
-              </button>
-            </div>
+            {/* Dropdown menu */}
+            <AnimatePresence>
+              {programMenuOpen && (
+                <motion.div
+                  ref={menuRef}
+                  initial={{ opacity: 0, y: -4, scale: 0.96 }}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                  exit={{ opacity: 0, y: -4, scale: 0.96 }}
+                  transition={{ duration: 0.15 }}
+                  className="absolute left-0 bottom-full mb-2 z-[100] min-w-[240px] rounded-xl overflow-hidden"
+                  style={{
+                    background: "rgba(20, 24, 30, 0.95)",
+                    border: "1px solid rgba(0, 230, 210, 0.25)",
+                    boxShadow: "0 0 30px rgba(0, 230, 210, 0.12), 0 8px 32px rgba(0,0,0,0.4)",
+                    backdropFilter: "blur(16px)",
+                  }}
+                >
+                  {!showLangSubmenu ? (
+                    <div className="py-1.5">
+                      {/* Single Language option */}
+                      <button
+                        onClick={() => setShowLangSubmenu(true)}
+                        className={`
+                          w-full flex items-center justify-between px-4 py-3 text-sm font-medium
+                          transition-colors duration-150
+                          ${selectedLanguage ? "text-primary bg-primary/5" : "text-foreground hover:bg-accent/10"}
+                        `}
+                      >
+                        <span>Single Language</span>
+                        <div className="flex items-center gap-2">
+                          {selectedLang && <span className="text-xs text-muted-foreground">{selectedLang.name}</span>}
+                          <ChevronRight className="w-4 h-4 opacity-50" />
+                        </div>
+                      </button>
+                      {/* Multi Program option */}
+                      <button
+                        onClick={() => {
+                          setProgramMenuOpen(false);
+                          setShowLangSubmenu(false);
+                          setMultiProgramOpen(true);
+                        }}
+                        className={`
+                          w-full flex items-center justify-between px-4 py-3 text-sm font-medium
+                          transition-colors duration-150
+                          ${isMultiMode ? "text-primary bg-primary/5" : "text-foreground hover:bg-accent/10"}
+                        `}
+                      >
+                        <span>Multi Program</span>
+                        {isMultiMode && <span className="text-xs text-muted-foreground">{multiStack.length} selected</span>}
+                      </button>
+                    </div>
+                  ) : (
+                    <div className="py-1.5">
+                      {/* Back button */}
+                      <button
+                        onClick={() => setShowLangSubmenu(false)}
+                        className="w-full flex items-center gap-2 px-4 py-2.5 text-xs font-medium text-muted-foreground hover:bg-accent/10 transition-colors border-b border-border/20"
+                      >
+                        <ChevronRight className="w-3 h-3 rotate-180" />
+                        <span>Back</span>
+                      </button>
+                      {/* Language list */}
+                      {languages.map((lang) => (
+                        <button
+                          key={lang.id}
+                          onClick={() => {
+                            handleLanguageSelect(lang.id);
+                            setProgramMenuOpen(false);
+                            setShowLangSubmenu(false);
+                          }}
+                          className={`
+                            w-full flex items-center justify-between px-4 py-2.5 text-sm
+                            transition-colors duration-150 cursor-pointer
+                            ${selectedLanguage === lang.id
+                              ? "bg-primary/10 text-primary"
+                              : "text-foreground hover:bg-accent/10"
+                            }
+                          `}
+                        >
+                          <span className="font-medium">{lang.name}</span>
+                          {selectedLanguage === lang.id && (
+                            <Check className="w-4 h-4 text-primary" />
+                          )}
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </motion.div>
+              )}
+            </AnimatePresence>
+
             {/* Validation error */}
             <AnimatePresence>
               {validationError && (
@@ -395,7 +467,7 @@ const UnifiedInput = ({
                   initial={{ opacity: 0, y: -4 }}
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: -4 }}
-                  className="text-xs text-red-400 pl-1"
+                  className="text-xs text-destructive pl-1"
                 >
                   {validationError}
                 </motion.p>
@@ -433,7 +505,6 @@ const UnifiedInput = ({
               )}
             </div>
 
-            {/* Generate Button - arrow only */}
             <button
               onClick={handleGenerate}
               className={`
@@ -445,15 +516,14 @@ const UnifiedInput = ({
                 }
               `}
               style={isGenerateEnabled ? {
-                background: "linear-gradient(90deg, #00f0ff, #00c8a0)",
+                background: "linear-gradient(90deg, hsl(var(--primary)), hsl(var(--accent)))",
               } : undefined}
-              title={isGenerateEnabled ? "Generate Application" : "Select language and describe your idea first"}
+              title={isGenerateEnabled ? "Generate Application" : "Select program and describe your idea first"}
             >
               <ArrowUp className="w-5 h-5" />
             </button>
           </div>
 
-          {/* Multi-Program Modal */}
           <MultiProgramModal
             open={multiProgramOpen}
             onClose={() => setMultiProgramOpen(false)}

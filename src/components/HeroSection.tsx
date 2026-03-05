@@ -129,23 +129,23 @@ export const HeroSection = () => {
   };
 
   return (
-    <section className="relative pt-20 pb-8 md:pt-24 md:pb-12 overflow-hidden min-h-screen flex flex-col justify-center">
+    <section className="relative pt-24 pb-12 md:pt-32 md:pb-16 overflow-hidden min-h-screen flex flex-col justify-center">
       {/* Premium background effects */}
       <HeroBackground />
 
-      <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative z-10 max-w-4xl">
         {/* Centered Quote with animations */}
-        <div className="text-center mb-8 md:mb-10">
+        <div className="text-center mb-12 md:mb-14">
           {/* Main headline - stacked with animation */}
           <motion.h1
-            className="text-[1.75rem] md:text-3xl lg:text-4xl font-semibold tracking-tight leading-[1.2] text-foreground"
+            className="text-3xl md:text-4xl lg:text-5xl font-bold tracking-tight leading-[1.15] text-foreground"
             initial={{ opacity: 0, y: 14 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, ease: "easeOut" }}>
             Build fast.
           </motion.h1>
           <motion.h1
-            className="text-[1.75rem] md:text-3xl lg:text-4xl font-semibold tracking-tight leading-[1.2] text-muted-foreground"
+            className="text-3xl md:text-4xl lg:text-5xl font-bold tracking-tight leading-[1.15] text-muted-foreground"
             initial={{ opacity: 0, y: 14 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.12, ease: "easeOut" }}>

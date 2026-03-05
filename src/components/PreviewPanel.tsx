@@ -488,7 +488,7 @@ const PreviewPanel = ({
       <div className="px-3 pt-3 pb-1 flex items-center justify-between sticky top-0 z-10 bg-muted/30">
         {/* Left: Preview/Code toggle */}
         <div className="flex items-center gap-1 flex-shrink-0">
-          {(["preview", "code", "database"] as const).map((tab) => (
+          {(["preview", "code"] as const).map((tab) => (
             <button
               key={tab}
               onClick={() => setActiveTab(tab)}
@@ -498,7 +498,6 @@ const PreviewPanel = ({
                   : "text-muted-foreground hover:text-foreground hover:bg-secondary/40 border border-transparent"
               }`}
             >
-              {tab === "database" && <Database className="w-3.5 h-3.5" />}
               {tab.charAt(0).toUpperCase() + tab.slice(1)}
             </button>
           ))}

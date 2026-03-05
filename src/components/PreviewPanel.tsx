@@ -1,6 +1,8 @@
 import { useState, useEffect, useRef, useCallback } from "react";
-import { ExternalLink, RefreshCw, MousePointer2, Github, Laptop, Tablet, Smartphone, ChevronDown, Share2, Copy, Check, Loader2, Link as LinkIcon } from "lucide-react";
+import { ExternalLink, RefreshCw, MousePointer2, Github, Laptop, Tablet, Smartphone, ChevronDown, Share2, Copy, Check, Loader2, Link as LinkIcon, Database } from "lucide-react";
 import IdePanel from "@/components/code/IdePanel";
+import DatabasePanel from "@/components/DatabasePanel";
+import DatabaseConnectModal from "@/components/DatabaseConnectModal";
 import { motion, AnimatePresence } from "framer-motion";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
@@ -15,6 +17,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
+import { useDbStore } from "@/stores/useDbStore";
 
 interface HealthCheckStatus {
   isChecking: boolean;
@@ -36,6 +39,8 @@ export interface PreviewPanelProps {
   onVisualEditModeChange?: (enabled: boolean) => void;
   onElementSelect?: (elementId: string | null) => void;
   selectedElementId?: string | null;
+  projectId?: string | null;
+  prompt?: string;
 }
 
 // Get progressive status message based on elapsed time
@@ -51,7 +56,7 @@ const getProgressiveMessage = (elapsedSeconds: number): { emoji: string; message
   }
 };
 // ── Publish Dropdown ──────────────────────
-const PublishDropdown = () => {
+const PublishDropdown = ({ dbConnected }: { dbConnected?: boolean }) => {
   const [publishState, setPublishState] = useState<"idle" | "publishing" | "done">("idle");
   const [generatedUrl, setGeneratedUrl] = useState("");
 
@@ -80,6 +85,14 @@ const PublishDropdown = () => {
         {publishState === "idle" && (
           <div className="space-y-3">
             <p className="text-sm font-semibold text-foreground">Publish your project</p>
+            <div className="flex items-center gap-2 text-xs text-muted-foreground border border-border/50 rounded-md px-3 py-2 bg-secondary/20">
+              <Database className="w-3.5 h-3.5 flex-shrink-0" />
+              {dbConnected ? (
+                <span className="flex items-center gap-1 text-primary">Database: Supabase Connected <Check className="w-3 h-3" /></span>
+              ) : (
+                <span>Database: None</span>
+              )}
+            </div>
             <Button onClick={handlePublish} className="w-full">
               Publish
             </Button>
@@ -158,16 +171,24 @@ const PreviewPanel = ({
   visualEditMode = false,
   onVisualEditModeChange,
   onElementSelect,
-  selectedElementId
+  selectedElementId,
+  projectId: externalProjectId,
+  prompt: externalPrompt,
 }: PreviewPanelProps) => {
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(true);
   const [generationComplete, setGenerationComplete] = useState(false);
-  const [activeTab, setActiveTab] = useState<"preview" | "code">("preview");
+  const [activeTab, setActiveTab] = useState<"preview" | "code" | "database">("preview");
   const [selectedDevice, setSelectedDevice] = useState<"desktop" | "tablet" | "mobile">("desktop");
   const [selectedRoute, setSelectedRoute] = useState("/");
   const [publishedUrl, setPublishedUrl] = useState<string | null>(null);
+  const [dbModalOpen, setDbModalOpen] = useState(false);
   const iframeRef = useRef<HTMLIFrameElement>(null);
+
+  const resolvedProjectId = externalProjectId || "default";
+  const resolvedPrompt = externalPrompt || idea || "";
+  const { setProvider, getProjectDb } = useDbStore();
+  const db = getProjectDb(resolvedProjectId);
 
   const appRoutes = ["/", "/about", "/pricing", "/technologies", "/profile"];
 
@@ -467,26 +488,61 @@ const PreviewPanel = ({
       <div className="px-3 pt-3 pb-1 flex items-center justify-between sticky top-0 z-10 bg-muted/30">
         {/* Left: Preview/Code toggle */}
         <div className="flex items-center gap-1 flex-shrink-0">
-          <button
-            onClick={() => setActiveTab("preview")}
-            className={`px-3 py-1.5 text-sm font-medium rounded-lg transition-all duration-200 ${
-              activeTab === "preview"
-                ? "bg-primary/15 text-primary border border-primary/30 shadow-[0_0_12px_rgba(0,230,210,0.2)]"
-                : "text-muted-foreground hover:text-foreground hover:bg-secondary/40 border border-transparent"
-            }`}
-          >
-            Preview
-          </button>
-          <button
-            onClick={() => setActiveTab("code")}
-            className={`px-3 py-1.5 text-sm font-medium rounded-lg transition-all duration-200 ${
-              activeTab === "code"
-                ? "bg-primary/15 text-primary border border-primary/30 shadow-[0_0_12px_rgba(0,230,210,0.2)]"
-                : "text-muted-foreground hover:text-foreground hover:bg-secondary/40 border border-transparent"
-            }`}
-          >
-            Code
-          </button>
+          {(["preview", "code", "database"] as const).map((tab) => (
+            <button
+              key={tab}
+              onClick={() => setActiveTab(tab)}
+              className={`px-3 py-1.5 text-sm font-medium rounded-lg transition-all duration-200 flex items-center gap-1.5 ${
+                activeTab === tab
+                  ? "bg-primary/15 text-primary border border-primary/30 shadow-[0_0_12px_rgba(0,230,210,0.2)]"
+                  : "text-muted-foreground hover:text-foreground hover:bg-secondary/40 border border-transparent"
+              }`}
+            >
+              {tab === "database" && <Database className="w-3.5 h-3.5" />}
+              {tab.charAt(0).toUpperCase() + tab.slice(1)}
+            </button>
+          ))}
+
+          {/* Database provider dropdown */}
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <button
+                className={`ml-1 h-8 px-2.5 flex items-center gap-1.5 text-xs font-medium rounded-lg border transition-all duration-200 ${
+                  db.supabaseConnected
+                    ? "border-primary/40 bg-primary/10 text-primary shadow-[0_0_10px_rgba(0,230,210,0.12)]"
+                    : "border-border bg-secondary/50 text-muted-foreground hover:text-foreground hover:border-primary/30"
+                }`}
+              >
+                <Database className="w-3.5 h-3.5" />
+                {db.supabaseConnected ? (
+                  <>
+                    <span className="hidden sm:inline">Database: Supabase</span>
+                    <div className="w-1.5 h-1.5 rounded-full bg-primary" />
+                  </>
+                ) : (
+                  <span className="hidden sm:inline">Database</span>
+                )}
+                <ChevronDown className="w-3 h-3 opacity-50" />
+              </button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="start" className="min-w-[180px] z-50 bg-popover">
+              <DropdownMenuItem
+                onClick={() => setDbModalOpen(true)}
+                className={`cursor-pointer ${db.databaseProvider === "supabase" ? "text-primary" : ""}`}
+              >
+                <Database className="w-4 h-4 mr-2" />
+                Supabase (recommended)
+                {db.supabaseConnected && <Check className="w-3 h-3 ml-auto" />}
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                onClick={() => setProvider(resolvedProjectId, null)}
+                className={`cursor-pointer ${db.databaseProvider === null ? "text-primary" : ""}`}
+              >
+                None
+                {db.databaseProvider === null && !db.supabaseConnected && <Check className="w-3 h-3 ml-auto" />}
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
 
         {/* Center: Unified control pill */}
@@ -576,7 +632,7 @@ const PreviewPanel = ({
           </button>
 
           {/* Publish Dropdown */}
-          <PublishDropdown />
+          <PublishDropdown dbConnected={db.supabaseConnected} />
 
           {/* Share Button */}
           <ShareButton publishedUrl={publishedUrl} />
@@ -585,7 +641,11 @@ const PreviewPanel = ({
 
       <div className="flex-1 p-4 overflow-auto flex items-start justify-center">
         <div className={`${getPreviewWidth()} h-full mx-auto transition-all duration-300`}>
-          {activeTab === "code" ? (
+          {activeTab === "database" ? (
+            <div className="h-full animate-fade-in" style={{ animationDuration: '150ms' }}>
+              <DatabasePanel projectId={resolvedProjectId} />
+            </div>
+          ) : activeTab === "code" ? (
             <div className="h-full animate-fade-in" style={{ animationDuration: '150ms' }}>
               <IdePanel />
             </div>
@@ -707,6 +767,13 @@ const PreviewPanel = ({
           )}
         </div>
       </div>
+      {/* Database Connect Modal */}
+      <DatabaseConnectModal
+        open={dbModalOpen}
+        onClose={() => setDbModalOpen(false)}
+        projectId={resolvedProjectId}
+        prompt={resolvedPrompt}
+      />
     </div>
   );
 };

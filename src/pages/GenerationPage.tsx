@@ -106,6 +106,8 @@ const GenerationPage = () => {
             onVisualEditModeChange={setVisualEditMode}
             onElementSelect={handleElementSelect}
             selectedElementId={selectedElementId}
+            projectId={projectId}
+            prompt={idea}
           />
         </div>
       </div>

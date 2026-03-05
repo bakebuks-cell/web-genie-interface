@@ -1,16 +1,9 @@
 import { motion, useInView } from "framer-motion";
 import { useRef } from "react";
-import {
-  Loader2,
-  ArrowRight,
-  Monitor,
-  Server,
-  Database,
-} from "lucide-react";
-import { useTechnologiesWithStyles } from "@/hooks/useTechnologies";
+import { ArrowRight } from "lucide-react";
 import techHeroVisual from "@/assets/tech-hero-visual.jpg";
 
-/* ── animation helpers ── */
+/* ── animation helper ── */
 const FadeIn = ({
   children,
   delay = 0,
@@ -35,30 +28,22 @@ const FadeIn = ({
   );
 };
 
-/* ── static data ── */
-const techCategories = [
-  { label: "Frontend", icon: Monitor },
-  { label: "Backend", icon: Server },
-  { label: "Database", icon: Database },
-] as const;
-
-const categoryMap: Record<string, string> = {
-  React: "Frontend",
-  "Next.js": "Frontend",
-  "Plain HTML/CSS/JS": "Frontend",
-  HTML: "Frontend",
-  CSS: "Frontend",
-  JavaScript: "Frontend",
-  "Node/TS": "Backend",
-  Python: "Backend",
-  "Java (Enterprise)": "Backend",
-  "ASP.NET (C#)": "Backend",
-  PHP: "Backend",
-  Golang: "Backend",
-  Supabase: "Database",
-  PostgreSQL: "Database",
-  MongoDB: "Database",
-};
+/* ── all technologies in a single flat list ── */
+const allTechnologies = [
+  { name: "React", desc: "Component-driven UI library for building interactive interfaces." },
+  { name: "Next.js", desc: "Full-stack React framework with SSR, routing, and API layers." },
+  { name: "HTML", desc: "The foundational markup language of the web." },
+  { name: "CSS", desc: "Styling language for layout, typography, and visual design." },
+  { name: "JavaScript", desc: "The universal scripting language powering modern web apps." },
+  { name: "Node.js", desc: "Server-side JavaScript runtime for scalable backend services." },
+  { name: "Django", desc: "High-level Python framework for rapid, secure web development." },
+  { name: "Spring Boot", desc: "Enterprise Java framework for production-grade microservices." },
+  { name: "ASP.NET", desc: "Microsoft's cross-platform framework for high-performance APIs." },
+  { name: "PHP", desc: "Battle-tested server language powering millions of web applications." },
+  { name: "Supabase", desc: "Open-source backend with auth, storage, and real-time database." },
+  { name: "PostgreSQL", desc: "Advanced relational database trusted by enterprise teams." },
+  { name: "MongoDB", desc: "Flexible document database for modern application data." },
+];
 
 const flowSteps = [
   { label: "Prompt", sub: "Describe your app" },
@@ -69,44 +54,28 @@ const flowSteps = [
 ];
 
 /* ── tech card ── */
-interface TechCardProps {
-  tech: {
-    name: string;
-    icon: string | null;
-    description: string | null;
-    color: string;
-    glowColor: string;
-    borderColor: string;
-  };
-  index: number;
-}
+const TechCard = ({ tech, index }: { tech: typeof allTechnologies[0]; index: number }) => (
+  <FadeIn delay={index * 0.04}>
+    <motion.div
+      whileHover={{ y: -4, transition: { duration: 0.2 } }}
+      className="group relative h-full p-6 rounded-xl
+        bg-card/40 backdrop-blur-sm
+        border border-border/30
+        hover:border-primary/30
+        hover:shadow-[0_0_40px_hsl(170_100%_47%/0.08)]
+        transition-all duration-300 cursor-default"
+    >
+      {/* subtle top-edge glow on hover */}
+      <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-primary/0 to-transparent group-hover:via-primary/40 transition-all duration-500 rounded-t-xl" />
 
-const TechCard = ({ tech, index }: TechCardProps) => (
-  <motion.div
-    initial={{ opacity: 0, y: 16 }}
-    animate={{ opacity: 1, y: 0 }}
-    transition={{ duration: 0.4, delay: index * 0.05 }}
-    whileHover={{
-      y: -5,
-      transition: { duration: 0.2 },
-    }}
-    className={`group relative p-5 rounded-xl
-      bg-secondary/30 backdrop-blur-sm
-      border border-border/40
-      hover:border-primary/40
-      hover:shadow-[0_0_30px_hsl(170_100%_47%/0.08)]
-      transition-all duration-300 cursor-default`}
-  >
-    <div className="flex items-center gap-3 mb-2">
-      <span className="text-xl">{tech.icon}</span>
-      <h3 className="text-sm font-semibold text-foreground/90 group-hover:text-foreground transition-colors">
+      <h3 className="text-sm font-semibold text-foreground/90 group-hover:text-foreground transition-colors mb-2">
         {tech.name}
       </h3>
-    </div>
-    <p className="text-xs text-muted-foreground leading-relaxed group-hover:text-foreground/60 transition-colors">
-      {tech.description}
-    </p>
-  </motion.div>
+      <p className="text-xs text-muted-foreground leading-relaxed group-hover:text-foreground/50 transition-colors">
+        {tech.desc}
+      </p>
+    </motion.div>
+  </FadeIn>
 );
 
 /* ── flow step ── */
@@ -127,21 +96,9 @@ const FlowStep = ({ step, index }: { step: typeof flowSteps[0]; index: number })
 
 /* ── page ── */
 const Technologies = () => {
-  const { technologies, isLoading } = useTechnologiesWithStyles();
-
-  const grouped = technologies?.reduce<Record<string, typeof technologies>>(
-    (acc, tech) => {
-      const cat = categoryMap[tech.name] || "Backend";
-      if (!acc[cat]) acc[cat] = [];
-      acc[cat].push(tech);
-      return acc;
-    },
-    {}
-  );
-
   return (
     <div className="min-h-screen bg-background relative overflow-hidden">
-      {/* grid bg */}
+      {/* dot grid bg */}
       <div
         className="fixed inset-0 pointer-events-none opacity-[0.025]"
         style={{
@@ -181,34 +138,12 @@ const Technologies = () => {
             </p>
           </FadeIn>
 
-          {/* ── Tech Grid by Category ── */}
-          {isLoading ? (
-            <div className="flex items-center justify-center py-20">
-              <Loader2 className="w-6 h-6 text-muted-foreground animate-spin" />
-            </div>
-          ) : (
-            <div className="space-y-16 mb-28">
-              {techCategories.map(({ label, icon: Icon }) => {
-                const techs = grouped?.[label];
-                if (!techs?.length) return null;
-                return (
-                  <FadeIn key={label}>
-                    <div className="flex items-center gap-2 mb-6">
-                      <Icon className="w-4 h-4 text-primary/60" strokeWidth={1.5} />
-                      <h2 className="text-xs font-semibold tracking-[0.15em] uppercase text-foreground/40">
-                        {label}
-                      </h2>
-                    </div>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
-                      {techs.map((tech, i) => (
-                        <TechCard key={tech.name} tech={tech} index={i} />
-                      ))}
-                    </div>
-                  </FadeIn>
-                );
-              })}
-            </div>
-          )}
+          {/* ── Flat Technology Grid ── */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-28">
+            {allTechnologies.map((tech, i) => (
+              <TechCard key={tech.name} tech={tech} index={i} />
+            ))}
+          </div>
 
           {/* ── Visual Section ── */}
           <FadeIn className="mb-28">

@@ -403,20 +403,21 @@ const ChatPanel = ({
     }
   }, [initialPrompt, hasAutoTriggered]);
 
-  // Helper function to make fetch request to localhost backend (waits up to 10 minutes for Docker)
+  // Helper function to make fetch request to production backend (waits up to 10 minutes)
   const fetchBuild = async (prompt: string, stack: string): Promise<{ success: boolean; data?: any; error?: string }> => {
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 600000); // 10 minutes timeout (600,000ms)
 
-    console.log("[fetchBuild] Sending request to localhost backend (sync mode, 10 min timeout)...", { prompt, stack });
+    console.log("[fetchBuild] Sending request to backend (sync mode, 10 min timeout)...", { prompt, stack });
 
     try {
-      const response = await fetch("http://localhost:3000/build", {
+      const response = await fetch("https://api.mycodex.dev/build", {
         method: "POST",
         headers: { 
           'Content-Type': 'application/json',
           'Accept': 'application/json',
         },
+        credentials: 'include',
         body: JSON.stringify({ prompt, stack }),
         signal: controller.signal,
       });
@@ -468,12 +469,13 @@ const ChatPanel = ({
     });
 
     try {
-      const response = await fetch("http://localhost:3000/modify", {
+      const response = await fetch("https://api.mycodex.dev/modify", {
         method: "POST",
         headers: { 
           'Content-Type': 'application/json',
           'Accept': 'application/json',
         },
+        credentials: 'include',
         body: JSON.stringify({ 
           projectId: projectIdToModify,
           stack, 

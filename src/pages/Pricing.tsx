@@ -4,7 +4,7 @@ import { useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
-import { Layout } from "@/components/Layout";
+
 
 type PlanType = "free" | "pro" | "enterprise";
 

@@ -128,7 +128,7 @@ const Projects = () => {
               onClick={() => navigate("/")}
               className="bg-primary/20 text-primary hover:bg-primary/30 border border-primary/30"
             >
-              Create your first project
+              Create your first application
             </Button>
           </motion.div>
         )}

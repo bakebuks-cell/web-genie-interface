@@ -168,6 +168,11 @@ const Projects = () => {
                         {project.name}
                       </h4>
                     )}
+                    {project.prompt && (
+                      <p className="text-xs text-muted-foreground mt-0.5 truncate max-w-md">
+                        {project.prompt.length > 80 ? project.prompt.slice(0, 80) + "…" : project.prompt}
+                      </p>
+                    )}
                     <div className="flex items-center gap-3 text-sm text-muted-foreground mt-0.5">
                       <span className="flex items-center gap-1">
                         <Clock className="w-3 h-3" />

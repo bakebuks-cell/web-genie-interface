@@ -1,11 +1,16 @@
-import { useState, useRef, useEffect } from "react";
-import { createPortal } from "react-dom";
+import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Menu, X, User, LogOut, CreditCard } from "lucide-react";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 import { useAuth } from "@/contexts/AuthContext";
 import { LayoutDashboard } from "lucide-react";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 const navItems = [
   { label: "Home", href: "/" },
@@ -16,26 +21,13 @@ const navItems = [
 
 export const Navbar = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const [isProfileOpen, setIsProfileOpen] = useState(false);
-  const profileRef = useRef<HTMLDivElement>(null);
   const navigate = useNavigate();
   const { user, profile, signOut } = useAuth();
-
-  useEffect(() => {
-    const handleClick = (e: MouseEvent) => {
-      if (profileRef.current && !profileRef.current.contains(e.target as Node)) {
-        setIsProfileOpen(false);
-      }
-    };
-    document.addEventListener("mousedown", handleClick);
-    return () => document.removeEventListener("mousedown", handleClick);
-  }, []);
 
   const handleLogin = () => navigate("/login");
   const handleSignUp = () => navigate("/signup");
   const handleLogout = async () => {
     await signOut();
-    setIsProfileOpen(false);
     navigate("/");
   };
 
@@ -82,53 +74,41 @@ export const Navbar = () => {
                   <LayoutDashboard className="w-3.5 h-3.5" />
                   Projects
                 </Button>
-                <div ref={profileRef} className="relative z-50">
-                  <button
-                    onClick={() => setIsProfileOpen(!isProfileOpen)}
-                    className="flex items-center justify-center w-8 h-8 rounded-full bg-primary/10 border border-primary/20 text-primary hover:bg-primary/20 transition-colors"
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <button
+                      className="flex items-center justify-center w-8 h-8 rounded-full bg-primary/10 border border-primary/20 text-primary hover:bg-primary/20 transition-colors"
+                    >
+                      <User className="w-4 h-4" />
+                    </button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent
+                    align="end"
+                    sideOffset={8}
+                    className="w-52 z-[9999] pointer-events-auto bg-background border border-primary/15 rounded-xl shadow-[0_8px_32px_rgba(0,0,0,0.5)]"
                   >
-                    <User className="w-4 h-4" />
-                  </button>
-                  <AnimatePresence>
-                    {isProfileOpen && createPortal(
-                      <motion.div
-                        initial={{ opacity: 0, y: -8, scale: 0.95 }}
-                        animate={{ opacity: 1, y: 0, scale: 1 }}
-                        exit={{ opacity: 0, y: -8, scale: 0.95 }}
-                        transition={{ duration: 0.15 }}
-                        className="fixed w-52 bg-background border border-primary/15 rounded-xl shadow-[0_8px_32px_rgba(0,0,0,0.5)]"
-                        style={{
-                          zIndex: 9999,
-                          pointerEvents: "auto",
-                          top: profileRef.current ? profileRef.current.getBoundingClientRect().bottom + 6 : 0,
-                          right: 16,
-                        }}
-                      >
-                        <div className="px-4 py-3 border-b border-primary/10">
-                          <p className="text-sm font-medium text-foreground truncate">
-                            {profile?.display_name || user.email}
-                          </p>
-                          <p className="text-xs text-muted-foreground capitalize">{profile?.plan || "free"} plan</p>
-                        </div>
-                        <div className="py-1">
-                          <button onClick={() => { navigate("/profile"); setIsProfileOpen(false); }} className="w-full flex items-center gap-2 px-4 py-2.5 text-sm text-muted-foreground hover:text-foreground hover:bg-primary/5 transition-colors cursor-pointer">
-                            <User className="w-4 h-4" /> Profile
-                          </button>
-                          <button onClick={() => { navigate("/projects"); setIsProfileOpen(false); }} className="w-full flex items-center gap-2 px-4 py-2.5 text-sm text-muted-foreground hover:text-foreground hover:bg-primary/5 transition-colors cursor-pointer">
-                            <LayoutDashboard className="w-4 h-4" /> Projects
-                          </button>
-                          <button onClick={() => { navigate("/pricing"); setIsProfileOpen(false); }} className="w-full flex items-center gap-2 px-4 py-2.5 text-sm text-muted-foreground hover:text-foreground hover:bg-primary/5 transition-colors cursor-pointer">
-                            <CreditCard className="w-4 h-4" /> Billing & Plan
-                          </button>
-                          <button onClick={handleLogout} className="w-full flex items-center gap-2 px-4 py-2.5 text-sm text-destructive hover:bg-destructive/5 transition-colors cursor-pointer">
-                            <LogOut className="w-4 h-4" /> Logout
-                          </button>
-                        </div>
-                      </motion.div>,
-                      document.body
-                    )}
-                  </AnimatePresence>
-                </div>
+                    <div className="px-4 py-3 border-b border-primary/10">
+                      <p className="text-sm font-medium text-foreground truncate">
+                        {profile?.display_name || user.email}
+                      </p>
+                      <p className="text-xs text-muted-foreground capitalize">{profile?.plan || "free"} plan</p>
+                    </div>
+                    <div className="py-1">
+                      <DropdownMenuItem onSelect={() => navigate("/profile")} className="cursor-pointer">
+                        <User className="w-4 h-4 mr-2" /> Profile
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onSelect={() => navigate("/projects")} className="cursor-pointer">
+                        <LayoutDashboard className="w-4 h-4 mr-2" /> Projects
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onSelect={() => navigate("/pricing")} className="cursor-pointer">
+                        <CreditCard className="w-4 h-4 mr-2" /> Billing & Plan
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onSelect={handleLogout} className="cursor-pointer text-destructive focus:text-destructive">
+                        <LogOut className="w-4 h-4 mr-2" /> Logout
+                      </DropdownMenuItem>
+                    </div>
+                  </DropdownMenuContent>
+                </DropdownMenu>
               </>
             ) : (
               <>

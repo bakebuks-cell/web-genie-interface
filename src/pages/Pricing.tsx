@@ -4,7 +4,7 @@ import { useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
-import { Layout } from "@/components/Layout";
+
 
 type PlanType = "free" | "pro" | "enterprise";
 
@@ -229,7 +229,6 @@ const Pricing = () => {
   };
 
   return (
-    <Layout>
       <div className="min-h-screen relative overflow-hidden">
         {/* ambient glow */}
         <div className="fixed inset-0 pointer-events-none">
@@ -354,7 +353,6 @@ const Pricing = () => {
           </div>
         </main>
       </div>
-    </Layout>
   );
 };
 

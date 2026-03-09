@@ -91,7 +91,7 @@ const Projects = () => {
         {/* Header */}
         <div className="flex items-center justify-between mb-8">
           <div>
-            <h1 className="text-2xl font-bold text-foreground">Projects</h1>
+            <h1 className="text-2xl font-bold text-foreground">Recent Applications</h1>
             <p className="text-sm text-muted-foreground mt-1">
               {projects.length} project{projects.length !== 1 ? "s" : ""}
             </p>
@@ -120,15 +120,15 @@ const Projects = () => {
             <div className="w-16 h-16 mx-auto rounded-full bg-muted flex items-center justify-center mb-4">
               <Code2 className="w-8 h-8 text-muted-foreground" />
             </div>
-            <h3 className="text-lg font-semibold text-foreground mb-2">No projects yet</h3>
+            <h3 className="text-lg font-semibold text-foreground mb-2">No recent applications yet</h3>
             <p className="text-muted-foreground text-sm mb-6 max-w-sm mx-auto">
-              Start generating your first application and it will appear here.
+              Create your first application and it will appear here.
             </p>
             <Button
               onClick={() => navigate("/")}
               className="bg-primary/20 text-primary hover:bg-primary/30 border border-primary/30"
             >
-              Create your first project
+              Create your first application
             </Button>
           </motion.div>
         )}
@@ -167,6 +167,11 @@ const Projects = () => {
                       <h4 className="font-medium text-foreground group-hover:text-primary transition-colors truncate">
                         {project.name}
                       </h4>
+                    )}
+                    {project.prompt && (
+                      <p className="text-xs text-muted-foreground mt-0.5 truncate max-w-md">
+                        {project.prompt.length > 80 ? project.prompt.slice(0, 80) + "…" : project.prompt}
+                      </p>
                     )}
                     <div className="flex items-center gap-3 text-sm text-muted-foreground mt-0.5">
                       <span className="flex items-center gap-1">

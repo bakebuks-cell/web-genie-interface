@@ -353,7 +353,6 @@ const Pricing = () => {
           </div>
         </main>
       </div>
-    </Layout>
   );
 };
 

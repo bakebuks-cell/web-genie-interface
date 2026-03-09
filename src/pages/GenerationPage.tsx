@@ -1,9 +1,9 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useLocation } from "react-router-dom";
 import ChatPanel, { HealthCheckStatus } from "@/components/ChatPanel";
 import PreviewPanel from "@/components/PreviewPanel";
-
 import { useAuth } from "@/contexts/AuthContext";
+import { updateProject, setLastOpenedProject } from "@/lib/projectStorage";
 
 const languageNames: Record<string, string> = {
   html: "Plain HTML/CSS/JS",

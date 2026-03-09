@@ -229,7 +229,6 @@ const Pricing = () => {
   };
 
   return (
-    <Layout>
       <div className="min-h-screen relative overflow-hidden">
         {/* ambient glow */}
         <div className="fixed inset-0 pointer-events-none">

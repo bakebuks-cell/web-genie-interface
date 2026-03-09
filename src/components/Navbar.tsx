@@ -81,7 +81,7 @@ export const Navbar = () => {
                   <LayoutDashboard className="w-3.5 h-3.5" />
                   Projects
                 </Button>
-                <div ref={profileRef} className="relative">
+                <div ref={profileRef} className="relative z-50">
                   <button
                     onClick={() => setIsProfileOpen(!isProfileOpen)}
                     className="flex items-center justify-center w-8 h-8 rounded-full bg-primary/10 border border-primary/20 text-primary hover:bg-primary/20 transition-colors"
@@ -95,7 +95,8 @@ export const Navbar = () => {
                         animate={{ opacity: 1, y: 0, scale: 1 }}
                         exit={{ opacity: 0, y: -8, scale: 0.95 }}
                         transition={{ duration: 0.15 }}
-                        className="absolute right-0 mt-2 w-52 bg-background/80 backdrop-blur-2xl border border-primary/15 rounded-xl shadow-[0_8px_32px_rgba(0,0,0,0.5)] overflow-hidden"
+                        className="fixed right-4 mt-2 w-52 z-[100] bg-background backdrop-blur-2xl border border-primary/15 rounded-xl shadow-[0_8px_32px_rgba(0,0,0,0.5)]"
+                        style={{ top: profileRef.current ? profileRef.current.getBoundingClientRect().bottom + 4 : undefined }}
                       >
                         <div className="px-4 py-3 border-b border-primary/10">
                           <p className="text-sm font-medium text-foreground truncate">
@@ -104,13 +105,13 @@ export const Navbar = () => {
                           <p className="text-xs text-muted-foreground capitalize">{profile?.plan || "free"} plan</p>
                         </div>
                         <div className="py-1">
-                          <button onClick={() => { navigate("/profile"); setIsProfileOpen(false); }} className="w-full flex items-center gap-2 px-4 py-2 text-sm text-muted-foreground hover:text-foreground hover:bg-primary/5 transition-colors">
+                          <button onClick={() => { navigate("/profile"); setIsProfileOpen(false); }} className="w-full flex items-center gap-2 px-4 py-2.5 text-sm text-muted-foreground hover:text-foreground hover:bg-primary/5 transition-colors cursor-pointer">
                             <User className="w-4 h-4" /> Profile
                           </button>
-                          <button onClick={() => { navigate("/pricing"); setIsProfileOpen(false); }} className="w-full flex items-center gap-2 px-4 py-2 text-sm text-muted-foreground hover:text-foreground hover:bg-primary/5 transition-colors">
+                          <button onClick={() => { navigate("/pricing"); setIsProfileOpen(false); }} className="w-full flex items-center gap-2 px-4 py-2.5 text-sm text-muted-foreground hover:text-foreground hover:bg-primary/5 transition-colors cursor-pointer">
                             <CreditCard className="w-4 h-4" /> Billing & Plan
                           </button>
-                          <button onClick={handleLogout} className="w-full flex items-center gap-2 px-4 py-2 text-sm text-red-400 hover:text-red-300 hover:bg-red-500/5 transition-colors">
+                          <button onClick={handleLogout} className="w-full flex items-center gap-2 px-4 py-2.5 text-sm text-red-400 hover:text-red-300 hover:bg-red-500/5 transition-colors cursor-pointer">
                             <LogOut className="w-4 h-4" /> Logout
                           </button>
                         </div>

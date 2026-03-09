@@ -17,7 +17,16 @@ const languageNames: Record<string, string> = {
 const GenerationPage = () => {
   const location = useLocation();
   const { user, profile } = useAuth();
-  const { language, idea } = location.state || { language: "react", idea: "" };
+  const { language, idea, localProjectId } = location.state || { language: "react", idea: "" };
+
+  // Update localStorage project status to "ready" when landing on this page
+  useEffect(() => {
+    if (localProjectId) {
+      updateProject(localProjectId, { status: "ready" });
+      setLastOpenedProject(localProjectId);
+      console.log("[GenerationPage] Marked project ready:", localProjectId);
+    }
+  }, [localProjectId]);
   const languageDisplay = languageNames[language] || language;
 
   // State for toolbar controls

@@ -96,36 +96,57 @@ export const HeroSection = () => {
       return;
     }
 
-    // If logged in, create project in DB
+    // Create project in localStorage immediately
+    const localProjectId = crypto.randomUUID();
+    const projectName = idea.trim().slice(0, 60) || "Untitled Project";
+    createLocalProject({
+      projectId: localProjectId,
+      projectName,
+      prompt: idea,
+      mode: generationMode.mode === "multi" ? "multi" : "single",
+      singleLanguage: generationMode.singleLanguage || null,
+      multiStack: generationMode.mode === "multi"
+        ? {
+            frontend: generationMode.multiStack.filter((s: string) => ["react", "html", "csharp"].includes(s)),
+            backend: generationMode.multiStack.filter((s: string) => ["nodejs", "python", "golang", "php", "java"].includes(s)),
+            database: [],
+          }
+        : null,
+      status: "generating",
+    });
+
+    // Also save to DB if logged in
     let dbProjectId: string | undefined;
     if (user) {
       try {
-        // Derive a project name from prompt
-        const name = idea.trim().slice(0, 60) || "Untitled Project";
         const project = await createProject.mutateAsync({
-          name,
+          name: projectName,
           prompt: idea,
           mode: generationMode.mode,
           single_language: generationMode.singleLanguage,
-          multi_stack: generationMode.mode === "multi" ?
-          { frontend: generationMode.multiStack.filter((s) => ["react", "html", "csharp"].includes(s)), backend: generationMode.multiStack.filter((s) => ["nodejs", "python", "golang", "php", "java"].includes(s)), database: [] } :
-          { frontend: [], backend: [], database: [] },
-          status: "generating"
+          multi_stack: generationMode.mode === "multi"
+            ? {
+                frontend: generationMode.multiStack.filter((s: string) => ["react", "html", "csharp"].includes(s)),
+                backend: generationMode.multiStack.filter((s: string) => ["nodejs", "python", "golang", "php", "java"].includes(s)),
+                database: [],
+              }
+            : { frontend: [], backend: [], database: [] },
+          status: "generating",
         });
         dbProjectId = project.id;
       } catch (e) {
-        console.error("Failed to save project:", e);
+        console.error("Failed to save project to DB:", e);
       }
     }
-
 
     navigate("/generating", {
       state: {
         language: generationMode.singleLanguage || generationMode.multiStack[0] || "react",
         idea,
         generationMode,
-        dbProjectId
-      }
+        dbProjectId,
+        localProjectId,
+      },
     });
   };
 

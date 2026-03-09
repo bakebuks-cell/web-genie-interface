@@ -120,9 +120,9 @@ const Projects = () => {
             <div className="w-16 h-16 mx-auto rounded-full bg-muted flex items-center justify-center mb-4">
               <Code2 className="w-8 h-8 text-muted-foreground" />
             </div>
-            <h3 className="text-lg font-semibold text-foreground mb-2">No projects yet</h3>
+            <h3 className="text-lg font-semibold text-foreground mb-2">No recent applications yet</h3>
             <p className="text-muted-foreground text-sm mb-6 max-w-sm mx-auto">
-              Start generating your first application and it will appear here.
+              Create your first application and it will appear here.
             </p>
             <Button
               onClick={() => navigate("/")}

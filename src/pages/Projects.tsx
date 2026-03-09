@@ -3,12 +3,16 @@ import { motion } from "framer-motion";
 import { Folder, Clock, Plus, Trash2, Pencil, ExternalLink, Code2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
-import { useProjects } from "@/hooks/useProjects";
 import { formatDistanceToNow } from "date-fns";
 import { useState, useEffect } from "react";
-import { supabase } from "@/integrations/supabase/client";
-import { useQueryClient } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
+import {
+  getProjects,
+  deleteProject as deleteLocalProject,
+  updateProject as updateLocalProject,
+  setLastOpenedProject,
+  type LocalProject,
+} from "@/lib/projectStorage";
 
 const languageNames: Record<string, string> = {
   html: "HTML/CSS/JS",
@@ -27,23 +31,22 @@ const statusColors: Record<string, string> = {
   ready: "bg-primary/20 text-primary border-primary/30",
 };
 
-function getStackLabel(project: { mode: string; single_language: string | null; multi_stack: any }) {
-  if (project.mode === "multi" && project.multi_stack) {
+function getStackLabel(project: LocalProject) {
+  if (project.mode === "multi" && project.multiStack) {
     const parts = [
-      ...(project.multi_stack.frontend || []),
-      ...(project.multi_stack.backend || []),
+      ...(project.multiStack.frontend || []),
+      ...(project.multiStack.backend || []),
     ];
     return parts.map((p: string) => languageNames[p] || p).join(", ") || "Multi-stack";
   }
-  return languageNames[project.single_language || "react"] || project.single_language || "React";
+  return languageNames[project.singleLanguage || "react"] || project.singleLanguage || "React";
 }
 
 const Projects = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
-  const { data: projects = [], isLoading } = useProjects();
-  const queryClient = useQueryClient();
   const { toast } = useToast();
+  const [projects, setProjects] = useState<LocalProject[]>([]);
   const [renamingId, setRenamingId] = useState<string | null>(null);
   const [renameValue, setRenameValue] = useState("");
 
@@ -52,37 +55,50 @@ const Projects = () => {
     if (!user) navigate("/auth-gate");
   }, [user, navigate]);
 
+  // Load projects from localStorage
+  useEffect(() => {
+    const loaded = getProjects();
+    // Sort newest first by updatedAt
+    loaded.sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime());
+    setProjects(loaded);
+    console.log("[Projects] Loaded projects:", loaded.length);
+  }, []);
+
   if (!user) return null;
 
-  const handleOpen = (project: any) => {
+  const handleOpen = (project: LocalProject) => {
+    setLastOpenedProject(project.projectId);
+    updateLocalProject(project.projectId, { lastOpenedAt: new Date().toISOString() });
+    console.log("[Projects] Opening project:", project.projectId);
     navigate("/generate", {
       state: {
-        language: project.single_language || "react",
+        language: project.singleLanguage || "react",
         idea: project.prompt || "",
-        projectId: project.id,
+        localProjectId: project.projectId,
+        generationMode: {
+          mode: project.mode,
+          singleLanguage: project.singleLanguage,
+          multiStack: project.multiStack
+            ? [...(project.multiStack.frontend || []), ...(project.multiStack.backend || [])]
+            : [],
+        },
       },
     });
   };
 
-  const handleDelete = async (id: string) => {
-    const { error } = await supabase.from("projects").delete().eq("id", id);
-    if (error) {
-      toast({ title: "Error", description: "Failed to delete project", variant: "destructive" });
-    } else {
-      queryClient.invalidateQueries({ queryKey: ["projects", user.id] });
-      toast({ title: "Deleted", description: "Project removed" });
-    }
+  const handleDelete = (id: string) => {
+    deleteLocalProject(id);
+    setProjects((prev) => prev.filter((p) => p.projectId !== id));
+    toast({ title: "Deleted", description: "Project removed" });
   };
 
-  const handleRename = async (id: string) => {
+  const handleRename = (id: string) => {
     if (!renameValue.trim()) return;
-    const { error } = await supabase.from("projects").update({ name: renameValue.trim() }).eq("id", id);
-    if (error) {
-      toast({ title: "Error", description: "Failed to rename project", variant: "destructive" });
-    } else {
-      queryClient.invalidateQueries({ queryKey: ["projects", user.id] });
-      setRenamingId(null);
-    }
+    updateLocalProject(id, { projectName: renameValue.trim() });
+    setProjects((prev) =>
+      prev.map((p) => (p.projectId === id ? { ...p, projectName: renameValue.trim() } : p))
+    );
+    setRenamingId(null);
   };
 
   return (
@@ -105,13 +121,8 @@ const Projects = () => {
           </Button>
         </div>
 
-        {/* Loading */}
-        {isLoading && (
-          <div className="text-center py-16 text-muted-foreground text-sm">Loading projects…</div>
-        )}
-
         {/* Empty state */}
-        {!isLoading && projects.length === 0 && (
+        {projects.length === 0 && (
           <motion.div
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
@@ -134,11 +145,11 @@ const Projects = () => {
         )}
 
         {/* Project list */}
-        {!isLoading && projects.length > 0 && (
+        {projects.length > 0 && (
           <div className="space-y-3">
             {projects.map((project, index) => (
               <motion.div
-                key={project.id}
+                key={project.projectId}
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: index * 0.05 }}
@@ -149,9 +160,9 @@ const Projects = () => {
                     <Folder className="w-5 h-5 text-primary" />
                   </div>
                   <div className="min-w-0 flex-1">
-                    {renamingId === project.id ? (
+                    {renamingId === project.projectId ? (
                       <form
-                        onSubmit={(e) => { e.preventDefault(); handleRename(project.id); }}
+                        onSubmit={(e) => { e.preventDefault(); handleRename(project.projectId); }}
                         className="flex items-center gap-2"
                       >
                         <input
@@ -165,7 +176,7 @@ const Projects = () => {
                       </form>
                     ) : (
                       <h4 className="font-medium text-foreground group-hover:text-primary transition-colors truncate">
-                        {project.name}
+                        {project.projectName}
                       </h4>
                     )}
                     {project.prompt && (
@@ -176,7 +187,7 @@ const Projects = () => {
                     <div className="flex items-center gap-3 text-sm text-muted-foreground mt-0.5">
                       <span className="flex items-center gap-1">
                         <Clock className="w-3 h-3" />
-                        {formatDistanceToNow(new Date(project.updated_at), { addSuffix: true })}
+                        {formatDistanceToNow(new Date(project.updatedAt), { addSuffix: true })}
                       </span>
                       <span
                         className={`px-2 py-0.5 rounded-full text-[10px] border capitalize font-medium shrink-0 ${statusColors[project.status] || statusColors.draft}`}
@@ -196,7 +207,7 @@ const Projects = () => {
                     variant="ghost"
                     size="icon"
                     className="h-8 w-8 text-muted-foreground hover:text-foreground"
-                    onClick={() => { setRenamingId(project.id); setRenameValue(project.name); }}
+                    onClick={() => { setRenamingId(project.projectId); setRenameValue(project.projectName); }}
                     title="Rename"
                   >
                     <Pencil className="w-3.5 h-3.5" />
@@ -205,7 +216,7 @@ const Projects = () => {
                     variant="ghost"
                     size="icon"
                     className="h-8 w-8 text-muted-foreground hover:text-red-400"
-                    onClick={() => handleDelete(project.id)}
+                    onClick={() => handleDelete(project.projectId)}
                     title="Delete"
                   >
                     <Trash2 className="w-3.5 h-3.5" />

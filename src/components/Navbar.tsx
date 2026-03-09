@@ -21,26 +21,13 @@ const navItems = [
 
 export const Navbar = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const [isProfileOpen, setIsProfileOpen] = useState(false);
-  const profileRef = useRef<HTMLDivElement>(null);
   const navigate = useNavigate();
   const { user, profile, signOut } = useAuth();
-
-  useEffect(() => {
-    const handleClick = (e: MouseEvent) => {
-      if (profileRef.current && !profileRef.current.contains(e.target as Node)) {
-        setIsProfileOpen(false);
-      }
-    };
-    document.addEventListener("mousedown", handleClick);
-    return () => document.removeEventListener("mousedown", handleClick);
-  }, []);
 
   const handleLogin = () => navigate("/login");
   const handleSignUp = () => navigate("/signup");
   const handleLogout = async () => {
     await signOut();
-    setIsProfileOpen(false);
     navigate("/");
   };
 

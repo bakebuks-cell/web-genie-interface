@@ -1,9 +1,9 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useLocation } from "react-router-dom";
 import ChatPanel, { HealthCheckStatus } from "@/components/ChatPanel";
 import PreviewPanel from "@/components/PreviewPanel";
+
 import { useAuth } from "@/contexts/AuthContext";
-import { updateProject, setLastOpenedProject } from "@/lib/projectStorage";
 
 const languageNames: Record<string, string> = {
   html: "Plain HTML/CSS/JS",
@@ -17,16 +17,7 @@ const languageNames: Record<string, string> = {
 const GenerationPage = () => {
   const location = useLocation();
   const { user, profile } = useAuth();
-  const { language, idea, localProjectId } = location.state || { language: "react", idea: "" };
-
-  // Update localStorage project status to "ready" when landing on this page
-  useEffect(() => {
-    if (localProjectId) {
-      updateProject(localProjectId, { status: "ready" });
-      setLastOpenedProject(localProjectId);
-      console.log("[GenerationPage] Marked project ready:", localProjectId);
-    }
-  }, [localProjectId]);
+  const { language, idea } = location.state || { language: "react", idea: "" };
   const languageDisplay = languageNames[language] || language;
 
   // State for toolbar controls

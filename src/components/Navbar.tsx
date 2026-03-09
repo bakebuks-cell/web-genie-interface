@@ -90,14 +90,19 @@ export const Navbar = () => {
                     <User className="w-4 h-4" />
                   </button>
                   <AnimatePresence>
-                    {isProfileOpen && (
+                    {isProfileOpen && createPortal(
                       <motion.div
                         initial={{ opacity: 0, y: -8, scale: 0.95 }}
                         animate={{ opacity: 1, y: 0, scale: 1 }}
                         exit={{ opacity: 0, y: -8, scale: 0.95 }}
                         transition={{ duration: 0.15 }}
-                        className="fixed right-4 mt-2 w-52 z-[100] bg-background backdrop-blur-2xl border border-primary/15 rounded-xl shadow-[0_8px_32px_rgba(0,0,0,0.5)]"
-                        style={{ top: profileRef.current ? profileRef.current.getBoundingClientRect().bottom + 4 : undefined }}
+                        className="fixed w-52 bg-background border border-primary/15 rounded-xl shadow-[0_8px_32px_rgba(0,0,0,0.5)]"
+                        style={{
+                          zIndex: 9999,
+                          pointerEvents: "auto",
+                          top: profileRef.current ? profileRef.current.getBoundingClientRect().bottom + 6 : 0,
+                          right: 16,
+                        }}
                       >
                         <div className="px-4 py-3 border-b border-primary/10">
                           <p className="text-sm font-medium text-foreground truncate">
@@ -109,14 +114,18 @@ export const Navbar = () => {
                           <button onClick={() => { navigate("/profile"); setIsProfileOpen(false); }} className="w-full flex items-center gap-2 px-4 py-2.5 text-sm text-muted-foreground hover:text-foreground hover:bg-primary/5 transition-colors cursor-pointer">
                             <User className="w-4 h-4" /> Profile
                           </button>
+                          <button onClick={() => { navigate("/projects"); setIsProfileOpen(false); }} className="w-full flex items-center gap-2 px-4 py-2.5 text-sm text-muted-foreground hover:text-foreground hover:bg-primary/5 transition-colors cursor-pointer">
+                            <LayoutDashboard className="w-4 h-4" /> Projects
+                          </button>
                           <button onClick={() => { navigate("/pricing"); setIsProfileOpen(false); }} className="w-full flex items-center gap-2 px-4 py-2.5 text-sm text-muted-foreground hover:text-foreground hover:bg-primary/5 transition-colors cursor-pointer">
                             <CreditCard className="w-4 h-4" /> Billing & Plan
                           </button>
-                          <button onClick={handleLogout} className="w-full flex items-center gap-2 px-4 py-2.5 text-sm text-red-400 hover:text-red-300 hover:bg-red-500/5 transition-colors cursor-pointer">
+                          <button onClick={handleLogout} className="w-full flex items-center gap-2 px-4 py-2.5 text-sm text-destructive hover:bg-destructive/5 transition-colors cursor-pointer">
                             <LogOut className="w-4 h-4" /> Logout
                           </button>
                         </div>
-                      </motion.div>
+                      </motion.div>,
+                      document.body
                     )}
                   </AnimatePresence>
                 </div>

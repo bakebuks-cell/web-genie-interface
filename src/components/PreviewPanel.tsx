@@ -214,7 +214,6 @@ const PreviewPanel = ({
   const [selectedDevice, setSelectedDevice] = useState<"desktop" | "tablet" | "mobile">("desktop");
   const [selectedRoute, setSelectedRoute] = useState("/");
   const [dbModalOpen, setDbModalOpen] = useState(false);
-  const [dbModalOpen, setDbModalOpen] = useState(false);
   const iframeRef = useRef<HTMLIFrameElement>(null);
 
   const resolvedProjectId = externalProjectId || "default";

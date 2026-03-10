@@ -94,12 +94,14 @@ const IdePanel = ({ projectId: externalProjectId }: IdePanelProps = {}) => {
     }
   };
 
-  // Auto-load mock files when the panel mounts and status is idle
+  const resolvedId = externalProjectId || projectId || "demo";
+
+  // Load project files when the panel mounts or projectId changes
   useEffect(() => {
-    if (status === "idle") {
-      loadProjectFiles(projectId || "demo");
+    if (status === "idle" || (resolvedId !== projectId && resolvedId !== "demo")) {
+      loadProjectFiles(resolvedId);
     }
-  }, [status, projectId, loadProjectFiles]);
+  }, [status, resolvedId, projectId, loadProjectFiles]);
 
   // ── Loading state ──
   if (status === "loading") {

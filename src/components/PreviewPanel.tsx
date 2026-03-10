@@ -213,7 +213,7 @@ const PreviewPanel = ({
   const [activeTab, setActiveTab] = useState<"preview" | "code" | "database">("preview");
   const [selectedDevice, setSelectedDevice] = useState<"desktop" | "tablet" | "mobile">("desktop");
   const [selectedRoute, setSelectedRoute] = useState("/");
-  const [publishedUrl, setPublishedUrl] = useState<string | null>(null);
+  const [dbModalOpen, setDbModalOpen] = useState(false);
   const [dbModalOpen, setDbModalOpen] = useState(false);
   const iframeRef = useRef<HTMLIFrameElement>(null);
 

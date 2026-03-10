@@ -136,14 +136,30 @@ const PublishDropdown = ({ dbConnected, schemaApplied }: { dbConnected?: boolean
 };
 
 // ── Share Button ──────────────────────
-const ShareButton = ({ publishedUrl }: { publishedUrl: string | null }) => {
+const ShareButton = ({ projectId }: { projectId: string }) => {
+  const [loading, setLoading] = useState(false);
+  const [shareUrl, setShareUrl] = useState<string | null>(null);
+
+  const handleShare = async () => {
+    if (shareUrl) return; // already fetched
+    setLoading(true);
+    try {
+      const { shareUrl: url } = await generateShareLink(projectId);
+      setShareUrl(url);
+    } catch {
+      toast.error("Unable to generate share link");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handleCopy = async (url: string) => {
     await navigator.clipboard.writeText(url);
     toast.success("Link copied!");
   };
 
   return (
-    <Popover>
+    <Popover onOpenChange={(open) => { if (open) handleShare(); }}>
       <PopoverTrigger asChild>
         <button
           className="w-8 h-8 flex items-center justify-center rounded-lg border border-border bg-secondary/50 text-muted-foreground hover:text-primary hover:border-primary/40 hover:shadow-[0_0_12px_rgba(0,230,210,0.15)] transition-all duration-200"
@@ -153,18 +169,22 @@ const ShareButton = ({ publishedUrl }: { publishedUrl: string | null }) => {
         </button>
       </PopoverTrigger>
       <PopoverContent align="end" className="w-72 bg-popover border-border p-4 z-50">
-        <p className="text-sm font-semibold text-foreground mb-3">Share via link</p>
-        {publishedUrl ? (
+        <p className="text-sm font-semibold text-foreground mb-3">Share your project</p>
+        {loading ? (
+          <div className="flex items-center justify-center py-3">
+            <Loader2 className="w-4 h-4 animate-spin text-primary" />
+          </div>
+        ) : shareUrl ? (
           <div className="flex items-center gap-2">
-            <Input value={publishedUrl} readOnly className="text-xs bg-secondary/50 border-border h-8" />
-            <button onClick={() => handleCopy(publishedUrl)} className="p-1.5 rounded-md text-muted-foreground hover:text-primary transition-colors flex-shrink-0">
+            <Input value={shareUrl} readOnly className="text-xs bg-secondary/50 border-border h-8" />
+            <button onClick={() => handleCopy(shareUrl)} className="p-1.5 rounded-md text-muted-foreground hover:text-primary transition-colors flex-shrink-0">
               <Copy className="w-4 h-4" />
             </button>
           </div>
         ) : (
           <div className="flex items-center gap-2 text-muted-foreground">
             <LinkIcon className="w-4 h-4 flex-shrink-0" />
-            <p className="text-xs">Publish first to get a share link.</p>
+            <p className="text-xs">Unable to generate link. Try again.</p>
           </div>
         )}
       </PopoverContent>

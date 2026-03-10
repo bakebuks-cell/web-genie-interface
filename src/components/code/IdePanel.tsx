@@ -61,7 +61,11 @@ const TreeNode = ({ node, depth, activeFilePath, onSelect }: TreeNodeProps) => {
 
 // ── Main IDE Panel ──────────────────────────
 
-const IdePanel = () => {
+interface IdePanelProps {
+  projectId?: string | null;
+}
+
+const IdePanel = ({ projectId: externalProjectId }: IdePanelProps = {}) => {
   const {
     files,
     fileTree,

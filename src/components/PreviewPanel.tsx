@@ -685,7 +685,7 @@ const PreviewPanel = ({
             </div>
           ) : activeTab === "code" ? (
             <div className="h-full animate-fade-in" style={{ animationDuration: '150ms' }}>
-              <IdePanel />
+              <IdePanel projectId={resolvedProjectId} />
             </div>
           ) : !generatedUrl ? (
             /* Placeholder preview when no URL yet */

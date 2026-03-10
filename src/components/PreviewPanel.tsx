@@ -655,7 +655,14 @@ const PreviewPanel = ({
         {/* Right: GitHub + Publish + Share */}
         <div className="flex items-center gap-2 flex-shrink-0">
           <button
-            onClick={() => console.log("GitHub export placeholder")}
+            onClick={async () => {
+              try {
+                const { repoUrl } = await getOrCreateGitHubRepo(resolvedProjectId);
+                window.open(repoUrl, "_blank");
+              } catch {
+                toast.error("Unable to open GitHub repository");
+              }
+            }}
             className="w-8 h-8 flex items-center justify-center rounded-lg border border-border bg-secondary/50 text-muted-foreground hover:text-primary hover:border-primary/40 hover:shadow-[0_0_12px_rgba(0,230,210,0.15)] transition-all duration-200"
             title="Export to GitHub"
           >
@@ -666,7 +673,7 @@ const PreviewPanel = ({
           <PublishDropdown dbConnected={db.supabaseConnected} schemaApplied={db.schemaApplied} />
 
           {/* Share Button */}
-          <ShareButton publishedUrl={publishedUrl} />
+          <ShareButton projectId={resolvedProjectId} />
         </div>
       </div>
 

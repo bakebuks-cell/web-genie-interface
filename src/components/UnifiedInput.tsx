@@ -136,6 +136,7 @@ const UnifiedInput = ({
 
   const finishRecording = () => {
     if (!isRecordingRef.current) return;
+    console.log("[STT] finishing recording");
     isRecordingRef.current = false;
     clearTimers();
     if (recognitionRef.current) {
@@ -148,6 +149,7 @@ const UnifiedInput = ({
       if (base) parts.push(base);
       if (final) parts.push(final);
       const finalText = parts.join(" ");
+      console.log("[STT] finalized text:", finalText);
       onIdeaChange(finalText);
       setDisplayText(finalText);
       if (recognitionRef.current) {

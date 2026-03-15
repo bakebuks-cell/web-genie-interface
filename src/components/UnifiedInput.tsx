@@ -143,7 +143,7 @@ const UnifiedInput = ({
     }, 400);
   };
 
-  const handleVoice = () => {
+  const handleVoice = async () => {
     const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
     if (!SpeechRecognition) {
       toast({ title: "Voice Not Supported", description: "Voice input is not supported in this browser.", variant: "destructive" });
@@ -152,6 +152,25 @@ const UnifiedInput = ({
 
     if (isRecordingRef.current) {
       finishRecording();
+      return;
+    }
+
+    // Pre-warm mic with optimized constraints for normal speaking volume
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({
+        audio: {
+          echoCancellation: true,
+          noiseSuppression: true,
+          autoGainControl: true,
+          channelCount: 1,
+        },
+      });
+      console.log("[STT] Mic permission granted, stream active");
+      // Release the stream — SpeechRecognition will open its own
+      stream.getTracks().forEach((t) => t.stop());
+    } catch (err) {
+      console.log("[STT] Mic permission denied:", err);
+      toast({ title: "Microphone access denied", description: "Please allow microphone permissions.", variant: "destructive" });
       return;
     }
 
@@ -173,8 +192,12 @@ const UnifiedInput = ({
     recognition.maxAlternatives = 1;
 
     recognition.onstart = () => {
-      console.log("[STT] Speech started");
+      console.log("[STT] Recognition started");
       resetSilenceTimer();
+    };
+
+    recognition.onaudiostart = () => {
+      console.log("[STT] Audio capture started");
     };
 
     recognition.onresult = (event: any) => {
@@ -194,10 +217,10 @@ const UnifiedInput = ({
 
       currentSessionFinalRef.current = sessionFinal;
 
-      console.log("[STT] Interim transcript:", sessionInterim);
-      console.log("[STT] Final transcript:", sessionFinal);
+      if (sessionInterim) console.log("[STT] Interim:", sessionInterim);
+      if (sessionFinal) console.log("[STT] Final:", sessionFinal);
 
-      // Update display
+      // Immediately update display for low latency
       const base = startIdeaRef.current.trim();
       const allFinal = getAllFinalText();
       const parts: string[] = [];
@@ -205,6 +228,19 @@ const UnifiedInput = ({
       if (allFinal) parts.push(allFinal);
       if (sessionInterim) parts.push(sessionInterim);
       setDisplayText(parts.join(" "));
+
+      // Also commit final text to the actual input immediately
+      if (sessionFinal) {
+        const commitParts: string[] = [];
+        if (base) commitParts.push(base);
+        if (allFinal) commitParts.push(allFinal);
+        onIdeaChange(commitParts.join(" "));
+      }
+    };
+
+    recognition.onspeechstart = () => {
+      console.log("[STT] Speech detected");
+      resetSilenceTimer();
     };
 
     recognition.onspeechend = () => {
@@ -212,17 +248,22 @@ const UnifiedInput = ({
     };
 
     recognition.onerror = (event: any) => {
-      console.log("[STT] Speech error:", event.error);
-      // Ignorable errors — auto-restart
+      console.log("[STT] Error:", event.error);
+      // no-speech and aborted are harmless — let onend auto-restart
       if (event.error === "no-speech" || event.error === "aborted") {
-        return; // onend will handle restart
+        // Bump retry counter; allow up to 3 silent restarts before giving up
+        retryCountRef.current++;
+        if (retryCountRef.current >= 3) {
+          console.log("[STT] Too many no-speech retries — stopping");
+          finishRecording();
+        }
+        return;
       }
-      // For other errors, retry once before showing error
-      if (retryCountRef.current < 1 && isRecordingRef.current) {
+      // audio-capture / network — retry once
+      if (retryCountRef.current < 2 && isRecordingRef.current) {
         retryCountRef.current++;
         return; // onend will restart
       }
-      // Truly failed
       toast({ title: "Could not recognize voice clearly. Please try again.", variant: "destructive" });
       isRecordingRef.current = false;
       manualStopRef.current = true;
@@ -233,7 +274,6 @@ const UnifiedInput = ({
     recognition.onend = () => {
       console.log("[STT] Recognition ended, still recording:", isRecordingRef.current);
       if (isRecordingRef.current && !manualStopRef.current) {
-        // Save finalized text from this session before restart
         const sessionFinal = currentSessionFinalRef.current.trim();
         if (sessionFinal) {
           segmentsRef.current.push(sessionFinal);
@@ -250,6 +290,7 @@ const UnifiedInput = ({
 
     try {
       recognition.start();
+      console.log("[STT] Recognition starting...");
     } catch {
       isRecordingRef.current = false;
       setIsRecording(false);

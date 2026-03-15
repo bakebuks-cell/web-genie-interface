@@ -61,7 +61,11 @@ const UnifiedInput = ({
   const menuRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
 
-  // Cleanup on unmount
+  const selectedLang = languages.find((l) => l.id === selectedLanguage);
+  const isMultiMode = multiStack.length > 0;
+  const hasSelection = !!selectedLanguage || isMultiMode;
+  const isGenerateEnabled = hasSelection && idea.trim().length > 0;
+
   useEffect(() => {
     return () => {
       isRecordingRef.current = false;

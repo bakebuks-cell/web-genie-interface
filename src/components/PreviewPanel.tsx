@@ -718,7 +718,7 @@ const PreviewPanel = ({
               <div className="flex-1 relative">
                 <iframe
                   ref={iframeRef}
-                  src={generatedUrl}
+                  src={selectedRoute === "/" ? generatedUrl : `${generatedUrl}${selectedRoute}`}
                   className={`absolute inset-0 w-full h-full border-0 ${visualEditMode ? 'cursor-crosshair' : ''}`}
                   title="Generated Application Preview"
                   sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-modals"

@@ -56,6 +56,7 @@ const GenerationPage = () => {
   };
 
   const handleGeneratedUrl = (url: string, newProjectId?: string) => {
+    console.log("[GenerationPage] Received generatedUrl:", url, "projectId:", newProjectId);
     setGeneratedUrl(url);
     if (newProjectId) {
       setProjectId(newProjectId);

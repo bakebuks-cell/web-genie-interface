@@ -572,7 +572,8 @@ const ChatPanel = ({
       if (result.success && result.data) {
         const data = result.data;
         if (data.success && data.url) {
-          onGeneratedUrl?.(data.url);
+          console.log("[triggerBuild] Generated URL:", data.url, "projectId:", data.projectId);
+          onGeneratedUrl?.(data.url, data.projectId);
           
           // Save recent project
           saveRecentProject({

@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Paperclip, Mic, ChevronDown, ChevronRight, Check, ArrowUp } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import MultiProgramModal from "./MultiProgramModal";
+import { startTranscription, type TranscriptionConfig } from "@/services/speechTranscription";
 
 export interface GenerationMode {
   mode: "single" | "multi";
@@ -49,19 +50,10 @@ const UnifiedInput = ({
   const [programMenuOpen, setProgramMenuOpen] = useState(false);
   const [showLangSubmenu, setShowLangSubmenu] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const recognitionRef = useRef<any>(null);
-  const silenceTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const finalizeTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const transcriptionSessionRef = useRef<{ stop: () => void } | null>(null);
   const programButtonRef = useRef<HTMLButtonElement>(null);
   const menuRef = useRef<HTMLDivElement>(null);
-
-  // Refs for speech state
-  const isRecordingRef = useRef(false);
   const startIdeaRef = useRef("");
-  const segmentsRef = useRef<string[]>([]); // finalized segments across restarts
-  const currentSessionFinalRef = useRef(""); // final text in current recognition session
-  const currentInterimRef = useRef("");
-  const lastSpeechTimeRef = useRef<number>(Date.now());
   const { toast } = useToast();
   
   const selectedLang = languages.find((l) => l.id === selectedLanguage);
@@ -72,12 +64,10 @@ const UnifiedInput = ({
   // Cleanup on unmount
   useEffect(() => {
     return () => {
-      isRecordingRef.current = false;
-      if (recognitionRef.current) {
-        try { recognitionRef.current.abort(); } catch {}
+      if (transcriptionSessionRef.current) {
+        transcriptionSessionRef.current.stop();
+        transcriptionSessionRef.current = null;
       }
-      if (silenceTimeoutRef.current) clearTimeout(silenceTimeoutRef.current);
-      if (finalizeTimeoutRef.current) clearTimeout(finalizeTimeoutRef.current);
     };
   }, []);
 
@@ -102,163 +92,58 @@ const UnifiedInput = ({
     e.target.value = "";
   };
 
-  const clearTimers = () => {
-    if (silenceTimeoutRef.current) {
-      clearTimeout(silenceTimeoutRef.current);
-      silenceTimeoutRef.current = null;
+  const stopRecording = () => {
+    if (transcriptionSessionRef.current) {
+      transcriptionSessionRef.current.stop();
+      transcriptionSessionRef.current = null;
     }
-    if (finalizeTimeoutRef.current) {
-      clearTimeout(finalizeTimeoutRef.current);
-      finalizeTimeoutRef.current = null;
-    }
-  };
-
-  const resetSilenceTimer = () => {
-    if (silenceTimeoutRef.current) {
-      clearTimeout(silenceTimeoutRef.current);
-    }
-    silenceTimeoutRef.current = setTimeout(() => {
-      if (isRecordingRef.current) {
-        finishRecording();
-      }
-    }, 5000);
-  };
-
-  const getAllFinalText = () => {
-    const segments = segmentsRef.current.join(" ").trim();
-    const sessionFinal = currentSessionFinalRef.current.trim();
-    if (segments && sessionFinal) return segments + " " + sessionFinal;
-    return segments || sessionFinal;
-  };
-
-  const updateDisplayText = () => {
-    const base = startIdeaRef.current.trim();
-    const finalText = getAllFinalText();
-    const interim = currentInterimRef.current.trim();
-    const parts: string[] = [];
-    if (base) parts.push(base);
-    if (finalText) parts.push(finalText);
-    if (interim) parts.push(interim);
-    setDisplayText(parts.join(" "));
-  };
-
-  const finishRecording = () => {
-    if (!isRecordingRef.current) return;
-    console.log("[STT] finishing recording");
-    isRecordingRef.current = false;
-    clearTimers();
-    if (recognitionRef.current) {
-      try { recognitionRef.current.stop(); } catch {}
-    }
-    finalizeTimeoutRef.current = setTimeout(() => {
-      const base = startIdeaRef.current.trim();
-      const finalText = getAllFinalText();
-      const parts: string[] = [];
-      if (base) parts.push(base);
-      if (finalText) parts.push(finalText);
-      const result = parts.join(" ");
-      console.log("[STT] finalized text:", result);
-      onIdeaChange(result);
-      setDisplayText(result);
-      if (recognitionRef.current) {
-        try { recognitionRef.current.abort(); } catch {}
-        recognitionRef.current = null;
-      }
-      setIsRecording(false);
-      segmentsRef.current = [];
-      currentSessionFinalRef.current = "";
-      currentInterimRef.current = "";
-    }, 500);
+    setIsRecording(false);
   };
 
   const handleVoice = async () => {
-    if (!("webkitSpeechRecognition" in window) && !("SpeechRecognition" in window)) {
-      toast({ title: "Voice Not Supported", description: "Your browser doesn't support voice input. Try Chrome or Edge.", variant: "destructive" });
+    // Toggle off if already recording
+    if (isRecording) {
+      stopRecording();
       return;
     }
-    if (isRecordingRef.current) { finishRecording(); return; }
 
     startIdeaRef.current = idea;
-    segmentsRef.current = [];
-    currentSessionFinalRef.current = "";
-    currentInterimRef.current = "";
-    lastSpeechTimeRef.current = Date.now();
-    isRecordingRef.current = true;
     setIsRecording(true);
     setDisplayText(idea);
-    resetSilenceTimer();
 
-    const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
-    const recognition = new SpeechRecognition();
-    recognitionRef.current = recognition;
-    recognition.lang = "en-US";
-    recognition.interimResults = true;
-    recognition.continuous = true;
-    recognition.maxAlternatives = 1;
-
-    recognition.onresult = (event: any) => {
-      if (!isRecordingRef.current) return;
-      lastSpeechTimeRef.current = Date.now();
-      resetSilenceTimer();
-
-      let sessionFinal = "";
-      let sessionInterim = "";
-
-      for (let i = 0; i < event.results.length; i++) {
-        const result = event.results[i];
-        const transcript = result[0].transcript;
-        if (result.isFinal) {
-          sessionFinal += transcript;
-        } else {
-          sessionInterim += transcript;
+    const session = await startTranscription({
+      // wsUrl can be overridden via env var
+      wsUrl: import.meta.env.VITE_STT_WS_URL || undefined,
+      silenceTimeout: 3000,
+      chunkInterval: 250,
+      onInterim: (text) => {
+        const base = startIdeaRef.current.trim();
+        const combined = base ? base + " " + text : text;
+        setDisplayText(combined);
+      },
+      onFinal: (text) => {
+        const base = startIdeaRef.current.trim();
+        const combined = base ? base + " " + text : text;
+        setDisplayText(combined);
+        onIdeaChange(combined);
+      },
+      onError: (msg) => {
+        toast({
+          title: "Could not recognize voice clearly. Please try again.",
+          description: msg,
+          variant: "destructive",
+        });
+      },
+      onStatusChange: (status) => {
+        console.log("[STT] status:", status);
+        if (status === "stopped") {
+          setIsRecording(false);
+          transcriptionSessionRef.current = null;
         }
-      }
+      },
+    });
 
-      currentSessionFinalRef.current = sessionFinal;
-      currentInterimRef.current = sessionInterim;
-
-      console.log("[STT] interim:", sessionInterim);
-      console.log("[STT] final so far:", sessionFinal);
-      console.log("[STT] segments:", segmentsRef.current);
-
-      updateDisplayText();
-    };
-
-    recognition.onspeechstart = () => {
-      console.log("[STT] speech started");
-      lastSpeechTimeRef.current = Date.now();
-      resetSilenceTimer();
-    };
-    recognition.onspeechend = () => {
-      console.log("[STT] speech ended");
-    };
-    recognition.onerror = (event: any) => {
-      console.log("[STT] error:", event.error);
-      if (event.error === 'no-speech' || event.error === 'aborted') return;
-      toast({ title: "Voice input could not be recognized. Please try again.", variant: "destructive" });
-      isRecordingRef.current = false;
-      setIsRecording(false);
-      clearTimers();
-    };
-    recognition.onend = () => {
-      console.log("[STT] recognition ended, still recording:", isRecordingRef.current);
-      if (isRecordingRef.current && recognitionRef.current === recognition) {
-        // Save current session's final text before restart resets event.results
-        const sessionFinal = currentSessionFinalRef.current.trim();
-        if (sessionFinal) {
-          segmentsRef.current.push(sessionFinal);
-          currentSessionFinalRef.current = "";
-        }
-        try { recognition.start(); console.log("[STT] restarted recognition"); } catch { finishRecording(); }
-      }
-    };
-
-    try { recognition.start(); } catch (e) {
-      isRecordingRef.current = false;
-      setIsRecording(false);
-      clearTimers();
-      toast({ title: "Voice Error", description: "Failed to start voice recognition.", variant: "destructive" });
-    }
+    transcriptionSessionRef.current = session;
   };
 
   useEffect(() => {

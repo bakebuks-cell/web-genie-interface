@@ -43,6 +43,7 @@ const UnifiedInput = ({
 }: UnifiedInputProps) => {
   const [isFocused, setIsFocused] = useState(false);
   const [isRecording, setIsRecording] = useState(false);
+  const [debugStatus, setDebugStatus] = useState("");
   const [multiProgramOpen, setMultiProgramOpen] = useState(false);
   const [displayText, setDisplayText] = useState("");
   const [validationError, setValidationError] = useState("");

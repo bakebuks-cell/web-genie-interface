@@ -105,39 +105,43 @@ const UnifiedInput = ({
 
     try {
       const session = await startTranscription({
-        silenceTimeout: 3000,
+        silenceTimeout: 4000,
         chunkInterval: 250,
+        onDebugStatus: (label) => setDebugStatus(label),
         onInterim: (text) => {
-          console.log("[STT-Backend] Interim:", text);
+          console.log("[STT] Interim:", text);
           const base = startIdeaRef.current.trim();
           const display = base ? base + " " + text : text;
           setDisplayText(display);
         },
         onFinal: (text) => {
-          console.log("[STT-Backend] Final:", text);
+          console.log("[STT] Final:", text);
           const base = startIdeaRef.current.trim();
           const result = base ? base + " " + text : text;
           setDisplayText(result);
           onIdeaChange(result);
         },
         onError: (msg) => {
-          console.error("[STT-Backend] Error:", msg);
-          toast({ title: "Voice input failed. Please try again.", variant: "destructive" });
+          console.error("[STT] Error:", msg);
+          toast({ title: msg, variant: "destructive" });
           stopTranscription();
+          setDebugStatus("");
         },
         onStatusChange: (status) => {
-          console.log("[STT-Backend] Status:", status);
+          console.log("[STT] Status:", status);
           if (status === "stopped") {
             setIsRecording(false);
             sessionRef.current = null;
+            setTimeout(() => setDebugStatus(""), 2000);
           }
         },
       });
       sessionRef.current = session;
     } catch (err) {
-      console.error("[STT-Backend] Failed to start:", err);
+      console.error("[STT] Failed to start:", err);
       toast({ title: "Voice input failed. Please try again.", variant: "destructive" });
       setIsRecording(false);
+      setDebugStatus("");
     }
   };
 

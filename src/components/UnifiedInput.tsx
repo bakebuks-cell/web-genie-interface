@@ -425,6 +425,11 @@ const UnifiedInput = ({
               {isRecording && (
                 <span className="absolute inset-0 rounded-xl border-2 border-primary/50 animate-[pulse_2s_ease-in-out_infinite] pointer-events-none" />
               )}
+              {debugStatus && (
+                <span className="absolute -bottom-5 left-1/2 -translate-x-1/2 whitespace-nowrap text-[10px] text-primary/80 font-mono">
+                  {debugStatus}
+                </span>
+              )}
             </div>
 
             <button

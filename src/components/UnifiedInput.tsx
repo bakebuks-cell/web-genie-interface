@@ -179,7 +179,8 @@ const UnifiedInput = ({
     if (isRecordingRef.current) { finishRecording(); return; }
 
     startIdeaRef.current = idea;
-    accumulatedFinalRef.current = "";
+    segmentsRef.current = [];
+    currentSessionFinalRef.current = "";
     currentInterimRef.current = "";
     lastSpeechTimeRef.current = Date.now();
     isRecordingRef.current = true;

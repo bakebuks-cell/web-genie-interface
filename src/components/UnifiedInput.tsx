@@ -2,8 +2,6 @@ import { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Paperclip, Mic, ChevronDown, ChevronRight, Check, ArrowUp } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import MultiProgramModal from "./MultiProgramModal";
-import { startTranscription, type TranscriptionConfig } from "@/services/speechTranscription";
 
 export interface GenerationMode {
   mode: "single" | "multi";

@@ -50,19 +50,10 @@ const UnifiedInput = ({
   const [programMenuOpen, setProgramMenuOpen] = useState(false);
   const [showLangSubmenu, setShowLangSubmenu] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const recognitionRef = useRef<any>(null);
-  const silenceTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const finalizeTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const transcriptionSessionRef = useRef<{ stop: () => void } | null>(null);
   const programButtonRef = useRef<HTMLButtonElement>(null);
   const menuRef = useRef<HTMLDivElement>(null);
-
-  // Refs for speech state
-  const isRecordingRef = useRef(false);
   const startIdeaRef = useRef("");
-  const segmentsRef = useRef<string[]>([]); // finalized segments across restarts
-  const currentSessionFinalRef = useRef(""); // final text in current recognition session
-  const currentInterimRef = useRef("");
-  const lastSpeechTimeRef = useRef<number>(Date.now());
   const { toast } = useToast();
   
   const selectedLang = languages.find((l) => l.id === selectedLanguage);

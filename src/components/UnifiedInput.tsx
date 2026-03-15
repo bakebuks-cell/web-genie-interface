@@ -61,7 +61,7 @@ const UnifiedInput = ({
   const hasSelection = !!selectedLanguage || isMultiMode;
   const isGenerateEnabled = hasSelection && idea.trim().length > 0;
 
-  // Cleanup on unmount
+  // Cleanup transcription session on unmount
   useEffect(() => {
     return () => {
       if (transcriptionSessionRef.current) {

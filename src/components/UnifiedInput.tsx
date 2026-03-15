@@ -58,7 +58,8 @@ const UnifiedInput = ({
   // Refs for speech state
   const isRecordingRef = useRef(false);
   const startIdeaRef = useRef("");
-  const accumulatedFinalRef = useRef("");
+  const segmentsRef = useRef<string[]>([]); // finalized segments across restarts
+  const currentSessionFinalRef = useRef(""); // final text in current recognition session
   const currentInterimRef = useRef("");
   const lastSpeechTimeRef = useRef<number>(Date.now());
   const { toast } = useToast();

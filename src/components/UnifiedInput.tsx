@@ -49,24 +49,27 @@ const UnifiedInput = ({
   const [programMenuOpen, setProgramMenuOpen] = useState(false);
   const [showLangSubmenu, setShowLangSubmenu] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const transcriptionSessionRef = useRef<{ stop: () => void } | null>(null);
+  const recognitionRef = useRef<any>(null);
+  const silenceTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const isRecordingRef = useRef(false);
+  const startIdeaRef = useRef("");
+  const segmentsRef = useRef<string[]>([]);
+  const currentSessionFinalRef = useRef("");
+  const retryCountRef = useRef(0);
+  const manualStopRef = useRef(false);
   const programButtonRef = useRef<HTMLButtonElement>(null);
   const menuRef = useRef<HTMLDivElement>(null);
-  const startIdeaRef = useRef("");
   const { toast } = useToast();
-  
-  const selectedLang = languages.find((l) => l.id === selectedLanguage);
-  const isMultiMode = multiStack.length > 0;
-  const hasSelection = !!selectedLanguage || isMultiMode;
-  const isGenerateEnabled = hasSelection && idea.trim().length > 0;
 
-  // Cleanup transcription session on unmount
+  // Cleanup on unmount
   useEffect(() => {
     return () => {
-      if (transcriptionSessionRef.current) {
-        transcriptionSessionRef.current.stop();
-        transcriptionSessionRef.current = null;
+      isRecordingRef.current = false;
+      manualStopRef.current = true;
+      if (recognitionRef.current) {
+        try { recognitionRef.current.abort(); } catch {}
       }
+      if (silenceTimerRef.current) clearTimeout(silenceTimerRef.current);
     };
   }, []);
 
@@ -83,66 +86,171 @@ const UnifiedInput = ({
     const files = e.target.files;
     if (files && files.length > 0) {
       const fileNames = Array.from(files).map(f => f.name).join(", ");
-      toast({
-        title: "Files Attached",
-        description: `Selected: ${fileNames}`,
-      });
+      toast({ title: "Files Attached", description: `Selected: ${fileNames}` });
     }
     e.target.value = "";
   };
 
-  const stopRecording = () => {
-    if (transcriptionSessionRef.current) {
-      transcriptionSessionRef.current.stop();
-      transcriptionSessionRef.current = null;
-    }
-    setIsRecording(false);
+  const getAllFinalText = () => {
+    const segments = segmentsRef.current.join(" ").trim();
+    const session = currentSessionFinalRef.current.trim();
+    if (segments && session) return segments + " " + session;
+    return segments || session;
   };
 
-  const handleVoice = async () => {
-    // Toggle off if already recording
-    if (isRecording) {
-      stopRecording();
+  const resetSilenceTimer = () => {
+    if (silenceTimerRef.current) clearTimeout(silenceTimerRef.current);
+    silenceTimerRef.current = setTimeout(() => {
+      if (isRecordingRef.current) {
+        console.log("[STT] Silence detected — finalizing");
+        finishRecording();
+      }
+    }, 5000);
+  };
+
+  const finishRecording = () => {
+    if (!isRecordingRef.current) return;
+    console.log("[STT] Speech ended — finalizing");
+    isRecordingRef.current = false;
+    manualStopRef.current = true;
+    if (silenceTimerRef.current) clearTimeout(silenceTimerRef.current);
+
+    if (recognitionRef.current) {
+      try { recognitionRef.current.stop(); } catch {}
+    }
+
+    // Short delay to let last results arrive
+    setTimeout(() => {
+      const base = startIdeaRef.current.trim();
+      const finalText = getAllFinalText();
+      const parts: string[] = [];
+      if (base) parts.push(base);
+      if (finalText) parts.push(finalText);
+      const result = parts.join(" ");
+      console.log("[STT] Final transcript:", result);
+      onIdeaChange(result);
+      setDisplayText(result);
+
+      recognitionRef.current = null;
+      setIsRecording(false);
+      segmentsRef.current = [];
+      currentSessionFinalRef.current = "";
+      retryCountRef.current = 0;
+    }, 400);
+  };
+
+  const handleVoice = () => {
+    const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+    if (!SpeechRecognition) {
+      toast({ title: "Voice Not Supported", description: "Voice input is not supported in this browser.", variant: "destructive" });
       return;
     }
 
+    if (isRecordingRef.current) {
+      finishRecording();
+      return;
+    }
+
+    // Init state
     startIdeaRef.current = idea;
+    segmentsRef.current = [];
+    currentSessionFinalRef.current = "";
+    retryCountRef.current = 0;
+    manualStopRef.current = false;
+    isRecordingRef.current = true;
     setIsRecording(true);
     setDisplayText(idea);
 
-    const session = await startTranscription({
-      // wsUrl can be overridden via env var
-      wsUrl: import.meta.env.VITE_STT_WS_URL || undefined,
-      silenceTimeout: 3000,
-      chunkInterval: 250,
-      onInterim: (text) => {
-        const base = startIdeaRef.current.trim();
-        const combined = base ? base + " " + text : text;
-        setDisplayText(combined);
-      },
-      onFinal: (text) => {
-        const base = startIdeaRef.current.trim();
-        const combined = base ? base + " " + text : text;
-        setDisplayText(combined);
-        onIdeaChange(combined);
-      },
-      onError: (msg) => {
-        toast({
-          title: "Could not recognize voice clearly. Please try again.",
-          description: msg,
-          variant: "destructive",
-        });
-      },
-      onStatusChange: (status) => {
-        console.log("[STT] status:", status);
-        if (status === "stopped") {
-          setIsRecording(false);
-          transcriptionSessionRef.current = null;
-        }
-      },
-    });
+    const recognition = new SpeechRecognition();
+    recognitionRef.current = recognition;
+    recognition.lang = "en-US";
+    recognition.continuous = true;
+    recognition.interimResults = true;
+    recognition.maxAlternatives = 1;
 
-    transcriptionSessionRef.current = session;
+    recognition.onstart = () => {
+      console.log("[STT] Speech started");
+      resetSilenceTimer();
+    };
+
+    recognition.onresult = (event: any) => {
+      if (!isRecordingRef.current) return;
+      resetSilenceTimer();
+
+      let sessionFinal = "";
+      let sessionInterim = "";
+      for (let i = 0; i < event.results.length; i++) {
+        const r = event.results[i];
+        if (r.isFinal) {
+          sessionFinal += r[0].transcript;
+        } else {
+          sessionInterim += r[0].transcript;
+        }
+      }
+
+      currentSessionFinalRef.current = sessionFinal;
+
+      console.log("[STT] Interim transcript:", sessionInterim);
+      console.log("[STT] Final transcript:", sessionFinal);
+
+      // Update display
+      const base = startIdeaRef.current.trim();
+      const allFinal = getAllFinalText();
+      const parts: string[] = [];
+      if (base) parts.push(base);
+      if (allFinal) parts.push(allFinal);
+      if (sessionInterim) parts.push(sessionInterim);
+      setDisplayText(parts.join(" "));
+    };
+
+    recognition.onspeechend = () => {
+      console.log("[STT] Speech ended (browser event)");
+    };
+
+    recognition.onerror = (event: any) => {
+      console.log("[STT] Speech error:", event.error);
+      // Ignorable errors — auto-restart
+      if (event.error === "no-speech" || event.error === "aborted") {
+        return; // onend will handle restart
+      }
+      // For other errors, retry once before showing error
+      if (retryCountRef.current < 1 && isRecordingRef.current) {
+        retryCountRef.current++;
+        return; // onend will restart
+      }
+      // Truly failed
+      toast({ title: "Could not recognize voice clearly. Please try again.", variant: "destructive" });
+      isRecordingRef.current = false;
+      manualStopRef.current = true;
+      setIsRecording(false);
+      if (silenceTimerRef.current) clearTimeout(silenceTimerRef.current);
+    };
+
+    recognition.onend = () => {
+      console.log("[STT] Recognition ended, still recording:", isRecordingRef.current);
+      if (isRecordingRef.current && !manualStopRef.current) {
+        // Save finalized text from this session before restart
+        const sessionFinal = currentSessionFinalRef.current.trim();
+        if (sessionFinal) {
+          segmentsRef.current.push(sessionFinal);
+          currentSessionFinalRef.current = "";
+        }
+        try {
+          recognition.start();
+          console.log("[STT] Restarted recognition");
+        } catch {
+          finishRecording();
+        }
+      }
+    };
+
+    try {
+      recognition.start();
+    } catch {
+      isRecordingRef.current = false;
+      setIsRecording(false);
+      toast({ title: "Voice Error", description: "Failed to start voice recognition.", variant: "destructive" });
+    }
   };
 
   useEffect(() => {

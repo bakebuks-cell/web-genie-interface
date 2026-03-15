@@ -124,13 +124,20 @@ const UnifiedInput = ({
     }, 5000);
   };
 
+  const getAllFinalText = () => {
+    const segments = segmentsRef.current.join(" ").trim();
+    const sessionFinal = currentSessionFinalRef.current.trim();
+    if (segments && sessionFinal) return segments + " " + sessionFinal;
+    return segments || sessionFinal;
+  };
+
   const updateDisplayText = () => {
     const base = startIdeaRef.current.trim();
-    const final = accumulatedFinalRef.current.trim();
+    const finalText = getAllFinalText();
     const interim = currentInterimRef.current.trim();
     const parts: string[] = [];
     if (base) parts.push(base);
-    if (final) parts.push(final);
+    if (finalText) parts.push(finalText);
     if (interim) parts.push(interim);
     setDisplayText(parts.join(" "));
   };
@@ -145,20 +152,21 @@ const UnifiedInput = ({
     }
     finalizeTimeoutRef.current = setTimeout(() => {
       const base = startIdeaRef.current.trim();
-      const final = accumulatedFinalRef.current.trim();
+      const finalText = getAllFinalText();
       const parts: string[] = [];
       if (base) parts.push(base);
-      if (final) parts.push(final);
-      const finalText = parts.join(" ");
-      console.log("[STT] finalized text:", finalText);
-      onIdeaChange(finalText);
-      setDisplayText(finalText);
+      if (finalText) parts.push(finalText);
+      const result = parts.join(" ");
+      console.log("[STT] finalized text:", result);
+      onIdeaChange(result);
+      setDisplayText(result);
       if (recognitionRef.current) {
         try { recognitionRef.current.abort(); } catch {}
         recognitionRef.current = null;
       }
       setIsRecording(false);
-      accumulatedFinalRef.current = "";
+      segmentsRef.current = [];
+      currentSessionFinalRef.current = "";
       currentInterimRef.current = "";
     }, 500);
   };

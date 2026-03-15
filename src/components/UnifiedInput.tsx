@@ -58,7 +58,8 @@ const UnifiedInput = ({
   // Refs for speech state
   const isRecordingRef = useRef(false);
   const startIdeaRef = useRef("");
-  const accumulatedFinalRef = useRef("");
+  const segmentsRef = useRef<string[]>([]); // finalized segments across restarts
+  const currentSessionFinalRef = useRef(""); // final text in current recognition session
   const currentInterimRef = useRef("");
   const lastSpeechTimeRef = useRef<number>(Date.now());
   const { toast } = useToast();
@@ -123,13 +124,20 @@ const UnifiedInput = ({
     }, 5000);
   };
 
+  const getAllFinalText = () => {
+    const segments = segmentsRef.current.join(" ").trim();
+    const sessionFinal = currentSessionFinalRef.current.trim();
+    if (segments && sessionFinal) return segments + " " + sessionFinal;
+    return segments || sessionFinal;
+  };
+
   const updateDisplayText = () => {
     const base = startIdeaRef.current.trim();
-    const final = accumulatedFinalRef.current.trim();
+    const finalText = getAllFinalText();
     const interim = currentInterimRef.current.trim();
     const parts: string[] = [];
     if (base) parts.push(base);
-    if (final) parts.push(final);
+    if (finalText) parts.push(finalText);
     if (interim) parts.push(interim);
     setDisplayText(parts.join(" "));
   };
@@ -144,20 +152,21 @@ const UnifiedInput = ({
     }
     finalizeTimeoutRef.current = setTimeout(() => {
       const base = startIdeaRef.current.trim();
-      const final = accumulatedFinalRef.current.trim();
+      const finalText = getAllFinalText();
       const parts: string[] = [];
       if (base) parts.push(base);
-      if (final) parts.push(final);
-      const finalText = parts.join(" ");
-      console.log("[STT] finalized text:", finalText);
-      onIdeaChange(finalText);
-      setDisplayText(finalText);
+      if (finalText) parts.push(finalText);
+      const result = parts.join(" ");
+      console.log("[STT] finalized text:", result);
+      onIdeaChange(result);
+      setDisplayText(result);
       if (recognitionRef.current) {
         try { recognitionRef.current.abort(); } catch {}
         recognitionRef.current = null;
       }
       setIsRecording(false);
-      accumulatedFinalRef.current = "";
+      segmentsRef.current = [];
+      currentSessionFinalRef.current = "";
       currentInterimRef.current = "";
     }, 500);
   };
@@ -170,7 +179,8 @@ const UnifiedInput = ({
     if (isRecordingRef.current) { finishRecording(); return; }
 
     startIdeaRef.current = idea;
-    accumulatedFinalRef.current = "";
+    segmentsRef.current = [];
+    currentSessionFinalRef.current = "";
     currentInterimRef.current = "";
     lastSpeechTimeRef.current = Date.now();
     isRecordingRef.current = true;
@@ -204,11 +214,12 @@ const UnifiedInput = ({
         }
       }
 
-      accumulatedFinalRef.current = sessionFinal;
+      currentSessionFinalRef.current = sessionFinal;
       currentInterimRef.current = sessionInterim;
 
       console.log("[STT] interim:", sessionInterim);
       console.log("[STT] final so far:", sessionFinal);
+      console.log("[STT] segments:", segmentsRef.current);
 
       updateDisplayText();
     };
@@ -224,7 +235,7 @@ const UnifiedInput = ({
     recognition.onerror = (event: any) => {
       console.log("[STT] error:", event.error);
       if (event.error === 'no-speech' || event.error === 'aborted') return;
-      toast({ title: "Couldn't hear clearly. Please try again.", variant: "destructive" });
+      toast({ title: "Voice input could not be recognized. Please try again.", variant: "destructive" });
       isRecordingRef.current = false;
       setIsRecording(false);
       clearTimers();
@@ -232,7 +243,13 @@ const UnifiedInput = ({
     recognition.onend = () => {
       console.log("[STT] recognition ended, still recording:", isRecordingRef.current);
       if (isRecordingRef.current && recognitionRef.current === recognition) {
-        try { recognition.start(); } catch { finishRecording(); }
+        // Save current session's final text before restart resets event.results
+        const sessionFinal = currentSessionFinalRef.current.trim();
+        if (sessionFinal) {
+          segmentsRef.current.push(sessionFinal);
+          currentSessionFinalRef.current = "";
+        }
+        try { recognition.start(); console.log("[STT] restarted recognition"); } catch { finishRecording(); }
       }
     };
 

@@ -52,6 +52,27 @@ const UnifiedInput = ({
   const fileInputRef = useRef<HTMLInputElement>(null);
   const sessionRef = useRef<{ stop: () => void } | null>(null);
   const startIdeaRef = useRef("");
+  const programButtonRef = useRef<HTMLButtonElement>(null);
+  const menuRef = useRef<HTMLDivElement>(null);
+  const { toast } = useToast();
+
+  const selectedLang = languages.find((l) => l.id === selectedLanguage);
+  const isMultiMode = multiStack.length > 0;
+  const hasSelection = !!selectedLanguage || isMultiMode;
+  const isGenerateEnabled = hasSelection && idea.trim().length > 0;
+
+  const handleAttach = () => {
+    fileInputRef.current?.click();
+  };
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (files && files.length > 0) {
+      const fileNames = Array.from(files).map(f => f.name).join(", ");
+      toast({ title: "Files Attached", description: `Selected: ${fileNames}` });
+    }
+    e.target.value = "";
+  };
 
   useEffect(() => {
     return () => {

@@ -80,6 +80,11 @@ const UnifiedInput = ({
     };
   }, []);
 
+  // Clear validation error when user selects something
+  useEffect(() => {
+    if (hasSelection) setValidationError("");
+  }, [hasSelection]);
+
   const stopTranscription = () => {
     sessionRef.current?.stop();
     sessionRef.current = null;

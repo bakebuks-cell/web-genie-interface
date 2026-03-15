@@ -8,29 +8,23 @@
  * Both paths expose the same callback interface.
  */
 
-// ── Configuration ──────────────────────────────────────────────
 const DEFAULT_WS_URL = "wss://api.mycodex.dev/ws/transcribe";
 const WS_CONNECT_TIMEOUT_MS = 3000;
 
 export interface TranscriptionConfig {
   wsUrl?: string;
-  /** Silence timeout in ms before auto-stop (default 4000) */
   silenceTimeout?: number;
-  /** Audio chunk interval in ms (default 250) */
   chunkInterval?: number;
   onInterim?: (text: string) => void;
   onFinal?: (text: string) => void;
   onError?: (msg: string) => void;
   onStatusChange?: (status: "connecting" | "listening" | "stopped") => void;
-  /** Debug status for UI display */
   onDebugStatus?: (label: string) => void;
 }
 
 interface TranscriptionSession {
   stop: () => void;
 }
-
-// ── Public API ─────────────────────────────────────────────────
 
 export async function startTranscription(
   config: TranscriptionConfig
@@ -42,7 +36,6 @@ export async function startTranscription(
 
   debug("Requesting mic permission...");
 
-  // 1. Get microphone access first (shared by both paths)
   let stream: MediaStream;
   try {
     stream = await navigator.mediaDevices.getUserMedia({
@@ -61,7 +54,7 @@ export async function startTranscription(
     return { stop: () => {} };
   }
 
-  // 2. Try WebSocket backend first
+  // Try WebSocket backend first
   debug("Trying backend connection...");
   try {
     const session = await tryWebSocketBackend(config, stream, debug);
@@ -69,15 +62,13 @@ export async function startTranscription(
     return session;
   } catch (wsErr) {
     console.warn("[STT] Backend unavailable, falling back to browser STT:", wsErr);
-    debug("Backend unavailable — using browser STT");
-    // Release the mic stream; browser STT opens its own
+    debug("Using browser STT");
     stream.getTracks().forEach((t) => t.stop());
   }
 
-  // 3. Fallback: browser Web Speech API
+  // Fallback: browser Web Speech API
   try {
-    const session = startBrowserSTT(config, debug);
-    return session;
+    return startBrowserSTT(config, debug);
   } catch (browserErr) {
     console.error("[STT] Browser STT also failed:", browserErr);
     config.onError?.("Voice input is not supported in this browser.");
@@ -95,8 +86,8 @@ function tryWebSocketBackend(
 ): Promise<TranscriptionSession> {
   return new Promise((resolve, reject) => {
     const wsUrl = config.wsUrl || DEFAULT_WS_URL;
-    const silenceTimeout = config.silenceTimeout ?? 4000;
-    const chunkInterval = config.chunkInterval ?? 250;
+    const silenceTimeout = config.silenceTimeout ?? 2500;
+    const chunkInterval = config.chunkInterval ?? 150;
 
     let stopped = false;
     let mediaRecorder: MediaRecorder | null = null;
@@ -105,7 +96,6 @@ function tryWebSocketBackend(
     let accumulatedFinal = "";
     let connected = false;
 
-    // Timeout: if WS doesn't connect in time, reject to trigger fallback
     const connectTimeout = setTimeout(() => {
       if (!connected && !stopped) {
         debug("Backend connection timeout");
@@ -138,7 +128,7 @@ function tryWebSocketBackend(
         if (ws && ws.readyState === WebSocket.OPEN) {
           ws.send(JSON.stringify({ type: "stop" }));
         }
-        setTimeout(cleanup, 500);
+        setTimeout(cleanup, 400);
       }, silenceTimeout);
     };
 
@@ -167,14 +157,14 @@ function tryWebSocketBackend(
       if (stopped) return;
       try {
         const msg = JSON.parse(event.data as string);
-        debug(`Transcript received: ${msg.type}`);
-
         if (msg.type === "interim" && msg.text) {
           resetSilenceTimer();
+          debug("Interim: " + msg.text);
           config.onInterim?.(accumulatedFinal + (accumulatedFinal ? " " : "") + msg.text);
         } else if (msg.type === "final" && msg.text) {
           resetSilenceTimer();
           accumulatedFinal = accumulatedFinal ? accumulatedFinal + " " + msg.text : msg.text;
+          debug("Final: " + msg.text);
           config.onFinal?.(accumulatedFinal);
         } else if (msg.type === "error") {
           config.onError?.(msg.message || "Transcription error");
@@ -186,7 +176,6 @@ function tryWebSocketBackend(
 
     ws.onerror = () => {
       if (!connected && !stopped) {
-        // Connection never succeeded — reject to trigger fallback
         stopped = true;
         clearTimeout(connectTimeout);
         stream.getTracks().forEach((t) => t.stop());
@@ -220,7 +209,6 @@ function tryWebSocketBackend(
       mediaRecorder = new MediaRecorder(stream, mimeType ? { mimeType } : {});
       mediaRecorder.ondataavailable = (event) => {
         if (event.data.size > 0 && ws && ws.readyState === WebSocket.OPEN) {
-          debug("Sending audio chunk");
           ws.send(event.data);
         }
       };
@@ -235,7 +223,7 @@ function tryWebSocketBackend(
   });
 }
 
-// ── Browser Web Speech API Fallback ───────────────────────────
+// ── Browser Web Speech API Fallback (Hinglish-aware) ──────────
 
 function startBrowserSTT(
   config: TranscriptionConfig,
@@ -247,7 +235,7 @@ function startBrowserSTT(
     throw new Error("Browser SpeechRecognition not available");
   }
 
-  const silenceTimeout = config.silenceTimeout ?? 4000;
+  const silenceTimeout = config.silenceTimeout ?? 2500;
   let stopped = false;
   let manualStop = false;
   let silenceTimer: ReturnType<typeof setTimeout> | null = null;
@@ -256,10 +244,13 @@ function startBrowserSTT(
   let retryCount = 0;
 
   const recognition = new SpeechRecognition();
-  recognition.lang = "en-US";
+
+  // Use hi-IN as primary lang for Hinglish — Chrome's hi-IN model
+  // handles mixed Hindi+English well. en-IN is added as alternative.
+  recognition.lang = "hi-IN";
   recognition.continuous = true;
   recognition.interimResults = true;
-  recognition.maxAlternatives = 1;
+  recognition.maxAlternatives = 3;
 
   const getAllFinal = () => {
     const seg = segments.join(" ").trim();
@@ -284,15 +275,16 @@ function startBrowserSTT(
     if (silenceTimer) clearTimeout(silenceTimer);
     try { recognition.stop(); } catch {}
 
+    // Minimal delay — just enough for last results to arrive
     setTimeout(() => {
       const finalText = getAllFinal();
       if (finalText) {
-        debug("Final transcript: " + finalText);
+        debug("Final: " + finalText);
         config.onFinal?.(finalText);
       }
       config.onStatusChange?.("stopped");
       debug("Session stopped");
-    }, 300);
+    }, 150);
   };
 
   const cleanup = () => {
@@ -302,7 +294,7 @@ function startBrowserSTT(
   };
 
   recognition.onstart = () => {
-    debug("Listening (browser STT)");
+    debug("Listening...");
     resetSilence();
   };
 
@@ -314,22 +306,26 @@ function startBrowserSTT(
     let sessionInterim = "";
     for (let i = 0; i < event.results.length; i++) {
       const r = event.results[i];
+      // Pick best alternative (first is usually best)
+      const transcript = r[0].transcript;
       if (r.isFinal) {
-        sessionFinal += r[0].transcript;
+        sessionFinal += transcript;
       } else {
-        sessionInterim += r[0].transcript;
+        sessionInterim += transcript;
       }
     }
     currentSessionFinal = sessionFinal;
 
-    // Build combined text for display
     const allFinal = getAllFinal();
-    const interimDisplay = [allFinal, sessionInterim].filter(Boolean).join(" ");
-    
+
+    // Show interim immediately for speed
     if (sessionInterim) {
+      const interimDisplay = [allFinal, sessionInterim].filter(Boolean).join(" ");
       debug("Interim: " + sessionInterim);
       config.onInterim?.(interimDisplay);
     }
+
+    // Commit final immediately
     if (sessionFinal) {
       debug("Final chunk: " + sessionFinal);
       config.onFinal?.(allFinal);
@@ -349,11 +345,11 @@ function startBrowserSTT(
         debug("Too many retries — stopping");
         finish();
       }
-      return; // onend will auto-restart
+      return;
     }
     if (retryCount < 2 && !stopped) {
       retryCount++;
-      return; // let onend restart
+      return;
     }
     config.onError?.("Voice input failed. Please try again.");
     finish();
@@ -361,7 +357,6 @@ function startBrowserSTT(
 
   recognition.onend = () => {
     if (!stopped && !manualStop) {
-      // Save session finals before restart
       const sf = currentSessionFinal.trim();
       if (sf) {
         segments.push(sf);

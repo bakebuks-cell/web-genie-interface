@@ -214,11 +214,12 @@ const UnifiedInput = ({
         }
       }
 
-      accumulatedFinalRef.current = sessionFinal;
+      currentSessionFinalRef.current = sessionFinal;
       currentInterimRef.current = sessionInterim;
 
       console.log("[STT] interim:", sessionInterim);
       console.log("[STT] final so far:", sessionFinal);
+      console.log("[STT] segments:", segmentsRef.current);
 
       updateDisplayText();
     };
@@ -234,7 +235,7 @@ const UnifiedInput = ({
     recognition.onerror = (event: any) => {
       console.log("[STT] error:", event.error);
       if (event.error === 'no-speech' || event.error === 'aborted') return;
-      toast({ title: "Couldn't hear clearly. Please try again.", variant: "destructive" });
+      toast({ title: "Voice input could not be recognized. Please try again.", variant: "destructive" });
       isRecordingRef.current = false;
       setIsRecording(false);
       clearTimers();
@@ -242,7 +243,13 @@ const UnifiedInput = ({
     recognition.onend = () => {
       console.log("[STT] recognition ended, still recording:", isRecordingRef.current);
       if (isRecordingRef.current && recognitionRef.current === recognition) {
-        try { recognition.start(); } catch { finishRecording(); }
+        // Save current session's final text before restart resets event.results
+        const sessionFinal = currentSessionFinalRef.current.trim();
+        if (sessionFinal) {
+          segmentsRef.current.push(sessionFinal);
+          currentSessionFinalRef.current = "";
+        }
+        try { recognition.start(); console.log("[STT] restarted recognition"); } catch { finishRecording(); }
       }
     };
 

@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Paperclip, Mic, ChevronDown, ChevronRight, Check, ArrowUp } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import MultiProgramModal from "./MultiProgramModal";
+import { startTranscription, type TranscriptionConfig } from "@/services/speechTranscription";
 
 export interface GenerationMode {
   mode: "single" | "multi";
@@ -49,14 +50,8 @@ const UnifiedInput = ({
   const [programMenuOpen, setProgramMenuOpen] = useState(false);
   const [showLangSubmenu, setShowLangSubmenu] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const recognitionRef = useRef<any>(null);
-  const silenceTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const isRecordingRef = useRef(false);
+  const sessionRef = useRef<{ stop: () => void } | null>(null);
   const startIdeaRef = useRef("");
-  const segmentsRef = useRef<string[]>([]);
-  const currentSessionFinalRef = useRef("");
-  const retryCountRef = useRef(0);
-  const manualStopRef = useRef(false);
   const programButtonRef = useRef<HTMLButtonElement>(null);
   const menuRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
@@ -65,22 +60,6 @@ const UnifiedInput = ({
   const isMultiMode = multiStack.length > 0;
   const hasSelection = !!selectedLanguage || isMultiMode;
   const isGenerateEnabled = hasSelection && idea.trim().length > 0;
-
-  useEffect(() => {
-    return () => {
-      isRecordingRef.current = false;
-      manualStopRef.current = true;
-      if (recognitionRef.current) {
-        try { recognitionRef.current.abort(); } catch {}
-      }
-      if (silenceTimerRef.current) clearTimeout(silenceTimerRef.current);
-    };
-  }, []);
-
-  // Clear validation error when user selects something
-  useEffect(() => {
-    if (hasSelection) setValidationError("");
-  }, [hasSelection]);
 
   const handleAttach = () => {
     fileInputRef.current?.click();
@@ -95,206 +74,69 @@ const UnifiedInput = ({
     e.target.value = "";
   };
 
-  const getAllFinalText = () => {
-    const segments = segmentsRef.current.join(" ").trim();
-    const session = currentSessionFinalRef.current.trim();
-    if (segments && session) return segments + " " + session;
-    return segments || session;
-  };
+  useEffect(() => {
+    return () => {
+      sessionRef.current?.stop();
+    };
+  }, []);
 
-  const resetSilenceTimer = () => {
-    if (silenceTimerRef.current) clearTimeout(silenceTimerRef.current);
-    silenceTimerRef.current = setTimeout(() => {
-      if (isRecordingRef.current) {
-        console.log("[STT] Silence detected — finalizing");
-        finishRecording();
-      }
-    }, 5000);
-  };
+  // Clear validation error when user selects something
+  useEffect(() => {
+    if (hasSelection) setValidationError("");
+  }, [hasSelection]);
 
-  const finishRecording = () => {
-    if (!isRecordingRef.current) return;
-    console.log("[STT] Speech ended — finalizing");
-    isRecordingRef.current = false;
-    manualStopRef.current = true;
-    if (silenceTimerRef.current) clearTimeout(silenceTimerRef.current);
-
-    if (recognitionRef.current) {
-      try { recognitionRef.current.stop(); } catch {}
-    }
-
-    // Short delay to let last results arrive
-    setTimeout(() => {
-      const base = startIdeaRef.current.trim();
-      const finalText = getAllFinalText();
-      const parts: string[] = [];
-      if (base) parts.push(base);
-      if (finalText) parts.push(finalText);
-      const result = parts.join(" ");
-      console.log("[STT] Final transcript:", result);
-      onIdeaChange(result);
-      setDisplayText(result);
-
-      recognitionRef.current = null;
-      setIsRecording(false);
-      segmentsRef.current = [];
-      currentSessionFinalRef.current = "";
-      retryCountRef.current = 0;
-    }, 400);
+  const stopTranscription = () => {
+    sessionRef.current?.stop();
+    sessionRef.current = null;
+    setIsRecording(false);
   };
 
   const handleVoice = async () => {
-    const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
-    if (!SpeechRecognition) {
-      toast({ title: "Voice Not Supported", description: "Voice input is not supported in this browser.", variant: "destructive" });
+    if (isRecording) {
+      console.log("[STT-Backend] Manual stop");
+      stopTranscription();
       return;
     }
 
-    if (isRecordingRef.current) {
-      finishRecording();
-      return;
-    }
-
-    // Pre-warm mic with optimized constraints for normal speaking volume
-    try {
-      const stream = await navigator.mediaDevices.getUserMedia({
-        audio: {
-          echoCancellation: true,
-          noiseSuppression: true,
-          autoGainControl: true,
-          channelCount: 1,
-        },
-      });
-      console.log("[STT] Mic permission granted, stream active");
-      // Release the stream — SpeechRecognition will open its own
-      stream.getTracks().forEach((t) => t.stop());
-    } catch (err) {
-      console.log("[STT] Mic permission denied:", err);
-      toast({ title: "Microphone access denied", description: "Please allow microphone permissions.", variant: "destructive" });
-      return;
-    }
-
-    // Init state
     startIdeaRef.current = idea;
-    segmentsRef.current = [];
-    currentSessionFinalRef.current = "";
-    retryCountRef.current = 0;
-    manualStopRef.current = false;
-    isRecordingRef.current = true;
     setIsRecording(true);
     setDisplayText(idea);
 
-    const recognition = new SpeechRecognition();
-    recognitionRef.current = recognition;
-    recognition.lang = "en-US";
-    recognition.continuous = true;
-    recognition.interimResults = true;
-    recognition.maxAlternatives = 1;
-
-    recognition.onstart = () => {
-      console.log("[STT] Recognition started");
-      resetSilenceTimer();
-    };
-
-    recognition.onaudiostart = () => {
-      console.log("[STT] Audio capture started");
-    };
-
-    recognition.onresult = (event: any) => {
-      if (!isRecordingRef.current) return;
-      resetSilenceTimer();
-
-      let sessionFinal = "";
-      let sessionInterim = "";
-      for (let i = 0; i < event.results.length; i++) {
-        const r = event.results[i];
-        if (r.isFinal) {
-          sessionFinal += r[0].transcript;
-        } else {
-          sessionInterim += r[0].transcript;
-        }
-      }
-
-      currentSessionFinalRef.current = sessionFinal;
-
-      if (sessionInterim) console.log("[STT] Interim:", sessionInterim);
-      if (sessionFinal) console.log("[STT] Final:", sessionFinal);
-
-      // Immediately update display for low latency
-      const base = startIdeaRef.current.trim();
-      const allFinal = getAllFinalText();
-      const parts: string[] = [];
-      if (base) parts.push(base);
-      if (allFinal) parts.push(allFinal);
-      if (sessionInterim) parts.push(sessionInterim);
-      setDisplayText(parts.join(" "));
-
-      // Also commit final text to the actual input immediately
-      if (sessionFinal) {
-        const commitParts: string[] = [];
-        if (base) commitParts.push(base);
-        if (allFinal) commitParts.push(allFinal);
-        onIdeaChange(commitParts.join(" "));
-      }
-    };
-
-    recognition.onspeechstart = () => {
-      console.log("[STT] Speech detected");
-      resetSilenceTimer();
-    };
-
-    recognition.onspeechend = () => {
-      console.log("[STT] Speech ended (browser event)");
-    };
-
-    recognition.onerror = (event: any) => {
-      console.log("[STT] Error:", event.error);
-      // no-speech and aborted are harmless — let onend auto-restart
-      if (event.error === "no-speech" || event.error === "aborted") {
-        // Bump retry counter; allow up to 3 silent restarts before giving up
-        retryCountRef.current++;
-        if (retryCountRef.current >= 3) {
-          console.log("[STT] Too many no-speech retries — stopping");
-          finishRecording();
-        }
-        return;
-      }
-      // audio-capture / network — retry once
-      if (retryCountRef.current < 2 && isRecordingRef.current) {
-        retryCountRef.current++;
-        return; // onend will restart
-      }
-      toast({ title: "Could not recognize voice clearly. Please try again.", variant: "destructive" });
-      isRecordingRef.current = false;
-      manualStopRef.current = true;
-      setIsRecording(false);
-      if (silenceTimerRef.current) clearTimeout(silenceTimerRef.current);
-    };
-
-    recognition.onend = () => {
-      console.log("[STT] Recognition ended, still recording:", isRecordingRef.current);
-      if (isRecordingRef.current && !manualStopRef.current) {
-        const sessionFinal = currentSessionFinalRef.current.trim();
-        if (sessionFinal) {
-          segmentsRef.current.push(sessionFinal);
-          currentSessionFinalRef.current = "";
-        }
-        try {
-          recognition.start();
-          console.log("[STT] Restarted recognition");
-        } catch {
-          finishRecording();
-        }
-      }
-    };
-
     try {
-      recognition.start();
-      console.log("[STT] Recognition starting...");
-    } catch {
-      isRecordingRef.current = false;
+      const session = await startTranscription({
+        silenceTimeout: 3000,
+        chunkInterval: 250,
+        onInterim: (text) => {
+          console.log("[STT-Backend] Interim:", text);
+          const base = startIdeaRef.current.trim();
+          const display = base ? base + " " + text : text;
+          setDisplayText(display);
+        },
+        onFinal: (text) => {
+          console.log("[STT-Backend] Final:", text);
+          const base = startIdeaRef.current.trim();
+          const result = base ? base + " " + text : text;
+          setDisplayText(result);
+          onIdeaChange(result);
+        },
+        onError: (msg) => {
+          console.error("[STT-Backend] Error:", msg);
+          toast({ title: "Voice input failed. Please try again.", variant: "destructive" });
+          stopTranscription();
+        },
+        onStatusChange: (status) => {
+          console.log("[STT-Backend] Status:", status);
+          if (status === "stopped") {
+            setIsRecording(false);
+            sessionRef.current = null;
+          }
+        },
+      });
+      sessionRef.current = session;
+    } catch (err) {
+      console.error("[STT-Backend] Failed to start:", err);
+      toast({ title: "Voice input failed. Please try again.", variant: "destructive" });
       setIsRecording(false);
-      toast({ title: "Voice Error", description: "Failed to start voice recognition.", variant: "destructive" });
     }
   };
 

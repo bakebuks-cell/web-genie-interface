@@ -188,28 +188,47 @@ const UnifiedInput = ({
       if (!isRecordingRef.current) return;
       lastSpeechTimeRef.current = Date.now();
       resetSilenceTimer();
-      for (let i = event.resultIndex; i < event.results.length; i++) {
+
+      let sessionFinal = "";
+      let sessionInterim = "";
+
+      for (let i = 0; i < event.results.length; i++) {
         const result = event.results[i];
+        const transcript = result[0].transcript;
         if (result.isFinal) {
-          accumulatedFinalRef.current += result[0].transcript;
-          currentInterimRef.current = "";
+          sessionFinal += transcript;
         } else {
-          currentInterimRef.current = result[0].transcript;
+          sessionInterim += transcript;
         }
       }
+
+      accumulatedFinalRef.current = sessionFinal;
+      currentInterimRef.current = sessionInterim;
+
+      console.log("[STT] interim:", sessionInterim);
+      console.log("[STT] final so far:", sessionFinal);
+
       updateDisplayText();
     };
 
-    recognition.onspeechstart = () => { lastSpeechTimeRef.current = Date.now(); resetSilenceTimer(); };
-    recognition.onspeechend = () => {};
+    recognition.onspeechstart = () => {
+      console.log("[STT] speech started");
+      lastSpeechTimeRef.current = Date.now();
+      resetSilenceTimer();
+    };
+    recognition.onspeechend = () => {
+      console.log("[STT] speech ended");
+    };
     recognition.onerror = (event: any) => {
+      console.log("[STT] error:", event.error);
       if (event.error === 'no-speech' || event.error === 'aborted') return;
-      toast({ title: "Voice Error", description: `Error: ${event.error}`, variant: "destructive" });
+      toast({ title: "Couldn't hear clearly. Please try again.", variant: "destructive" });
       isRecordingRef.current = false;
       setIsRecording(false);
       clearTimers();
     };
     recognition.onend = () => {
+      console.log("[STT] recognition ended, still recording:", isRecordingRef.current);
       if (isRecordingRef.current && recognitionRef.current === recognition) {
         try { recognition.start(); } catch { finishRecording(); }
       }

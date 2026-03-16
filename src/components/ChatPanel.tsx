@@ -186,8 +186,8 @@ const ChatPanel = ({
 
     setIsUploading(true);
     const fileExt = file.name.split('.').pop();
-    const fileName = \`${Math.random()}.${fileExt}\`;
-    const filePath = \`${user.id}/${fileName}\`; // Organize by user ID
+    const fileName = `${Math.random()}.${fileExt}`;
+    const filePath = `${user.id}/${fileName}`; // Organize by user ID
 
     try {
       console.log('Uploading file to Supabase Storage...', filePath);

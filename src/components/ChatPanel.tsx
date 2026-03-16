@@ -1,13 +1,33 @@
 import React, { useState, useRef, useEffect, useTransition } from "react";
 import { Send, Paperclip, Code, Palette, Zap, RefreshCw, X, Mic, PlusSquare } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
-import { useAutoResizeTextarea } from "../hooks/useAutoResizeTextarea";
 import FileUploadZone from "./FileUploadZone";
 import { useAuth } from "@/contexts/AuthContext";
 import { useGuestCredits } from "@/hooks/useGuestCredits";
 import { supabase } from "@/integrations/supabase/client";
 import { fetchBuild } from "@/services/api";
 import { useNavigate } from "react-router-dom";
+
+// Embedded hook logic since it was missing from the GitHub repository
+function useAutoResizeTextarea({ minHeight, maxHeight }: { minHeight: number, maxHeight: number }) {
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
+  
+  const adjustHeight = (reset?: boolean) => {
+    const textarea = textareaRef.current;
+    if (!textarea) return;
+    
+    if (reset) {
+      textarea.style.height = `${minHeight}px`;
+      return;
+    }
+    
+    textarea.style.height = `${minHeight}px`;
+    const scrollHeight = textarea.scrollHeight;
+    textarea.style.height = `${Math.min(scrollHeight, maxHeight)}px`;
+  };
+
+  return { textareaRef, adjustHeight };
+}
 
 type Message = {
   id: string;

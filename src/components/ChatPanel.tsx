@@ -1,7 +1,6 @@
 import React, { useState, useRef, useEffect, useTransition } from "react";
 import { Send, Paperclip, Code, Palette, Zap, RefreshCw, X, Mic, PlusSquare } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
-import FileUploadZone from "./FileUploadZone";
 import { useAuth } from "@/contexts/AuthContext";
 import { useGuestCredits } from "@/hooks/useGuestCredits";
 import { supabase } from "@/integrations/supabase/client";
@@ -28,6 +27,29 @@ function useAutoResizeTextarea({ minHeight, maxHeight }: { minHeight: number, ma
 
   return { textareaRef, adjustHeight };
 }
+
+// Embedded FileUploadZone component since it was missing from the GitHub repository
+const FileUploadZone: React.FC<{
+  onFileSelect: (file: File) => void;
+  children: React.ReactNode;
+}> = ({ onFileSelect, children }) => {
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+  };
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+      onFileSelect(e.dataTransfer.files[0]);
+    }
+  };
+  return (
+    <div onDragOver={handleDragOver} onDrop={handleDrop} className="inline-flex items-center justify-center">
+      {children}
+    </div>
+  );
+};
 
 type Message = {
   id: string;

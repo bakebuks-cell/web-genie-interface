@@ -129,13 +129,13 @@ export const HeroSection = () => {
   };
 
   return (
-    <section className="relative pt-24 pb-12 md:pt-32 md:pb-16 overflow-hidden min-h-screen flex flex-col justify-center">
+    <section className="relative overflow-hidden flex min-h-[calc(100svh-4.75rem)] flex-col justify-center pt-8 pb-8 md:min-h-[calc(100svh-5.5rem)] md:pt-10 md:pb-10 lg:pt-8 lg:pb-8">
       {/* Premium background effects */}
       <HeroBackground />
 
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative z-10 max-w-4xl">
         {/* Centered Quote with animations */}
-        <div className="text-center mb-12 md:mb-14">
+        <div className="text-center mb-7 md:mb-8 lg:mb-7">
           {/* Main headline - stacked with animation */}
           <motion.h1
             className="text-3xl md:text-4xl lg:text-5xl font-bold tracking-tight leading-[1.15] text-foreground"
@@ -154,11 +154,10 @@ export const HeroSection = () => {
 
           {/* Animated decorative line */}
           <motion.div
-            className="flex justify-center mt-6 mb-4"
+            className="flex justify-center mt-4 mb-3 md:mt-5 md:mb-4"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.8 }}>
-            
             <motion.div
               className="h-px w-24 bg-gradient-to-r from-transparent via-primary to-transparent"
               animate={{
@@ -170,7 +169,6 @@ export const HeroSection = () => {
                 repeat: Infinity,
                 ease: "easeInOut"
               }} />
-            
           </motion.div>
           
           {/* Supporting Quote */}

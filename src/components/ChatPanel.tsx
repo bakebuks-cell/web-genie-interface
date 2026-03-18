@@ -5,7 +5,6 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useGuestCredits } from "@/hooks/useCredits";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
-import { startTranscription } from "@/services/speechTranscription";
 
 // === EMBEDDED: useAutoResizeTextarea (missing from repo) ===
 function useAutoResizeTextarea({ minHeight, maxHeight }: { minHeight: number; maxHeight: number }) {
@@ -62,18 +61,11 @@ async function fetchBuild(prompt: string, stack: string) {
 type Message = { id: string; role: "user" | "assistant"; content: string };
 type CommandSuggestion = { icon: React.ReactNode; label: string; description: string; prefix: string };
 
-export interface HealthCheckStatus {
-  isChecking: boolean;
-  isReady: boolean;
-  elapsedSeconds: number;
-  error?: string;
-}
-
 interface ChatPanelProps {
   selectedStack?: "react" | "nextjs" | "vue" | "html";
   initialPrompt?: string;
   onGeneratedUrl?: (url: string) => void;
-  onHealthCheckStatus?: (status: HealthCheckStatus) => void;
+  onHealthCheckStatus?: (status: boolean) => void;
   projectId?: string;
   selectedElementId?: string;
   onClearElement?: () => void;
@@ -91,7 +83,7 @@ const ChatPanel = ({
 }: ChatPanelProps) => {
   const navigate = useNavigate();
   const { user, profile, userCredits, deductCredit: authDeductCredit } = useAuth();
-  const { credits: guestCredits, deductCredit: guestDeductCredit } = useGuestCredits();
+  const { credits: guestCredits, hasCredits: guestHasCredits, deductCredit: guestDeductCredit } = useGuestCredits();
 
   const [messages, setMessages] = useState<Message[]>([
     { id: "1", role: "assistant", content: "I'm ready to generate your application. Describe what you want to build!" },
@@ -106,12 +98,11 @@ const ChatPanel = ({
   const [isRecording, setIsRecording] = useState(false);
   const [showUpgradePrompt, setShowUpgradePrompt] = useState(false);
   const [hasAutoTriggered, setHasAutoTriggered] = useState(false);
-  const { textareaRef, adjustHeight } = useAutoResizeTextarea({ minHeight: 88, maxHeight: 180 });
+  const { textareaRef, adjustHeight } = useAutoResizeTextarea({ minHeight: 44, maxHeight: 120 });
   const commandPaletteRef = useRef<HTMLDivElement>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const recognitionRef = useRef<SpeechRecognition | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const sessionRef = useRef<{ stop: () => void } | null>(null);
-  const startValueRef = useRef("");
   const [isUploading, setIsUploading] = useState(false);
 
   const isAuthenticated = !!user;
@@ -145,10 +136,22 @@ const ChatPanel = ({
   }, [value]);
 
   useEffect(() => {
-    return () => {
-      sessionRef.current?.stop();
+    if (!("webkitSpeechRecognition" in window) && !("SpeechRecognition" in window)) return;
+    const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+    recognitionRef.current = new SR();
+    recognitionRef.current.continuous = false;
+    recognitionRef.current.interimResults = false;
+    recognitionRef.current.lang = "en-US";
+    recognitionRef.current.onresult = (event: any) => {
+      setValue((prev) => prev + " " + event.results[0][0].transcript);
+      adjustHeight();
     };
-  }, []);
+    recognitionRef.current.onend = () => setIsRecording(false);
+    recognitionRef.current.onerror = () => setIsRecording(false);
+    return () => {
+      recognitionRef.current?.stop();
+    };
+  }, [adjustHeight]);
 
   useEffect(() => {
     if (initialPrompt && initialPrompt.trim() !== "" && !hasAutoTriggered) {
@@ -276,12 +279,11 @@ const ChatPanel = ({
         throw new Error(data.error || "Failed to generate application");
       }
     } catch (error: any) {
-      const errorMessage = error.message || "Failed to connect to the generator API.";
       setMessages((prev) => [
         ...prev,
-        { id: (Date.now() + 2).toString(), role: "assistant", content: `⚠️ Backend Error: ${errorMessage}` },
+        { id: (Date.now() + 2).toString(), role: "assistant", content: `⚠️ Backend Error: ${error.message || "Failed to connect to the generator API."}` },
       ]);
-      onHealthCheckStatus?.({ isChecking: false, isReady: false, elapsedSeconds: 0, error: errorMessage });
+      onHealthCheckStatus?.(false);
     } finally {
       setIsTyping(false);
       setIsModifying(false);
@@ -352,53 +354,17 @@ const ChatPanel = ({
   };
 
   // === VOICE ===
-  const toggleVoiceRecording = async () => {
-    if (isRecording) {
-      sessionRef.current?.stop();
-      sessionRef.current = null;
-      setIsRecording(false);
-      console.log("[Voice] Voice input stopped");
+  const toggleVoiceRecording = () => {
+    if (!recognitionRef.current) {
+      alert("Speech recognition is not supported in your browser.");
       return;
     }
-
-    try {
-      startValueRef.current = value.trim();
-      console.log("[Voice] Starting voice input");
-      const session = await startTranscription({
-        silenceTimeout: 2500,
-        chunkInterval: 150,
-        onInterim: (text) => {
-          console.log("[Voice] Interim transcript received", text);
-          const merged = startValueRef.current ? `${startValueRef.current} ${text}` : text;
-          setValue(merged);
-          requestAnimationFrame(() => adjustHeight());
-        },
-        onFinal: (text) => {
-          console.log("[Voice] Final transcript received", text);
-          const merged = startValueRef.current ? `${startValueRef.current} ${text}` : text;
-          setValue(merged);
-          requestAnimationFrame(() => adjustHeight());
-        },
-        onError: (message) => {
-          console.error("[Voice] Voice input error", message);
-          setIsRecording(false);
-          sessionRef.current = null;
-        },
-        onStatusChange: (status) => {
-          console.log("[Voice] Status", status);
-          if (status === "stopped") {
-            setIsRecording(false);
-            sessionRef.current = null;
-          }
-        },
-      });
-
-      sessionRef.current = session;
-      setIsRecording(true);
-    } catch (error) {
-      console.error("[Voice] Failed to start voice input", error);
+    if (isRecording) {
+      recognitionRef.current.stop();
       setIsRecording(false);
-      sessionRef.current = null;
+    } else {
+      recognitionRef.current.start();
+      setIsRecording(true);
     }
   };
 
@@ -507,12 +473,11 @@ const ChatPanel = ({
         throw new Error(data.error || "Failed to generate application");
       }
     } catch (error: any) {
-      const errorMessage = error.message || "Failed to connect to the generator API.";
       setMessages((prev) => [
         ...prev,
-        { id: (Date.now() + 2).toString(), role: "assistant", content: `⚠️ Backend Error: ${errorMessage}` },
+        { id: (Date.now() + 2).toString(), role: "assistant", content: `⚠️ Backend Error: ${error.message || "Failed to connect to the generator API."}` },
       ]);
-      onHealthCheckStatus?.({ isChecking: false, isReady: false, elapsedSeconds: 0, error: errorMessage });
+      onHealthCheckStatus?.(false);
     } finally {
       setIsTyping(false);
       setIsModifying(false);
@@ -633,15 +598,15 @@ const ChatPanel = ({
         )}
 
         {/* Input Box */}
-        <div className="relative flex flex-col gap-3 rounded-[1.6rem] border border-border/70 bg-card/75 p-3 shadow-soft transition-all duration-200 focus-within:border-primary/50 focus-within:shadow-glow">
+        <div className="relative flex items-end gap-2 bg-muted/30 border border-white/10 rounded-2xl p-2 focus-within:border-primary/50 transition-colors shadow-inner">
           {/* Command Palette */}
           {showCommandPalette && (
             <div
               ref={commandPaletteRef}
-              className="absolute bottom-full left-0 z-50 mb-2 w-64 origin-bottom overflow-hidden rounded-xl border border-border/70 bg-background/95 shadow-large backdrop-blur-xl"
+              className="absolute bottom-full left-0 w-64 mb-2 bg-background/95 backdrop-blur-xl border border-white/10 rounded-xl overflow-hidden shadow-2xl z-50 transform origin-bottom"
             >
-              <div className="border-b border-border/50 bg-muted/30 p-2">
-                <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Quick commands</span>
+              <div className="p-2 border-b border-white/5 bg-muted/30">
+                <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Quick commands</span>
               </div>
               <div className="p-1">
                 {commandSuggestions.map((suggestion, index) => (
@@ -652,13 +617,13 @@ const ChatPanel = ({
                       setShowCommandPalette(false);
                       textareaRef.current?.focus();
                     }}
-                    className={`flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-left transition-all ${
-                      index === activeSuggestion ? "bg-primary text-primary-foreground shadow-sm" : "text-foreground hover:bg-muted"
+                    className={`w-full text-left px-3 py-2.5 rounded-lg flex items-center gap-3 transition-all ${
+                      index === activeSuggestion ? "bg-primary text-primary-foreground shadow-sm" : "hover:bg-muted text-foreground"
                     }`}
                   >
-                    <div className={`rounded-md p-1.5 ${index === activeSuggestion ? "bg-primary-foreground/20" : "bg-background/50"}`}>{suggestion.icon}</div>
+                    <div className={`p-1.5 rounded-md ${index === activeSuggestion ? "bg-white/20" : "bg-background/50"}`}>{suggestion.icon}</div>
                     <div className="flex flex-col">
-                      <span className="text-sm font-medium">{suggestion.label}</span>
+                      <span className="font-medium text-sm">{suggestion.label}</span>
                       <span className={`text-xs ${index === activeSuggestion ? "text-primary-foreground/80" : "text-muted-foreground"}`}>{suggestion.description}</span>
                     </div>
                   </button>
@@ -666,6 +631,39 @@ const ChatPanel = ({
               </div>
             </div>
           )}
+
+          {/* Action Buttons */}
+          <div className="flex gap-1 pb-1 px-1">
+            <input type="file" accept="image/*" className="hidden" ref={fileInputRef} onChange={handleFileUpload} />
+            <button
+              onClick={() => fileInputRef.current?.click()}
+              disabled={isUploading || attachments.length >= 3}
+              className={`p-2 text-muted-foreground hover:text-foreground rounded-xl transition-colors ${isUploading ? "opacity-50 cursor-not-allowed" : "hover:bg-muted/50"}`}
+              title="Attach image (max 3)"
+            >
+              <FileUploadZone
+                onFileSelect={(file) => {
+                  const dt = new DataTransfer();
+                  dt.items.add(file);
+                  if (fileInputRef.current) {
+                    fileInputRef.current.files = dt.files;
+                    handleFileUpload({ target: fileInputRef.current } as any);
+                  }
+                }}
+              >
+                {isUploading ? <RefreshCw className="w-5 h-5 animate-spin" /> : <Paperclip className="w-5 h-5" />}
+              </FileUploadZone>
+            </button>
+            <button
+              onClick={toggleVoiceRecording}
+              className={`p-2 rounded-xl transition-all shadow-sm ${
+                isRecording ? "bg-destructive text-destructive-foreground animate-pulse shadow-destructive/20" : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
+              }`}
+              title="Voice input"
+            >
+              <Mic className="w-5 h-5" />
+            </button>
+          </div>
 
           {/* Textarea */}
           <textarea
@@ -676,54 +674,19 @@ const ChatPanel = ({
               adjustHeight();
             }}
             onKeyDown={handleKeyDown}
-            placeholder="Type changes"
-            className="min-h-[96px] w-full resize-none border-none bg-transparent px-2 py-1 text-sm leading-6 text-foreground placeholder:text-muted-foreground/70 focus:ring-0 focus:outline-none align-top"
-            rows={4}
+            placeholder={
+              !hasCredits
+                ? "Out of credits"
+                : isModifying && selectedElementId
+                ? "Modifying target element..."
+                : isModifying
+                ? "Modify project..."
+                : "Describe your app..."
+            }
+            className="flex-1 bg-transparent border-none resize-none focus:ring-0 py-3 px-2 text-sm max-h-[120px] scrollbar-thin scrollbar-thumb-white/10"
+            rows={1}
             disabled={!hasCredits}
           />
-
-          {/* Action Buttons */}
-          <div className="flex items-center justify-between gap-2 border-t border-border/50 px-1 pt-2">
-            <div className="flex gap-1">
-              <input type="file" accept="image/*" className="hidden" ref={fileInputRef} onChange={handleFileUpload} />
-              <button
-                onClick={() => fileInputRef.current?.click()}
-                disabled={isUploading || attachments.length >= 3}
-                className={`rounded-xl p-2.5 text-muted-foreground transition-colors ${isUploading ? "cursor-not-allowed opacity-50" : "hover:bg-muted hover:text-foreground"}`}
-                title="Attach image (max 3)"
-              >
-                <FileUploadZone
-                  onFileSelect={(file) => {
-                    const dt = new DataTransfer();
-                    dt.items.add(file);
-                    if (fileInputRef.current) {
-                      fileInputRef.current.files = dt.files;
-                      handleFileUpload({ target: fileInputRef.current } as any);
-                    }
-                  }}
-                >
-                  {isUploading ? <RefreshCw className="h-5 w-5 animate-spin" /> : <Paperclip className="h-5 w-5" />}
-                </FileUploadZone>
-              </button>
-              <button
-                onClick={toggleVoiceRecording}
-                className={`rounded-xl p-2.5 shadow-sm transition-all ${
-                  isRecording ? "bg-destructive text-destructive-foreground animate-pulse shadow-destructive/20" : "text-muted-foreground hover:bg-muted hover:text-foreground"
-                }`}
-                title="Voice input"
-              >
-                <Mic className="h-5 w-5" />
-              </button>
-            </div>
-
-            <div className="flex items-center gap-2">
-              {isModifying && selectedElementId && (
-                <span className="hidden max-w-[180px] truncate text-xs text-muted-foreground md:inline-block">
-                  Editing {selectedElementId}
-                </span>
-              )}
-            </div>
-          </div>
 
           {/* Send Button */}
           <button

@@ -1,11 +1,18 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
-import { ArrowUp, MessageSquareText, Mic, Plus, Sparkles } from "lucide-react";
+import { ArrowUp, ChevronDown, Paperclip, PencilLine, Settings, Trash2, Wallet } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { useGuestCredits } from "@/hooks/useCredits";
+import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
-import { startTranscription } from "@/services/speechTranscription";
 
 const API_URL = "https://api.mycodex.dev";
 
@@ -48,7 +55,6 @@ const ChatPanel = ({
   onHealthCheckStatus,
   projectId,
   selectedElementId,
-  onClearElement,
 }: ChatPanelProps) => {
   const navigate = useNavigate();
   const { user, profile, userCredits, deductCredit: authDeductCredit } = useAuth();
@@ -56,14 +62,11 @@ const ChatPanel = ({
 
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const transcriptionSessionRef = useRef<{ stop: () => void } | null>(null);
-  const transcriptionBaseRef = useRef("");
 
   const [projectName, setProjectName] = useState<string | null>(null);
   const [value, setValue] = useState("");
   const [attachments, setAttachments] = useState<string[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [isRecording, setIsRecording] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
   const [showUpgradePrompt, setShowUpgradePrompt] = useState(false);
   const [hasAutoTriggered, setHasAutoTriggered] = useState(false);
@@ -82,7 +85,7 @@ const ChatPanel = ({
     const textarea = textareaRef.current;
     if (!textarea) return;
     textarea.style.height = "0px";
-    textarea.style.height = `${Math.min(textarea.scrollHeight, 220)}px`;
+    textarea.style.height = `${Math.min(Math.max(textarea.scrollHeight, 144), 220)}px`;
   };
 
   useEffect(() => {
@@ -98,11 +101,7 @@ const ChatPanel = ({
         return;
       }
 
-      const { data } = await supabase
-        .from("projects")
-        .select("name")
-        .eq("id", projectId)
-        .maybeSingle();
+      const { data } = await supabase.from("projects").select("name").eq("id", projectId).maybeSingle();
 
       if (!ignore) {
         setProjectName(data?.name?.trim() || null);
@@ -116,66 +115,48 @@ const ChatPanel = ({
     };
   }, [projectId]);
 
-  useEffect(() => {
-    return () => {
-      transcriptionSessionRef.current?.stop();
-    };
-  }, []);
+  const handleRenameProject = async () => {
+    const nextName = window.prompt("Rename project", displayProjectName)?.trim();
+    if (!nextName) return;
 
-  const stopRecording = () => {
-    const session = transcriptionSessionRef.current;
-    transcriptionSessionRef.current = null;
-    session?.stop();
-    setIsRecording(false);
+    setProjectName(nextName);
+
+    if (!projectId) return;
+
+    const { error } = await supabase.from("projects").update({ name: nextName }).eq("id", projectId);
+
+    if (error) {
+      console.error("[EditPanel] Rename failed", error);
+      setInlineError("Could not rename project.");
+    }
   };
 
-  const toggleVoiceRecording = async () => {
-    if (isRecording) {
-      console.log("[EditPanel] Voice input stopped");
-      stopRecording();
-      return;
+  const handleDeleteProject = async () => {
+    const confirmed = window.confirm("Delete this project? This action cannot be undone.");
+    if (!confirmed) return;
+
+    if (projectId) {
+      const { error } = await supabase.from("projects").delete().eq("id", projectId);
+
+      if (error) {
+        console.error("[EditPanel] Delete failed", error);
+        setInlineError("Could not delete project.");
+        return;
+      }
+
+      const storedContainers = localStorage.getItem("active_containers");
+      if (storedContainers) {
+        try {
+          const parsed = JSON.parse(storedContainers);
+          delete parsed[projectId];
+          localStorage.setItem("active_containers", JSON.stringify(parsed));
+        } catch (error) {
+          console.error("[EditPanel] Failed to clear local container cache", error);
+        }
+      }
     }
 
-    transcriptionBaseRef.current = value.trim();
-    setInlineError("");
-    setIsRecording(true);
-
-    try {
-      const session = await startTranscription({
-        silenceTimeout: 2500,
-        chunkInterval: 150,
-        onInterim: (text) => {
-          console.log("[EditPanel] Interim transcript received", text);
-          const nextValue = [transcriptionBaseRef.current, text].filter(Boolean).join(" ").trim();
-          setValue(nextValue);
-        },
-        onFinal: (text) => {
-          console.log("[EditPanel] Final transcript received", text);
-          const nextValue = [transcriptionBaseRef.current, text].filter(Boolean).join(" ").trim();
-          setValue(nextValue);
-        },
-        onError: (message) => {
-          console.error("[EditPanel] Voice input error", message);
-          setInlineError(message);
-          transcriptionSessionRef.current = null;
-          setIsRecording(false);
-        },
-        onStatusChange: (status) => {
-          console.log("[EditPanel] Voice input status", status);
-          if (status === "stopped") {
-            transcriptionSessionRef.current = null;
-            setIsRecording(false);
-          }
-        },
-      });
-
-      transcriptionSessionRef.current = session;
-      console.log("[EditPanel] Recording started");
-    } catch (error) {
-      console.error("[EditPanel] Voice input failed to start", error);
-      setInlineError("Voice input failed. Please try again.");
-      setIsRecording(false);
-    }
+    navigate("/projects");
   };
 
   const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -317,49 +298,66 @@ const ChatPanel = ({
 
   return (
     <div className="flex h-full flex-col bg-background">
-      <div className="border-b border-border px-5 py-5">
-        <h1 className="truncate text-lg font-semibold tracking-tight text-foreground">
-          {displayProjectName}
-        </h1>
+      <div className="border-b border-border/80 bg-card/40 px-5 py-4 backdrop-blur-sm">
+        <div className="flex items-start justify-between gap-3">
+          <div className="min-w-0">
+            <p className="mb-1 text-[11px] font-medium uppercase tracking-[0.18em] text-muted-foreground">
+              Project
+            </p>
+            <div className="truncate text-base font-semibold tracking-tight text-foreground">
+              {displayProjectName}
+            </div>
+          </div>
+
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button
+                variant="outline"
+                size="sm"
+                className="h-9 rounded-xl border-border/80 bg-card/70 px-3 text-muted-foreground hover:bg-accent/10 hover:text-foreground"
+              >
+                <span className="text-sm">Menu</span>
+                <ChevronDown className="h-4 w-4" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-56 rounded-xl border-border/80 bg-popover/95 p-1.5 backdrop-blur-md">
+              <DropdownMenuItem
+                onClick={() => navigate(isAuthenticated ? "/pricing" : "/login")}
+                className="rounded-lg px-3 py-2"
+              >
+                <Wallet className="mr-2 h-4 w-4" />
+                <span>Credits</span>
+                <span className="ml-auto text-xs text-muted-foreground">
+                  {isUnlimited ? "Unlimited" : currentCredits}
+                </span>
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => navigate("/profile")} className="rounded-lg px-3 py-2">
+                <Settings className="mr-2 h-4 w-4" />
+                <span>Settings</span>
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => void handleRenameProject()} className="rounded-lg px-3 py-2">
+                <PencilLine className="mr-2 h-4 w-4" />
+                <span>Rename</span>
+              </DropdownMenuItem>
+              <DropdownMenuSeparator className="bg-border/80" />
+              <DropdownMenuItem
+                onClick={() => void handleDeleteProject()}
+                className="rounded-lg px-3 py-2 text-destructive focus:text-destructive"
+              >
+                <Trash2 className="mr-2 h-4 w-4" />
+                <span>Delete</span>
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
       </div>
 
-      <div className="flex-1" />
+      <div className="flex-1 px-5 py-5">
+        <div className="h-full rounded-[28px] border border-dashed border-border/50 bg-card/10" />
+      </div>
 
-      <div className="border-t border-border bg-background px-4 py-4">
-        {showUpgradePrompt && (
-          <div className="mb-3 flex items-center justify-between rounded-xl border border-border bg-card px-3 py-2 text-xs text-muted-foreground">
-            <span>
-              {isAuthenticated ? "Upgrade for more edits." : "Sign in to continue editing."}
-            </span>
-            <button
-              onClick={() => navigate(isAuthenticated ? "/pricing" : "/login")}
-              className="text-primary transition-colors hover:text-primary/80"
-            >
-              {isAuthenticated ? "Upgrade" : "Sign in"}
-            </button>
-          </div>
-        )}
-
-        {selectedElementId && (
-          <div className="mb-3 flex items-center justify-between rounded-xl border border-border bg-card px-3 py-2 text-xs text-muted-foreground">
-            <span className="truncate">Editing target: {selectedElementId}</span>
-            <button onClick={onClearElement} className="text-primary transition-colors hover:text-primary/80">
-              Clear
-            </button>
-          </div>
-        )}
-
-        {attachments.length > 0 && (
-          <div className="mb-3 flex flex-wrap gap-2">
-            {attachments.map((url, index) => (
-              <div key={`${url}-${index}`} className="relative overflow-hidden rounded-xl border border-border bg-card">
-                <img src={url} alt={`Attachment ${index + 1}`} className="h-14 w-14 object-cover" />
-              </div>
-            ))}
-          </div>
-        )}
-
-        <div className="rounded-[24px] border border-border bg-card/80 p-3 shadow-lg shadow-primary/10">
+      <div className="px-4 pb-4 pt-0">
+        <div className="rounded-[26px] border border-border/80 bg-card/75 p-3 shadow-[0_18px_40px_hsl(var(--primary)/0.12)] backdrop-blur-xl">
           <input
             ref={fileInputRef}
             type="file"
@@ -377,64 +375,53 @@ const ChatPanel = ({
               setInlineError("");
             }}
             placeholder="Type changes"
-            rows={3}
-            className="min-h-[120px] w-full resize-none bg-transparent px-1 py-1 text-sm leading-6 text-foreground outline-none placeholder:text-muted-foreground"
+            rows={4}
+            className="min-h-[144px] max-h-[220px] w-full resize-none overflow-y-auto bg-transparent px-1 py-1 text-sm leading-6 text-foreground outline-none placeholder:text-muted-foreground"
           />
 
-          {inlineError && (
-            <div className="px-1 pb-2 text-xs text-destructive">{inlineError}</div>
+          {attachments.length > 0 && (
+            <div className="mb-3 flex flex-wrap gap-2 px-1">
+              {attachments.map((url, index) => (
+                <div
+                  key={`${url}-${index}`}
+                  className="overflow-hidden rounded-lg border border-border/80 bg-background/70"
+                >
+                  <img src={url} alt={`Attachment ${index + 1}`} className="h-12 w-12 object-cover" />
+                </div>
+              ))}
+            </div>
           )}
 
-          <div className="flex items-center justify-between gap-3 border-t border-border pt-3">
-            <div className="flex items-center gap-2">
-              <button
-                onClick={() => fileInputRef.current?.click()}
-                disabled={isUploading}
-                className="flex h-10 w-10 items-center justify-center rounded-xl border border-border bg-background text-muted-foreground transition-colors hover:text-foreground disabled:cursor-not-allowed disabled:opacity-50"
-                title="Attach"
-              >
-                <Plus className="h-4 w-4" />
-              </button>
+          {(inlineError || showUpgradePrompt) && (
+            <div className="px-1 pb-3 text-xs text-destructive">{inlineError}</div>
+          )}
 
-              <button
-                onClick={() => textareaRef.current?.focus()}
-                className="inline-flex h-10 items-center gap-2 rounded-xl border border-border bg-background px-3 text-sm text-foreground transition-colors hover:text-primary"
-                title="Visual edits"
-              >
-                <Sparkles className="h-4 w-4" />
-                <span>Visual edits</span>
-              </button>
+          <div className="flex items-center justify-end gap-2 border-t border-border/70 pt-3">
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={() => fileInputRef.current?.click()}
+              disabled={isUploading}
+              className="h-10 rounded-xl border-border/80 bg-background/70 px-3 text-muted-foreground hover:bg-accent/10 hover:text-foreground disabled:cursor-not-allowed disabled:opacity-50"
+            >
+              <Paperclip className="h-4 w-4" />
+              <span>Attach</span>
+            </Button>
 
-              <button
-                onClick={() => textareaRef.current?.focus()}
-                className="flex h-10 w-10 items-center justify-center rounded-xl border border-border bg-background text-muted-foreground transition-colors hover:text-foreground"
-                title="Comments"
-              >
-                <MessageSquareText className="h-4 w-4" />
-              </button>
-            </div>
-
-            <div className="flex items-center gap-2">
-              <button
-                onClick={toggleVoiceRecording}
-                className={cn(
-                  "flex h-10 w-10 items-center justify-center rounded-xl border border-border bg-background transition-colors",
-                  isRecording ? "text-primary" : "text-muted-foreground hover:text-foreground"
-                )}
-                title="Voice input"
-              >
-                <Mic className="h-4 w-4" />
-              </button>
-
-              <button
-                onClick={() => void handleSend()}
-                disabled={!value.trim() || isSubmitting || !hasCredits}
-                className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary text-primary-foreground transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
-                title="Send"
-              >
-                <ArrowUp className="h-4 w-4" />
-              </button>
-            </div>
+            <Button
+              type="button"
+              size="sm"
+              onClick={() => void handleSend()}
+              disabled={!value.trim() || isSubmitting || !hasCredits}
+              className={cn(
+                "h-10 rounded-xl px-4 shadow-[0_0_24px_hsl(var(--primary)/0.25)]",
+                "disabled:cursor-not-allowed disabled:opacity-50"
+              )}
+            >
+              <span>{isSubmitting ? "Generating..." : "Generate"}</span>
+              <ArrowUp className="h-4 w-4" />
+            </Button>
           </div>
         </div>
       </div>

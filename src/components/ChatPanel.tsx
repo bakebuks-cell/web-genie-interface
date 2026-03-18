@@ -85,7 +85,7 @@ const ChatPanel = ({
     const textarea = textareaRef.current;
     if (!textarea) return;
     textarea.style.height = "0px";
-    textarea.style.height = `${Math.min(Math.max(textarea.scrollHeight, 144), 220)}px`;
+    textarea.style.height = `${Math.min(Math.max(textarea.scrollHeight, 112), 176)}px`;
   };
 
   useEffect(() => {

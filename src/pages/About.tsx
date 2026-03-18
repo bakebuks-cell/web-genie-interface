@@ -87,10 +87,10 @@ const About = () => {
           {/* ── Hero ── */}
           <FadeIn className="text-center mb-20">
             <span className="inline-block text-[11px] font-medium tracking-[0.2em] uppercase text-primary/70 mb-4">
-              About
+              Company
             </span>
             <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-foreground mb-6 leading-tight">
-              About <span className="gradient-text">MyCodex</span>
+              <span className="gradient-text">MyCodex</span>
             </h1>
             <p className="text-foreground/45 text-base md:text-lg max-w-2xl mx-auto leading-relaxed">
               MyCodex is an AI-powered builder that transforms simple prompts

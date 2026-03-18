@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useLocation } from "react-router-dom";
-import ChatPanel, { HealthCheckStatus } from "@/components/ChatPanel";
+import ChatPanel from "@/components/ChatPanel";
+import type { HealthCheckStatus } from "@/components/ChatPanel";
 import PreviewPanel from "@/components/PreviewPanel";
 
 import { useAuth } from "@/contexts/AuthContext";

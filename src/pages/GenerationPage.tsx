@@ -1,9 +1,16 @@
 import { useState } from "react";
 import { useLocation } from "react-router-dom";
-import ChatPanel, { HealthCheckStatus } from "@/components/ChatPanel";
+import ChatPanel from "@/components/ChatPanel";
 import PreviewPanel from "@/components/PreviewPanel";
 
 import { useAuth } from "@/contexts/AuthContext";
+
+type HealthCheckStatus = {
+  isChecking: boolean;
+  isReady: boolean;
+  elapsedSeconds: number;
+  error?: string;
+};
 
 const languageNames: Record<string, string> = {
   html: "Plain HTML/CSS/JS",

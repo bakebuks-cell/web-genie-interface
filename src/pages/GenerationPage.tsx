@@ -70,8 +70,13 @@ const GenerationPage = () => {
     }
   };
 
-  const handleHealthCheckStatus = (status: HealthCheckStatus) => {
-    setHealthCheckStatus(status);
+  const handleHealthCheckStatus = (status: boolean) => {
+    setHealthCheckStatus({
+      isChecking: false,
+      isReady: status,
+      elapsedSeconds: 0,
+      error: status ? undefined : "Preview unavailable",
+    });
   };
 
   const handleElementSelect = (elementId: string | null) => {

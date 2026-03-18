@@ -103,6 +103,13 @@ const ChatPanel = ({
   };
 
   useEffect(() => {
+    autoResize();
+  }, [displayValue]);
+
+  useEffect(() => {
+    setDisplayValue(value);
+  }, [value]);
+
     let ignore = false;
 
     const loadProjectName = async () => {

@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
-import { ArrowUp, ChevronDown, Paperclip, PencilLine, Settings, Trash2, Wallet } from "lucide-react";
+import { ArrowUp, ChevronDown, Mic, Paperclip, PencilLine, Plus, Settings, Trash2, Wallet } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { useGuestCredits } from "@/hooks/useCredits";
@@ -12,6 +12,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { supabase } from "@/integrations/supabase/client";
+import { startTranscription } from "@/services/speechTranscription";
 import { cn } from "@/lib/utils";
 
 const API_URL = "https://api.mycodex.dev";

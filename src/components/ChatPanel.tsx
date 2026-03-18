@@ -85,7 +85,7 @@ const ChatPanel = ({
     const textarea = textareaRef.current;
     if (!textarea) return;
     textarea.style.height = "0px";
-    textarea.style.height = `${Math.min(Math.max(textarea.scrollHeight, 144), 220)}px`;
+    textarea.style.height = `${Math.min(Math.max(textarea.scrollHeight, 112), 176)}px`;
   };
 
   useEffect(() => {
@@ -300,13 +300,8 @@ const ChatPanel = ({
     <div className="flex h-full flex-col bg-background">
       <div className="border-b border-border/80 bg-card/40 px-5 py-4 backdrop-blur-sm">
         <div className="flex items-start justify-between gap-3">
-          <div className="min-w-0">
-            <p className="mb-1 text-[11px] font-medium uppercase tracking-[0.18em] text-muted-foreground">
-              Project
-            </p>
-            <div className="truncate text-base font-semibold tracking-tight text-foreground">
-              {displayProjectName}
-            </div>
+          <div className="min-w-0 truncate text-base font-semibold tracking-tight text-foreground">
+            {displayProjectName}
           </div>
 
           <DropdownMenu>
@@ -316,7 +311,6 @@ const ChatPanel = ({
                 size="sm"
                 className="h-9 rounded-xl border-border/80 bg-card/70 px-3 text-muted-foreground hover:bg-accent/10 hover:text-foreground"
               >
-                <span className="text-sm">Menu</span>
                 <ChevronDown className="h-4 w-4" />
               </Button>
             </DropdownMenuTrigger>
@@ -357,7 +351,7 @@ const ChatPanel = ({
       </div>
 
       <div className="px-4 pb-4 pt-0">
-        <div className="rounded-[26px] border border-border/80 bg-card/75 p-3 shadow-[0_18px_40px_hsl(var(--primary)/0.12)] backdrop-blur-xl">
+        <div className="rounded-[24px] border border-border/80 bg-card/75 p-3 shadow-[0_18px_40px_hsl(var(--primary)/0.12)] backdrop-blur-xl">
           <input
             ref={fileInputRef}
             type="file"
@@ -375,8 +369,8 @@ const ChatPanel = ({
               setInlineError("");
             }}
             placeholder="Type changes"
-            rows={4}
-            className="min-h-[144px] max-h-[220px] w-full resize-none overflow-y-auto bg-transparent px-1 py-1 text-sm leading-6 text-foreground outline-none placeholder:text-muted-foreground"
+            rows={3}
+            className="min-h-[112px] max-h-[176px] w-full resize-none overflow-y-auto bg-transparent px-1 py-1 text-sm leading-6 text-foreground outline-none placeholder:text-muted-foreground"
           />
 
           {attachments.length > 0 && (
@@ -400,26 +394,26 @@ const ChatPanel = ({
             <Button
               type="button"
               variant="outline"
-              size="sm"
+              size="icon"
               onClick={() => fileInputRef.current?.click()}
               disabled={isUploading}
-              className="h-10 rounded-xl border-border/80 bg-background/70 px-3 text-muted-foreground hover:bg-accent/10 hover:text-foreground disabled:cursor-not-allowed disabled:opacity-50"
+              className="h-9 w-9 rounded-xl border-border/80 bg-background/70 text-muted-foreground hover:bg-accent/10 hover:text-foreground disabled:cursor-not-allowed disabled:opacity-50"
+              aria-label="Attach file"
             >
               <Paperclip className="h-4 w-4" />
-              <span>Attach</span>
             </Button>
 
             <Button
               type="button"
-              size="sm"
+              size="icon"
               onClick={() => void handleSend()}
               disabled={!value.trim() || isSubmitting || !hasCredits}
               className={cn(
-                "h-10 rounded-xl px-4 shadow-[0_0_24px_hsl(var(--primary)/0.25)]",
+                "h-9 w-9 rounded-xl shadow-[0_0_24px_hsl(var(--primary)/0.25)]",
                 "disabled:cursor-not-allowed disabled:opacity-50"
               )}
+              aria-label={isSubmitting ? "Generating changes" : "Generate changes"}
             >
-              <span>{isSubmitting ? "Generating..." : "Generate"}</span>
               <ArrowUp className="h-4 w-4" />
             </Button>
           </div>

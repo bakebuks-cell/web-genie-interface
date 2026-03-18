@@ -316,6 +316,64 @@ const ChatPanel = ({
     void submitPrompt(initialPrompt);
   }, [hasAutoTriggered, initialPrompt]);
 
+  const handleSuggestionClick = (suggestion: string) => {
+    setValue(suggestion);
+    setDisplayValue(suggestion);
+    setInlineError("");
+    requestAnimationFrame(() => textareaRef.current?.focus());
+  };
+
+  const stopVoiceInput = () => {
+    transcriptionSessionRef.current?.stop();
+    transcriptionSessionRef.current = null;
+    setIsRecording(false);
+  };
+
+  const handleVoiceInput = async () => {
+    if (isRecording) {
+      stopVoiceInput();
+      return;
+    }
+
+    transcriptionBaseRef.current = value.trim();
+    setDisplayValue(value);
+    setIsRecording(true);
+    setInlineError("");
+
+    try {
+      const session = await startTranscription({
+        silenceTimeout: 2500,
+        chunkInterval: 150,
+        onInterim: (text) => {
+          const base = transcriptionBaseRef.current;
+          const nextText = base ? `${base} ${text}` : text;
+          setDisplayValue(nextText.trim());
+        },
+        onFinal: (text) => {
+          const base = transcriptionBaseRef.current;
+          const nextText = (base ? `${base} ${text}` : text).trim();
+          setValue(nextText);
+          setDisplayValue(nextText);
+        },
+        onError: (msg) => {
+          setInlineError(msg);
+          stopVoiceInput();
+        },
+        onStatusChange: (status) => {
+          if (status === "stopped") {
+            setIsRecording(false);
+            transcriptionSessionRef.current = null;
+          }
+        },
+      });
+
+      transcriptionSessionRef.current = session;
+    } catch {
+      setInlineError("Voice input failed. Please try again.");
+      setIsRecording(false);
+    }
+  };
+
   const handleSend = async () => {
     await submitPrompt(value);
   };
@@ -375,7 +433,20 @@ const ChatPanel = ({
       </div>
 
       <div className="px-4 pb-4 pt-0">
-        <div className="rounded-[24px] border border-border/80 bg-card/75 p-3 shadow-[0_18px_40px_hsl(var(--primary)/0.12)] backdrop-blur-xl">
+        <div className="mb-3 flex flex-wrap gap-2 px-1">
+          {suggestionChips.map((suggestion) => (
+            <button
+              key={suggestion}
+              type="button"
+              onClick={() => handleSuggestionClick(suggestion)}
+              className="hover-scale rounded-full border border-border/80 bg-card/70 px-3 py-1.5 text-xs font-medium text-muted-foreground transition-all hover:border-primary/40 hover:text-foreground hover:shadow-[0_0_18px_hsl(var(--primary)/0.12)]"
+            >
+              {suggestion}
+            </button>
+          ))}
+        </div>
+
+        <div className="rounded-[22px] border border-border/80 bg-card/75 p-3 shadow-[0_18px_40px_hsl(var(--primary)/0.12)] backdrop-blur-xl transition-all duration-200 focus-within:border-primary/40 focus-within:shadow-[0_18px_44px_hsl(var(--primary)/0.18)]">
           <input
             ref={fileInputRef}
             type="file"
@@ -387,14 +458,15 @@ const ChatPanel = ({
 
           <textarea
             ref={textareaRef}
-            value={value}
+            value={displayValue}
             onChange={(event) => {
               setValue(event.target.value);
+              setDisplayValue(event.target.value);
               setInlineError("");
             }}
             placeholder="Type changes"
-            rows={3}
-            className="min-h-[112px] max-h-[176px] w-full resize-none overflow-y-auto bg-transparent px-1 py-1 text-sm leading-6 text-foreground outline-none placeholder:text-muted-foreground"
+            rows={2}
+            className="min-h-[96px] max-h-[148px] w-full resize-none overflow-y-auto bg-transparent px-1 py-1 text-sm leading-6 text-foreground outline-none placeholder:text-muted-foreground"
           />
 
           {attachments.length > 0 && (
@@ -414,32 +486,70 @@ const ChatPanel = ({
             <div className="px-1 pb-3 text-xs text-destructive">{inlineError}</div>
           )}
 
-          <div className="flex items-center justify-end gap-2 border-t border-border/70 pt-3">
-            <Button
-              type="button"
-              variant="outline"
-              size="icon"
-              onClick={() => fileInputRef.current?.click()}
-              disabled={isUploading}
-              className="h-9 w-9 rounded-xl border-border/80 bg-background/70 text-muted-foreground hover:bg-accent/10 hover:text-foreground disabled:cursor-not-allowed disabled:opacity-50"
-              aria-label="Attach file"
-            >
-              <Paperclip className="h-4 w-4" />
-            </Button>
+          <div className="flex items-center justify-between border-t border-border/70 pt-3">
+            <div className="flex items-center gap-2">
+              <Button
+                type="button"
+                variant="outline"
+                size="icon"
+                disabled
+                className="h-8 w-8 rounded-lg border-border/70 bg-background/50 text-muted-foreground/70 opacity-60"
+                aria-label="Quick actions"
+              >
+                <Plus className="h-4 w-4" />
+              </Button>
 
-            <Button
-              type="button"
-              size="icon"
-              onClick={() => void handleSend()}
-              disabled={!value.trim() || isSubmitting || !hasCredits}
-              className={cn(
-                "h-9 w-9 rounded-xl shadow-[0_0_24px_hsl(var(--primary)/0.25)]",
-                "disabled:cursor-not-allowed disabled:opacity-50"
+              {isSubmitting && (
+                <div className="flex items-center gap-1.5 px-2 text-xs text-muted-foreground animate-fade-in">
+                  <span className="h-1.5 w-1.5 rounded-full bg-primary pulse" />
+                  <span className="h-1.5 w-1.5 rounded-full bg-primary/80 pulse [animation-delay:120ms]" />
+                  <span className="h-1.5 w-1.5 rounded-full bg-primary/60 pulse [animation-delay:240ms]" />
+                </div>
               )}
-              aria-label={isSubmitting ? "Generating changes" : "Generate changes"}
-            >
-              <ArrowUp className="h-4 w-4" />
-            </Button>
+            </div>
+
+            <div className="flex items-center gap-2">
+              <Button
+                type="button"
+                variant="outline"
+                size="icon"
+                onClick={() => fileInputRef.current?.click()}
+                disabled={isUploading}
+                className="h-9 w-9 rounded-xl border-border/80 bg-background/70 text-muted-foreground transition-all duration-200 hover:scale-105 hover:bg-accent/10 hover:text-foreground disabled:cursor-not-allowed disabled:opacity-50"
+                aria-label="Attach file"
+              >
+                <Paperclip className="h-4 w-4" />
+              </Button>
+
+              <Button
+                type="button"
+                variant="outline"
+                size="icon"
+                onClick={() => void handleVoiceInput()}
+                disabled={isSubmitting}
+                className={cn(
+                  "h-9 w-9 rounded-xl border-border/80 bg-background/70 text-muted-foreground transition-all duration-200 hover:scale-105 hover:bg-accent/10 hover:text-foreground disabled:cursor-not-allowed disabled:opacity-50",
+                  isRecording && "border-primary/40 text-primary shadow-[0_0_18px_hsl(var(--primary)/0.18)]"
+                )}
+                aria-label={isRecording ? "Stop voice input" : "Start voice input"}
+              >
+                <Mic className="h-4 w-4" />
+              </Button>
+
+              <Button
+                type="button"
+                size="icon"
+                onClick={() => void handleSend()}
+                disabled={!value.trim() || isSubmitting || !hasCredits}
+                className={cn(
+                  "h-9 w-9 rounded-xl shadow-[0_0_24px_hsl(var(--primary)/0.25)] transition-all duration-200 hover:scale-105",
+                  "disabled:cursor-not-allowed disabled:opacity-50"
+                )}
+                aria-label={isSubmitting ? "Generating changes" : "Generate changes"}
+              >
+                <ArrowUp className="h-4 w-4" />
+              </Button>
+            </div>
           </div>
         </div>
       </div>

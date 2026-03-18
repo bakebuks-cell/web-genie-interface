@@ -84,14 +84,6 @@ const ChatPanel = ({
     return projectName || deriveProjectName(initialPrompt) || "Untitled Project";
   }, [projectName, initialPrompt]);
 
-  const suggestionChips = [
-    "Add login system",
-    "Make UI modern",
-    "Optimize performance",
-    "Add dashboard",
-    "Improve styling",
-  ];
-
   const transcriptionSessionRef = useRef<{ stop: () => void } | null>(null);
   const transcriptionBaseRef = useRef("");
 

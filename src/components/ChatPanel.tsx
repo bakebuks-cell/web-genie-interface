@@ -84,16 +84,23 @@ const ChatPanel = ({
     return projectName || deriveProjectName(initialPrompt) || "Untitled Project";
   }, [projectName, initialPrompt]);
 
+  const suggestionChips = [
+    "Add login system",
+    "Make UI modern",
+    "Optimize performance",
+    "Add dashboard",
+    "Improve styling",
+  ];
+
+  const transcriptionSessionRef = useRef<{ stop: () => void } | null>(null);
+  const transcriptionBaseRef = useRef("");
+
   const autoResize = () => {
     const textarea = textareaRef.current;
     if (!textarea) return;
     textarea.style.height = "0px";
-    textarea.style.height = `${Math.min(Math.max(textarea.scrollHeight, 112), 176)}px`;
+    textarea.style.height = `${Math.min(Math.max(textarea.scrollHeight, 96), 148)}px`;
   };
-
-  useEffect(() => {
-    autoResize();
-  }, [value]);
 
   useEffect(() => {
     let ignore = false;

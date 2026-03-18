@@ -110,6 +110,13 @@ const ChatPanel = ({
     setDisplayValue(value);
   }, [value]);
 
+  useEffect(() => {
+    return () => {
+      transcriptionSessionRef.current?.stop();
+    };
+  }, []);
+
+  useEffect(() => {
     let ignore = false;
 
     const loadProjectName = async () => {

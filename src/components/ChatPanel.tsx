@@ -84,14 +84,6 @@ const ChatPanel = ({
     return projectName || deriveProjectName(initialPrompt) || "Untitled Project";
   }, [projectName, initialPrompt]);
 
-  const suggestionChips = [
-    "Add login system",
-    "Make UI modern",
-    "Optimize performance",
-    "Add dashboard",
-    "Improve styling",
-  ];
-
   const transcriptionSessionRef = useRef<{ stop: () => void } | null>(null);
   const transcriptionBaseRef = useRef("");
 
@@ -433,18 +425,6 @@ const ChatPanel = ({
       </div>
 
       <div className="px-4 pb-4 pt-0">
-        <div className="mb-3 flex flex-wrap gap-2 px-1">
-          {suggestionChips.map((suggestion) => (
-            <button
-              key={suggestion}
-              type="button"
-              onClick={() => handleSuggestionClick(suggestion)}
-              className="hover-scale rounded-full border border-border/80 bg-card/70 px-3 py-1.5 text-xs font-medium text-muted-foreground transition-all hover:border-primary/40 hover:text-foreground hover:shadow-[0_0_18px_hsl(var(--primary)/0.12)]"
-            >
-              {suggestion}
-            </button>
-          ))}
-        </div>
 
         <div className="rounded-[22px] border border-border/80 bg-card/75 p-3 shadow-[0_18px_40px_hsl(var(--primary)/0.12)] backdrop-blur-xl transition-all duration-200 focus-within:border-primary/40 focus-within:shadow-[0_18px_44px_hsl(var(--primary)/0.18)]">
           <input

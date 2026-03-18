@@ -464,7 +464,7 @@ const ChatPanel = ({
               setDisplayValue(event.target.value);
               setInlineError("");
             }}
-            placeholder="Type changes"
+            placeholder="Type Changes...."
             rows={2}
             className="min-h-[96px] max-h-[148px] w-full resize-none overflow-y-auto bg-transparent px-1 py-1 text-sm leading-6 text-foreground outline-none placeholder:text-muted-foreground"
           />

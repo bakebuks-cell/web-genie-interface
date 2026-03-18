@@ -276,11 +276,12 @@ const ChatPanel = ({
         throw new Error(data.error || "Failed to generate application");
       }
     } catch (error: any) {
+      const errorMessage = error.message || "Failed to connect to the generator API.";
       setMessages((prev) => [
         ...prev,
-        { id: (Date.now() + 2).toString(), role: "assistant", content: `⚠️ Backend Error: ${error.message || "Failed to connect to the generator API."}` },
+        { id: (Date.now() + 2).toString(), role: "assistant", content: `⚠️ Backend Error: ${errorMessage}` },
       ]);
-      onHealthCheckStatus?.(false);
+      onHealthCheckStatus?.({ isChecking: false, isReady: false, elapsedSeconds: 0, error: errorMessage });
     } finally {
       setIsTyping(false);
       setIsModifying(false);

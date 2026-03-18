@@ -5,6 +5,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useGuestCredits } from "@/hooks/useCredits";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
+import { startTranscription } from "@/services/speechTranscription";
 
 // === EMBEDDED: useAutoResizeTextarea (missing from repo) ===
 function useAutoResizeTextarea({ minHeight, maxHeight }: { minHeight: number; maxHeight: number }) {
@@ -61,11 +62,18 @@ async function fetchBuild(prompt: string, stack: string) {
 type Message = { id: string; role: "user" | "assistant"; content: string };
 type CommandSuggestion = { icon: React.ReactNode; label: string; description: string; prefix: string };
 
+export interface HealthCheckStatus {
+  isChecking: boolean;
+  isReady: boolean;
+  elapsedSeconds: number;
+  error?: string;
+}
+
 interface ChatPanelProps {
   selectedStack?: "react" | "nextjs" | "vue" | "html";
   initialPrompt?: string;
   onGeneratedUrl?: (url: string) => void;
-  onHealthCheckStatus?: (status: boolean) => void;
+  onHealthCheckStatus?: (status: HealthCheckStatus) => void;
   projectId?: string;
   selectedElementId?: string;
   onClearElement?: () => void;
@@ -83,7 +91,7 @@ const ChatPanel = ({
 }: ChatPanelProps) => {
   const navigate = useNavigate();
   const { user, profile, userCredits, deductCredit: authDeductCredit } = useAuth();
-  const { credits: guestCredits, hasCredits: guestHasCredits, deductCredit: guestDeductCredit } = useGuestCredits();
+  const { credits: guestCredits, deductCredit: guestDeductCredit } = useGuestCredits();
 
   const [messages, setMessages] = useState<Message[]>([
     { id: "1", role: "assistant", content: "I'm ready to generate your application. Describe what you want to build!" },
@@ -98,11 +106,12 @@ const ChatPanel = ({
   const [isRecording, setIsRecording] = useState(false);
   const [showUpgradePrompt, setShowUpgradePrompt] = useState(false);
   const [hasAutoTriggered, setHasAutoTriggered] = useState(false);
-  const { textareaRef, adjustHeight } = useAutoResizeTextarea({ minHeight: 44, maxHeight: 120 });
+  const { textareaRef, adjustHeight } = useAutoResizeTextarea({ minHeight: 88, maxHeight: 180 });
   const commandPaletteRef = useRef<HTMLDivElement>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
-  const recognitionRef = useRef<SpeechRecognition | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const sessionRef = useRef<{ stop: () => void } | null>(null);
+  const startValueRef = useRef("");
   const [isUploading, setIsUploading] = useState(false);
 
   const isAuthenticated = !!user;
@@ -136,22 +145,10 @@ const ChatPanel = ({
   }, [value]);
 
   useEffect(() => {
-    if (!("webkitSpeechRecognition" in window) && !("SpeechRecognition" in window)) return;
-    const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
-    recognitionRef.current = new SR();
-    recognitionRef.current.continuous = false;
-    recognitionRef.current.interimResults = false;
-    recognitionRef.current.lang = "en-US";
-    recognitionRef.current.onresult = (event: any) => {
-      setValue((prev) => prev + " " + event.results[0][0].transcript);
-      adjustHeight();
-    };
-    recognitionRef.current.onend = () => setIsRecording(false);
-    recognitionRef.current.onerror = () => setIsRecording(false);
     return () => {
-      recognitionRef.current?.stop();
+      sessionRef.current?.stop();
     };
-  }, [adjustHeight]);
+  }, []);
 
   useEffect(() => {
     if (initialPrompt && initialPrompt.trim() !== "" && !hasAutoTriggered) {

@@ -352,17 +352,53 @@ const ChatPanel = ({
   };
 
   // === VOICE ===
-  const toggleVoiceRecording = () => {
-    if (!recognitionRef.current) {
-      alert("Speech recognition is not supported in your browser.");
+  const toggleVoiceRecording = async () => {
+    if (isRecording) {
+      sessionRef.current?.stop();
+      sessionRef.current = null;
+      setIsRecording(false);
+      console.log("[Voice] Voice input stopped");
       return;
     }
-    if (isRecording) {
-      recognitionRef.current.stop();
-      setIsRecording(false);
-    } else {
-      recognitionRef.current.start();
+
+    try {
+      startValueRef.current = value.trim();
+      console.log("[Voice] Starting voice input");
+      const session = await startTranscription({
+        silenceTimeout: 2500,
+        chunkInterval: 150,
+        onInterim: (text) => {
+          console.log("[Voice] Interim transcript received", text);
+          const merged = startValueRef.current ? `${startValueRef.current} ${text}` : text;
+          setValue(merged);
+          requestAnimationFrame(() => adjustHeight());
+        },
+        onFinal: (text) => {
+          console.log("[Voice] Final transcript received", text);
+          const merged = startValueRef.current ? `${startValueRef.current} ${text}` : text;
+          setValue(merged);
+          requestAnimationFrame(() => adjustHeight());
+        },
+        onError: (message) => {
+          console.error("[Voice] Voice input error", message);
+          setIsRecording(false);
+          sessionRef.current = null;
+        },
+        onStatusChange: (status) => {
+          console.log("[Voice] Status", status);
+          if (status === "stopped") {
+            setIsRecording(false);
+            sessionRef.current = null;
+          }
+        },
+      });
+
+      sessionRef.current = session;
       setIsRecording(true);
+    } catch (error) {
+      console.error("[Voice] Failed to start voice input", error);
+      setIsRecording(false);
+      sessionRef.current = null;
     }
   };
 

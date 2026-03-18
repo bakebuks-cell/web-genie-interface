@@ -66,9 +66,11 @@ const ChatPanel = ({
 
   const [projectName, setProjectName] = useState<string | null>(null);
   const [value, setValue] = useState("");
+  const [displayValue, setDisplayValue] = useState("");
   const [attachments, setAttachments] = useState<string[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
+  const [isRecording, setIsRecording] = useState(false);
   const [showUpgradePrompt, setShowUpgradePrompt] = useState(false);
   const [hasAutoTriggered, setHasAutoTriggered] = useState(false);
   const [inlineError, setInlineError] = useState("");

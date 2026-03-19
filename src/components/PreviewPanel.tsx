@@ -136,18 +136,23 @@ const PublishDropdown = ({ dbConnected, schemaApplied }: { dbConnected?: boolean
 };
 
 // ── Share Button ──────────────────────
-const ShareButton = ({ projectId }: { projectId: string }) => {
+const ShareButton = ({ projectId, generatedUrl }: { projectId: string; generatedUrl?: string }) => {
   const [loading, setLoading] = useState(false);
   const [shareUrl, setShareUrl] = useState<string | null>(null);
+  const isDisabled = !projectId || projectId === "default";
 
   const handleShare = async () => {
-    if (shareUrl) return; // already fetched
+    if (shareUrl) return;
     setLoading(true);
     try {
       const { shareUrl: url } = await generateShareLink(projectId);
       setShareUrl(url);
     } catch {
-      toast.error("Unable to generate share link");
+      if (generatedUrl) {
+        setShareUrl(generatedUrl);
+      } else {
+        toast.error("Unable to generate share link");
+      }
     } finally {
       setLoading(false);
     }
@@ -162,7 +167,8 @@ const ShareButton = ({ projectId }: { projectId: string }) => {
     <Popover onOpenChange={(open) => { if (open) handleShare(); }}>
       <PopoverTrigger asChild>
         <button
-          className="w-8 h-8 flex items-center justify-center rounded-lg border border-border bg-secondary/50 text-muted-foreground hover:text-primary hover:border-primary/40 hover:shadow-[0_0_12px_rgba(0,230,210,0.15)] transition-all duration-200"
+          disabled={isDisabled}
+          className="w-8 h-8 flex items-center justify-center rounded-lg border border-primary/30 bg-secondary/50 text-primary/80 shadow-[0_0_8px_rgba(0,230,210,0.12)] hover:text-primary hover:border-primary/50 hover:shadow-[0_0_16px_rgba(0,230,210,0.25)] hover:scale-105 transition-all duration-200 disabled:opacity-40 disabled:pointer-events-none disabled:shadow-none"
           title="Share"
         >
           <Share2 className="w-3.5 h-3.5" />
@@ -175,10 +181,18 @@ const ShareButton = ({ projectId }: { projectId: string }) => {
             <Loader2 className="w-4 h-4 animate-spin text-primary" />
           </div>
         ) : shareUrl ? (
-          <div className="flex items-center gap-2">
-            <Input value={shareUrl} readOnly className="text-xs bg-secondary/50 border-border h-8" />
-            <button onClick={() => handleCopy(shareUrl)} className="p-1.5 rounded-md text-muted-foreground hover:text-primary transition-colors flex-shrink-0">
-              <Copy className="w-4 h-4" />
+          <div className="space-y-2">
+            <div className="flex items-center gap-2">
+              <Input value={shareUrl} readOnly className="text-xs bg-secondary/50 border-border h-8" />
+              <button onClick={() => handleCopy(shareUrl)} className="p-1.5 rounded-md text-muted-foreground hover:text-primary transition-colors flex-shrink-0">
+                <Copy className="w-4 h-4" />
+              </button>
+            </div>
+            <button
+              onClick={() => window.open(shareUrl, "_blank")}
+              className="w-full text-xs text-primary hover:underline text-left"
+            >
+              Open in new tab →
             </button>
           </div>
         ) : (

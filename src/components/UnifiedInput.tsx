@@ -281,10 +281,10 @@ const UnifiedInput = ({
                 rounded-lg border transition-all duration-200
                 text-sm max-w-[280px]
                 ${hasSelection
-                  ? "bg-primary/10 border-primary/30 text-foreground"
+              ? "bg-primary/10 border-primary/30 text-foreground"
                   : "bg-secondary/30 border-border/50 text-muted-foreground hover:border-primary/40 hover:bg-secondary/50"
                 }
-                ${attentionPulse ? "animate-[pulse_0.5s_ease-in-out_2] border-primary shadow-[0_0_16px_rgba(0,230,210,0.5)]" : ""}
+                ${attentionPulse ? "animate-[pulse_0.5s_ease-in-out_2] border-primary shadow-[0_0_16px_hsl(190_100%_50%/0.5)]" : ""}
               `}
             >
               <span className="font-medium truncate">{getProgramLabel()}</span>

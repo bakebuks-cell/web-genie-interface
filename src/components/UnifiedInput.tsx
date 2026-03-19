@@ -302,9 +302,9 @@ const UnifiedInput = ({
                   transition={{ duration: 0.15 }}
                   className="absolute left-0 bottom-full mb-2 z-[100] min-w-[240px] rounded-xl overflow-hidden"
                   style={{
-                    background: "rgba(20, 24, 30, 0.95)",
-                    border: "1px solid rgba(0, 230, 210, 0.25)",
-                    boxShadow: "0 0 30px rgba(0, 230, 210, 0.12), 0 8px 32px rgba(0,0,0,0.4)",
+                    background: "hsl(222, 40%, 8%, 0.95)",
+                    border: "1px solid hsl(190, 100%, 50%, 0.2)",
+                    boxShadow: "0 0 30px hsl(190, 100%, 50%, 0.1), 0 8px 32px rgba(0,0,0,0.4)",
                     backdropFilter: "blur(16px)",
                   }}
                 >

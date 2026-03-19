@@ -231,16 +231,16 @@ const UnifiedInput = ({
         className={`
           relative flex flex-col p-4
           rounded-2xl
-          backdrop-blur-lg
+          backdrop-blur-xl
           transition-all duration-300 ease-out
           ${isFocused 
-            ? "shadow-[0_0_50px_rgba(0,255,200,0.35),0_0_80px_rgba(0,255,200,0.15),inset_0_0_30px_rgba(0,255,200,0.05)]" 
-            : "shadow-[0_0_40px_rgba(0,255,200,0.2),0_0_60px_rgba(0,255,200,0.08)]"
+            ? "shadow-[0_0_50px_hsl(190_100%_50%/0.3),0_0_80px_hsl(258_100%_68%/0.1),inset_0_0_30px_hsl(190_100%_50%/0.05)]" 
+            : "shadow-[0_0_40px_hsl(190_100%_50%/0.15),0_0_60px_hsl(258_100%_68%/0.06)]"
           }
         `}
         style={{
-          background: "rgba(30, 30, 30, 0.6)",
-          border: "1px solid rgba(0, 230, 210, 0.25)",
+          background: "hsl(222, 40%, 10%, 0.6)",
+          border: "1px solid hsl(190, 100%, 50%, 0.2)",
         }}
       >
         <input

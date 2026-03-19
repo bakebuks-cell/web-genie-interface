@@ -136,23 +136,18 @@ const PublishDropdown = ({ dbConnected, schemaApplied }: { dbConnected?: boolean
 };
 
 // ── Share Button ──────────────────────
-const ShareButton = ({ projectId, generatedUrl }: { projectId: string; generatedUrl?: string }) => {
+const ShareButton = ({ projectId }: { projectId: string }) => {
   const [loading, setLoading] = useState(false);
   const [shareUrl, setShareUrl] = useState<string | null>(null);
-  const isDisabled = !projectId || projectId === "default";
 
   const handleShare = async () => {
-    if (shareUrl) return;
+    if (shareUrl) return; // already fetched
     setLoading(true);
     try {
       const { shareUrl: url } = await generateShareLink(projectId);
       setShareUrl(url);
     } catch {
-      if (generatedUrl) {
-        setShareUrl(generatedUrl);
-      } else {
-        toast.error("Unable to generate share link");
-      }
+      toast.error("Unable to generate share link");
     } finally {
       setLoading(false);
     }
@@ -167,8 +162,7 @@ const ShareButton = ({ projectId, generatedUrl }: { projectId: string; generated
     <Popover onOpenChange={(open) => { if (open) handleShare(); }}>
       <PopoverTrigger asChild>
         <button
-          disabled={isDisabled}
-          className="w-8 h-8 flex items-center justify-center rounded-lg bg-primary/15 text-primary border border-primary/30 shadow-[0_0_12px_rgba(0,230,210,0.2)] hover:bg-primary/20 hover:shadow-[0_0_18px_rgba(0,230,210,0.3)] hover:scale-105 active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 transition-all duration-200 disabled:opacity-30 disabled:pointer-events-none disabled:shadow-none disabled:border-border/40"
+          className="w-8 h-8 flex items-center justify-center rounded-lg border border-border bg-secondary/50 text-muted-foreground hover:text-primary hover:border-primary/40 hover:shadow-[0_0_12px_rgba(0,230,210,0.15)] transition-all duration-200"
           title="Share"
         >
           <Share2 className="w-3.5 h-3.5" />
@@ -181,18 +175,10 @@ const ShareButton = ({ projectId, generatedUrl }: { projectId: string; generated
             <Loader2 className="w-4 h-4 animate-spin text-primary" />
           </div>
         ) : shareUrl ? (
-          <div className="space-y-2">
-            <div className="flex items-center gap-2">
-              <Input value={shareUrl} readOnly className="text-xs bg-secondary/50 border-border h-8" />
-              <button onClick={() => handleCopy(shareUrl)} className="p-1.5 rounded-md text-muted-foreground hover:text-primary transition-colors flex-shrink-0">
-                <Copy className="w-4 h-4" />
-              </button>
-            </div>
-            <button
-              onClick={() => window.open(shareUrl, "_blank")}
-              className="w-full text-xs text-primary hover:underline text-left"
-            >
-              Open in new tab →
+          <div className="flex items-center gap-2">
+            <Input value={shareUrl} readOnly className="text-xs bg-secondary/50 border-border h-8" />
+            <button onClick={() => handleCopy(shareUrl)} className="p-1.5 rounded-md text-muted-foreground hover:text-primary transition-colors flex-shrink-0">
+              <Copy className="w-4 h-4" />
             </button>
           </div>
         ) : (
@@ -668,7 +654,6 @@ const PreviewPanel = ({
         {/* Right: GitHub + Publish + Share */}
         <div className="flex items-center gap-2 flex-shrink-0">
           <button
-            disabled={!externalProjectId}
             onClick={async () => {
               try {
                 const { repoUrl } = await getOrCreateGitHubRepo(resolvedProjectId);
@@ -677,7 +662,7 @@ const PreviewPanel = ({
                 toast.error("Unable to open GitHub repository");
               }
             }}
-            className="w-8 h-8 flex items-center justify-center rounded-lg bg-primary/15 text-primary border border-primary/30 shadow-[0_0_12px_rgba(0,230,210,0.2)] hover:bg-primary/20 hover:shadow-[0_0_18px_rgba(0,230,210,0.3)] hover:scale-105 active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 transition-all duration-200 disabled:opacity-30 disabled:pointer-events-none disabled:shadow-none disabled:border-border/40"
+            className="w-8 h-8 flex items-center justify-center rounded-lg border border-border bg-secondary/50 text-muted-foreground hover:text-primary hover:border-primary/40 hover:shadow-[0_0_12px_rgba(0,230,210,0.15)] transition-all duration-200"
             title="Export to GitHub"
           >
             <Github className="w-3.5 h-3.5" />
@@ -687,7 +672,7 @@ const PreviewPanel = ({
           <PublishDropdown dbConnected={db.supabaseConnected} schemaApplied={db.schemaApplied} />
 
           {/* Share Button */}
-          <ShareButton projectId={resolvedProjectId} generatedUrl={generatedUrl} />
+          <ShareButton projectId={resolvedProjectId} />
         </div>
       </div>
 

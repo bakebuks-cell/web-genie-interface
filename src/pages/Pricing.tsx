@@ -234,7 +234,7 @@ const Pricing = () => {
         <div className="fixed inset-0 pointer-events-none">
           <motion.div
             className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[400px]"
-            style={{ background: "radial-gradient(ellipse, hsl(170 100% 47% / 0.06) 0%, transparent 70%)" }}
+            style={{ background: "radial-gradient(ellipse, hsl(var(--primary) / 0.06) 0%, transparent 70%)" }}
             animate={{ opacity: [0.4, 0.7, 0.4] }}
             transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }}
           />

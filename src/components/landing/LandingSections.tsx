@@ -305,7 +305,7 @@ function FinalCTA() {
       <div className="absolute inset-0 pointer-events-none">
         <div
           className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[200px] rounded-full opacity-30"
-          style={{ background: "radial-gradient(ellipse, hsl(170 100% 47% / 0.2) 0%, transparent 70%)", filter: "blur(60px)" }}
+          style={{ background: "radial-gradient(ellipse, hsl(var(--primary) / 0.2) 0%, transparent 70%)", filter: "blur(60px)" }}
         />
       </div>
       <div className="container mx-auto px-6 lg:px-8 max-w-xl text-center relative z-10">

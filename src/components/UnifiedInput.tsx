@@ -438,7 +438,7 @@ const UnifiedInput = ({
                 flex items-center justify-center p-2.5 rounded-xl 
                 transition-all duration-300 active:scale-95
                 ${isGenerateEnabled
-                  ? "text-primary-foreground hover:opacity-90 shadow-[0_0_20px_rgba(0,255,200,0.3)]"
+                  ? "text-primary-foreground hover:opacity-90 shadow-[0_0_20px_hsl(190_100%_50%/0.3)]"
                   : "bg-muted text-muted-foreground cursor-not-allowed opacity-50"
                 }
               `}

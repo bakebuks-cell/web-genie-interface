@@ -297,13 +297,7 @@ const UnifiedInput = ({
                   animate={{ opacity: 1, y: 0, scale: 1 }}
                   exit={{ opacity: 0, y: -4, scale: 0.96 }}
                   transition={{ duration: 0.15 }}
-                  className="absolute left-0 bottom-full mb-2 z-[100] min-w-[240px] rounded-xl overflow-hidden"
-                  style={{
-                    background: "rgba(20, 24, 30, 0.95)",
-                    border: "1px solid rgba(0, 230, 210, 0.25)",
-                    boxShadow: "0 0 30px rgba(0, 230, 210, 0.12), 0 8px 32px rgba(0,0,0,0.4)",
-                    backdropFilter: "blur(16px)",
-                  }}
+                  className="absolute left-0 bottom-full mb-2 z-[100] min-w-[240px] rounded-xl overflow-hidden bg-card border border-border shadow-large backdrop-blur-md"
                 >
                   {!showLangSubmenu ? (
                     <div className="py-1.5">

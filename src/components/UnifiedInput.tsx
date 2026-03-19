@@ -281,7 +281,7 @@ const UnifiedInput = ({
                   ? "bg-primary/10 border-primary/30 text-foreground"
                   : "bg-secondary/30 border-border/50 text-muted-foreground hover:border-primary/40 hover:bg-secondary/50"
                 }
-                ${attentionPulse ? "animate-[pulse_0.5s_ease-in-out_2] border-primary shadow-[0_0_16px_rgba(0,230,210,0.5)]" : ""}
+                ${attentionPulse ? "animate-[pulse_0.5s_ease-in-out_2] border-primary shadow-[0_0_12px_hsl(217_91%_60%/0.3)]" : ""}
               `}
             >
               <span className="font-medium truncate">{getProgramLabel()}</span>

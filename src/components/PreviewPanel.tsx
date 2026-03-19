@@ -168,7 +168,7 @@ const ShareButton = ({ projectId, generatedUrl }: { projectId: string; generated
       <PopoverTrigger asChild>
         <button
           disabled={isDisabled}
-          className="w-8 h-8 flex items-center justify-center rounded-lg border border-primary/60 bg-primary/[0.12] text-primary shadow-[0_0_20px_rgba(0,230,210,0.3),inset_0_0_8px_rgba(0,230,210,0.1)] hover:shadow-[0_0_28px_rgba(0,230,210,0.4),inset_0_0_12px_rgba(0,230,210,0.15)] hover:scale-105 active:scale-95 active:shadow-[0_0_32px_rgba(0,230,210,0.45)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 focus-visible:ring-offset-1 focus-visible:ring-offset-background transition-all duration-200 disabled:opacity-30 disabled:pointer-events-none disabled:shadow-none disabled:border-border/40"
+          className="w-8 h-8 flex items-center justify-center rounded-lg bg-primary/15 text-primary border border-primary/30 shadow-[0_0_12px_rgba(0,230,210,0.2)] hover:bg-primary/20 hover:shadow-[0_0_18px_rgba(0,230,210,0.3)] hover:scale-105 active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 transition-all duration-200 disabled:opacity-30 disabled:pointer-events-none disabled:shadow-none disabled:border-border/40"
           title="Share"
         >
           <Share2 className="w-3.5 h-3.5" />

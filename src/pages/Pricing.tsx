@@ -120,7 +120,7 @@ const PricingCard = ({
         whileHover={{ y: -4, transition: { duration: 0.2 } }}
         className={`relative flex flex-col h-full p-8 rounded-2xl backdrop-blur-sm transition-all duration-300 ${
           plan.popular
-            ? "bg-card/60 border-2 border-primary/40 shadow-[0_0_60px_hsl(170_100%_47%/0.1)]"
+            ? "bg-card/60 border-2 border-primary/40 shadow-[0_0_60px_hsl(var(--primary)/0.1)]"
             : isCurrentPlan
             ? "bg-card/50 border-2 border-primary/30 ring-1 ring-primary/10"
             : "bg-card/30 border border-border/30 hover:border-primary/20"

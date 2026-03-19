@@ -231,17 +231,14 @@ const UnifiedInput = ({
         className={`
           relative flex flex-col p-4
           rounded-2xl
-          backdrop-blur-lg
+          bg-card/80
+          border border-border
           transition-all duration-300 ease-out
           ${isFocused 
-            ? "shadow-[0_0_50px_rgba(0,255,200,0.35),0_0_80px_rgba(0,255,200,0.15),inset_0_0_30px_rgba(0,255,200,0.05)]" 
-            : "shadow-[0_0_40px_rgba(0,255,200,0.2),0_0_60px_rgba(0,255,200,0.08)]"
+            ? "shadow-[0_0_30px_hsl(217_91%_60%/0.12)] border-primary/30" 
+            : "shadow-medium"
           }
         `}
-        style={{
-          background: "rgba(30, 30, 30, 0.6)",
-          border: "1px solid rgba(0, 230, 210, 0.25)",
-        }}
       >
         <input
           ref={fileInputRef}

@@ -35,6 +35,7 @@ export const HeroSection = () => {
     if (!draft) return;
     hasResumed.current = true;
 
+    // Restore state and auto-navigate
     setIdea(draft.prompt);
     if (draft.mode === "single" && draft.singleLanguage) {
       setSelectedLanguage(draft.singleLanguage);
@@ -50,6 +51,7 @@ export const HeroSection = () => {
       multiStack: draft.multiStack
     };
 
+    // Small delay to let state settle
     setTimeout(() => {
       navigate("/generating", {
         state: {
@@ -81,6 +83,7 @@ export const HeroSection = () => {
       return;
     }
 
+    // Auth gate: redirect unauthenticated users
     if (!user) {
       savePreAuthDraft({
         prompt: idea,
@@ -92,9 +95,11 @@ export const HeroSection = () => {
       return;
     }
 
+    // If logged in, create project in DB
     let dbProjectId: string | undefined;
     if (user) {
       try {
+        // Derive a project name from prompt
         const name = idea.trim().slice(0, 60) || "Untitled Project";
         const project = await createProject.mutateAsync({
           name,
@@ -112,6 +117,7 @@ export const HeroSection = () => {
       }
     }
 
+
     navigate("/generating", {
       state: {
         language: generationMode.singleLanguage || generationMode.multiStack[0] || "react",
@@ -124,10 +130,13 @@ export const HeroSection = () => {
 
   return (
     <section className="relative overflow-hidden flex min-h-[calc(100svh-4.75rem)] flex-col justify-center pt-8 pb-8 md:min-h-[calc(100svh-5.5rem)] md:pt-10 md:pb-10 lg:pt-8 lg:pb-8">
+      {/* Premium background effects */}
       <HeroBackground />
 
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative z-10 max-w-4xl">
+        {/* Centered Quote with animations */}
         <div className="text-center mb-7 md:mb-8 lg:mb-7">
+          {/* Main headline - stacked with animation */}
           <motion.h1
             className="text-3xl md:text-4xl lg:text-5xl font-bold tracking-tight leading-[1.15] text-foreground"
             initial={{ opacity: 0, y: 14 }}
@@ -143,29 +152,68 @@ export const HeroSection = () => {
             Ship lean.
           </motion.h1>
 
-          {/* Subtle decorative line */}
+          {/* Animated decorative line */}
           <motion.div
             className="flex justify-center mt-4 mb-3 md:mt-5 md:mb-4"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.8 }}>
-            <div className="h-px w-24 bg-gradient-to-r from-transparent via-border to-transparent" />
+            <motion.div
+              className="h-px w-24 bg-gradient-to-r from-transparent via-primary to-transparent"
+              animate={{
+                scaleX: [0, 1, 1, 0],
+                opacity: [0, 1, 1, 0]
+              }}
+              transition={{
+                duration: 3,
+                repeat: Infinity,
+                ease: "easeInOut"
+              }} />
           </motion.div>
           
+          {/* Supporting Quote */}
           <motion.p
             className="text-muted-foreground text-sm md:text-base font-light tracking-wide max-w-lg mx-auto"
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.8, duration: 0.8 }}>
+            
             <motion.span
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ delay: 1, duration: 1.5 }}>
-              Bringing clarity, speed, and precision to prompt-driven development
+              
+              "Bringing clarity, speed, and precision to prompt-driven development"
             </motion.span>
           </motion.p>
+
+          {/* Floating accent badges */}
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+          
         </div>
 
+        {/* Unified Input Container */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -181,7 +229,8 @@ export const HeroSection = () => {
             onMultiStackChange={setMultiStack} />
           
         </motion.div>
+
       </div>
-    </section>
-  );
+    </section>);
+
 };

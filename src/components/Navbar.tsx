@@ -35,14 +35,14 @@ export const Navbar = () => {
     <nav className="relative px-4 sm:px-6 lg:px-8 pt-4">
       <div className="flex items-center justify-between">
         <Link to="/" className="group relative">
-          <span className="font-bold text-lg sm:text-xl text-foreground transition-all duration-300">
+          <span className="font-bold text-lg sm:text-xl text-foreground transition-all duration-300 group-hover:drop-shadow-[0_0_8px_rgba(0,230,210,0.5)]">
             MyCodex
           </span>
-          <span className="absolute -bottom-0.5 left-0 w-full h-px bg-primary/30" />
+          <span className="absolute -bottom-0.5 left-0 w-full h-px bg-primary/50" />
         </Link>
 
         <motion.div
-          className="flex items-center gap-1 sm:gap-2 px-3 sm:px-5 py-2.5 bg-card/60 backdrop-blur-md border border-border rounded-full shadow-soft"
+          className="flex items-center gap-1 sm:gap-2 px-3 sm:px-5 py-2.5 bg-background/40 backdrop-blur-2xl border border-primary/15 rounded-full shadow-[0_8px_32px_rgba(0,0,0,0.4),inset_0_1px_0_rgba(0,230,210,0.05)]"
           initial={{ opacity: 0, x: 20 }}
           animate={{ opacity: 1, x: 0 }}
           transition={{ duration: 0.5, delay: 0.1, ease: "easeOut" }}
@@ -53,14 +53,14 @@ export const Navbar = () => {
               <Link
                 key={item.label}
                 to={item.href}
-                className="px-3 py-1.5 rounded-full text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-all duration-200 text-sm font-medium"
+                className="px-3 py-1.5 rounded-full text-muted-foreground hover:text-primary hover:bg-primary/5 transition-all duration-200 text-sm font-medium"
               >
                 {item.label}
               </Link>
             ))}
           </div>
 
-          <div className="hidden md:block w-px h-5 bg-border mx-2" />
+          <div className="hidden md:block w-px h-5 bg-primary/15 mx-2" />
 
           <div className="hidden md:flex items-center gap-2">
             {user ? (
@@ -69,7 +69,7 @@ export const Navbar = () => {
                   variant="ghost"
                   size="sm"
                   onClick={() => navigate("/projects")}
-                  className="text-muted-foreground hover:text-foreground rounded-full px-4 h-8 text-sm gap-1.5"
+                  className="text-muted-foreground hover:text-foreground hover:bg-primary/5 rounded-full px-4 h-8 text-sm gap-1.5"
                 >
                   <LayoutDashboard className="w-3.5 h-3.5" />
                   Projects
@@ -77,7 +77,7 @@ export const Navbar = () => {
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
                     <button
-                      className="flex items-center justify-center w-8 h-8 rounded-full bg-primary/10 border border-border text-primary hover:bg-primary/20 transition-colors"
+                      className="flex items-center justify-center w-8 h-8 rounded-full bg-primary/10 border border-primary/20 text-primary hover:bg-primary/20 transition-colors"
                     >
                       <User className="w-4 h-4" />
                     </button>
@@ -85,9 +85,9 @@ export const Navbar = () => {
                   <DropdownMenuContent
                     align="end"
                     sideOffset={8}
-                    className="w-52 z-[9999] pointer-events-auto bg-card border border-border rounded-xl shadow-large"
+                    className="w-52 z-[9999] pointer-events-auto bg-background border border-primary/15 rounded-xl shadow-[0_8px_32px_rgba(0,0,0,0.5)]"
                   >
-                    <div className="px-4 py-3 border-b border-border">
+                    <div className="px-4 py-3 border-b border-primary/10">
                       <p className="text-sm font-medium text-foreground truncate">
                         {profile?.display_name || user.email}
                       </p>
@@ -112,19 +112,19 @@ export const Navbar = () => {
               </>
             ) : (
               <>
-                <Button variant="ghost" size="sm" onClick={handleLogin} className="text-muted-foreground hover:text-foreground rounded-full px-4 h-8 text-sm">
+                <Button variant="ghost" size="sm" onClick={handleLogin} className="text-muted-foreground hover:text-foreground hover:bg-primary/5 rounded-full px-4 h-8 text-sm">
                   Login
                 </Button>
-                <Button size="sm" onClick={handleSignUp} className="rounded-full px-4 h-8 text-sm">
+                <button onClick={handleSignUp} className="rounded-full px-4 h-8 text-sm font-medium text-primary-foreground shadow-[0_0_15px_rgba(0,255,200,0.25)] transition-all duration-300 hover:shadow-[0_0_25px_rgba(0,255,200,0.4)] hover:opacity-90" style={{ background: "linear-gradient(90deg, #00f0ff, #00c8a0)" }}>
                   Sign Up
-                </Button>
+                </button>
               </>
             )}
           </div>
 
           {/* Mobile Menu Button */}
           <button
-            className="md:hidden p-1.5 text-muted-foreground hover:text-foreground transition-colors rounded-full hover:bg-muted/50"
+            className="md:hidden p-1.5 text-muted-foreground hover:text-foreground transition-colors rounded-full hover:bg-primary/5"
             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
           >
             {isMobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
@@ -136,24 +136,24 @@ export const Navbar = () => {
       {isMobileMenuOpen && (
         <div className="md:hidden mt-2 flex justify-end">
           <motion.div
-            className="bg-card/90 backdrop-blur-md border border-border rounded-2xl p-4 w-64 shadow-large"
+            className="bg-background/60 backdrop-blur-2xl border border-primary/15 rounded-2xl p-4 w-64 shadow-[0_8px_32px_rgba(0,0,0,0.4)]"
             initial={{ opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.2 }}
           >
             <div className="flex flex-col gap-2">
               {navItems.map((item) => (
-                <Link key={item.label} to={item.href} className="text-muted-foreground hover:text-foreground transition-colors duration-200 text-sm font-medium px-3 py-2 rounded-lg hover:bg-muted/50" onClick={() => setIsMobileMenuOpen(false)}>
+                <Link key={item.label} to={item.href} className="text-muted-foreground hover:text-primary transition-colors duration-200 text-sm font-medium px-3 py-2 rounded-lg hover:bg-primary/5" onClick={() => setIsMobileMenuOpen(false)}>
                   {item.label}
                 </Link>
               ))}
-              <div className="flex flex-col gap-2 pt-3 border-t border-border mt-2">
+              <div className="flex flex-col gap-2 pt-3 border-t border-primary/15 mt-2">
                 {user ? (
                   <>
-                    <Button variant="ghost" size="sm" onClick={() => { navigate("/projects"); setIsMobileMenuOpen(false); }} className="justify-start text-muted-foreground rounded-lg gap-2">
+                    <Button variant="ghost" size="sm" onClick={() => { navigate("/projects"); setIsMobileMenuOpen(false); }} className="justify-start text-muted-foreground hover:bg-primary/5 rounded-lg gap-2">
                       Projects
                     </Button>
-                    <Button variant="ghost" size="sm" onClick={() => { navigate("/profile"); setIsMobileMenuOpen(false); }} className="justify-start text-muted-foreground rounded-lg gap-2">
+                    <Button variant="ghost" size="sm" onClick={() => { navigate("/profile"); setIsMobileMenuOpen(false); }} className="justify-start text-muted-foreground hover:bg-primary/5 rounded-lg gap-2">
                       <User className="w-4 h-4" /> Profile
                     </Button>
                     <Button variant="ghost" size="sm" onClick={async () => { await signOut(); setIsMobileMenuOpen(false); navigate("/"); }} className="justify-start text-red-400 hover:bg-red-500/5 rounded-lg gap-2">
@@ -162,8 +162,8 @@ export const Navbar = () => {
                   </>
                 ) : (
                   <>
-                    <Button variant="ghost" size="sm" onClick={handleLogin} className="justify-start text-muted-foreground rounded-lg">Login</Button>
-                    <Button size="sm" onClick={handleSignUp} className="rounded-lg">Sign Up</Button>
+                    <Button variant="ghost" size="sm" onClick={handleLogin} className="justify-start text-muted-foreground hover:bg-primary/5 rounded-lg">Login</Button>
+                    <button onClick={handleSignUp} className="rounded-lg px-4 h-9 text-sm font-medium text-primary-foreground" style={{ background: "linear-gradient(90deg, #00f0ff, #00c8a0)" }}>Sign Up</button>
                   </>
                 )}
               </div>

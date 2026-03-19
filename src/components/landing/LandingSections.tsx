@@ -41,8 +41,8 @@ function ParallaxImage({ src, alt, className = "" }: { src: string; alt: string;
   );
 }
 
-const glassCard = "rounded-xl border border-border bg-card/40 p-6 transition-all duration-300 hover:border-primary/20 hover:translate-y-[-2px] hover:shadow-md";
-const glassFrame = "rounded-xl overflow-hidden border border-border shadow-medium transition-shadow duration-300 hover:shadow-large";
+const glassCard = "rounded-xl border border-border/30 bg-card/30 backdrop-blur-sm p-6 transition-all duration-300 hover:border-primary/20 hover:translate-y-[-2px]";
+const glassFrame = "rounded-xl overflow-hidden border border-primary/15 shadow-[0_0_60px_-15px_hsl(var(--primary)/0.12)] transition-shadow duration-300 hover:shadow-[0_0_80px_-15px_hsl(var(--primary)/0.18)]";
 
 /* ─── 1. Why MyCodex ─── */
 function WhySection() {
@@ -96,7 +96,7 @@ function WhySection() {
 /* ─── 2. Workflow Banner ─── */
 function WorkflowBanner() {
   return (
-    <section className="py-20 md:py-28 border-t border-border/30 relative overflow-hidden">
+    <section className="py-20 md:py-28 border-t border-border/10 relative overflow-hidden">
       <div className="container mx-auto px-6 lg:px-8 max-w-6xl">
         <FadeIn>
           <div className="relative rounded-2xl overflow-hidden">
@@ -132,7 +132,7 @@ function InsideTheBuilder() {
   ];
 
   return (
-    <section className="py-28 md:py-36 border-t border-border/30">
+    <section className="py-28 md:py-36 border-t border-border/10">
       <div className="container mx-auto px-6 lg:px-8 max-w-6xl">
         <div className="grid lg:grid-cols-[7fr_5fr] gap-12 lg:gap-16 items-center">
           <FadeIn>
@@ -152,7 +152,7 @@ function InsideTheBuilder() {
               {bullets.map((b, i) => (
                 <FadeIn key={i} delay={0.15 + i * 0.06}>
                   <div
-                    className="flex items-center gap-3 py-3 px-3 rounded-lg transition-all duration-200 cursor-default hover:bg-muted/50"
+                    className="flex items-center gap-3 py-3 px-3 rounded-lg transition-all duration-200 cursor-default hover:bg-primary/5"
                     onMouseEnter={() => setHoveredIndex(i)}
                     onMouseLeave={() => setHoveredIndex(null)}
                   >
@@ -183,7 +183,7 @@ function KeyFeatures() {
   ];
 
   return (
-    <section className="py-28 md:py-36 border-t border-border/30">
+    <section className="py-28 md:py-36 border-t border-border/10">
       <div className="container mx-auto px-6 lg:px-8 max-w-6xl">
         <div className="grid lg:grid-cols-[1.1fr_1fr] gap-16 items-start">
           <div>
@@ -215,6 +215,10 @@ function KeyFeatures() {
               <div className={glassFrame}>
                 <ParallaxImage src={dashboardPreview} alt="Project dashboard" />
               </div>
+              <div
+                className="absolute -bottom-4 -left-4 w-24 h-24 rounded-full opacity-20 pointer-events-none"
+                style={{ background: "radial-gradient(circle, hsl(var(--primary)) 0%, transparent 70%)", filter: "blur(20px)" }}
+              />
             </div>
           </FadeIn>
         </div>
@@ -232,7 +236,7 @@ function TestimonialsSection() {
   ];
 
   return (
-    <section className="py-28 md:py-36 border-t border-border/30">
+    <section className="py-28 md:py-36 border-t border-border/10">
       <div className="container mx-auto px-6 lg:px-8 max-w-5xl">
         <FadeIn>
           <p className="text-xs font-medium tracking-[0.2em] uppercase text-primary mb-5 text-center">Community</p>
@@ -269,7 +273,7 @@ function FAQSection() {
   ];
 
   return (
-    <section className="py-28 md:py-36 border-t border-border/30">
+    <section className="py-28 md:py-36 border-t border-border/10">
       <div className="container mx-auto px-6 lg:px-8 max-w-2xl">
         <FadeIn>
           <div className="flex items-center justify-center gap-2 mb-5">
@@ -281,7 +285,7 @@ function FAQSection() {
         <FadeIn delay={0.1}>
           <Accordion type="single" collapsible className="w-full">
             {faqs.map((faq, i) => (
-              <AccordionItem key={i} value={`faq-${i}`} className="border-border/30">
+              <AccordionItem key={i} value={`faq-${i}`} className="border-border/20">
                 <AccordionTrigger className="text-sm text-foreground hover:no-underline hover:text-primary transition-colors py-5 text-left">{faq.q}</AccordionTrigger>
                 <AccordionContent className="text-sm text-muted-foreground leading-relaxed pb-5">{faq.a}</AccordionContent>
               </AccordionItem>
@@ -297,11 +301,11 @@ function FAQSection() {
 function FinalCTA() {
   const navigate = useNavigate();
   return (
-    <section className="py-28 md:py-36 border-t border-border/30 relative overflow-hidden">
+    <section className="py-28 md:py-36 border-t border-border/10 relative overflow-hidden">
       <div className="absolute inset-0 pointer-events-none">
         <div
           className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[200px] rounded-full opacity-30"
-          style={{ background: "radial-gradient(ellipse, hsl(217 91% 60% / 0.1) 0%, transparent 70%)", filter: "blur(60px)" }}
+          style={{ background: "radial-gradient(ellipse, hsl(170 100% 47% / 0.2) 0%, transparent 70%)", filter: "blur(60px)" }}
         />
       </div>
       <div className="container mx-auto px-6 lg:px-8 max-w-xl text-center relative z-10">

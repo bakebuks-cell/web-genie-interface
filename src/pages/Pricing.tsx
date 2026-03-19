@@ -179,7 +179,7 @@ const PricingCard = ({
             isCurrentPlan
               ? "bg-secondary text-muted-foreground cursor-not-allowed"
               : plan.popular
-              ? "bg-primary text-primary-foreground hover:shadow-[0_0_30px_hsl(170_100%_47%/0.3)] hover:bg-primary/90"
+              ? "bg-primary text-primary-foreground hover:shadow-[0_0_30px_hsl(var(--primary)/0.3)] hover:bg-primary/90"
               : isDowngrade
               ? "bg-secondary text-foreground hover:bg-secondary/80 border border-border/50"
               : "bg-secondary text-foreground hover:bg-secondary/80 border border-border/50 hover:border-primary/30"

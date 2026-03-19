@@ -3,7 +3,7 @@ import { Github, Twitter } from "lucide-react";
 
 export const Footer = () => {
   return (
-    <footer className="bg-[hsl(210_30%_3.5%)] border-t border-border/40">
+    <footer className="bg-[hsl(222_47%_4%)] border-t border-border/40">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-14">
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-10 lg:gap-12">
           {/* Brand */}

@@ -29,11 +29,11 @@ export const HeroBackground = () => {
         </svg>
       </div>
 
-      {/* Main electric blue blob - follows mouse */}
+      {/* Main gradient blob - follows mouse */}
       <motion.div
         className="absolute -top-40 left-1/2 -translate-x-1/2 w-[800px] h-[500px] rounded-full"
         style={{
-          background: "radial-gradient(ellipse, hsl(190 100% 50% / 0.14) 0%, hsl(190 100% 50% / 0.04) 40%, transparent 70%)",
+          background: "radial-gradient(ellipse, hsl(170 100% 47% / 0.14) 0%, hsl(170 100% 47% / 0.04) 40%, transparent 70%)",
         }}
         animate={{
           x: mousePosition.x,
@@ -47,11 +47,11 @@ export const HeroBackground = () => {
         }}
       />
 
-      {/* Aurora glow behind the prompt box area - purple + cyan blend */}
+      {/* Aurora glow behind the prompt box area */}
       <motion.div
         className="absolute top-[55%] left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[200px] rounded-full"
         style={{
-          background: "radial-gradient(ellipse, hsl(190 100% 50% / 0.10) 0%, hsl(258 100% 68% / 0.06) 50%, transparent 80%)",
+          background: "radial-gradient(ellipse, hsl(170 100% 47% / 0.12) 0%, hsl(175 100% 50% / 0.05) 50%, transparent 80%)",
           filter: "blur(40px)",
         }}
         animate={{
@@ -65,11 +65,11 @@ export const HeroBackground = () => {
         }}
       />
 
-      {/* Slow-moving electric blue blob - left */}
+      {/* Slow-moving gradient blobs */}
       <motion.div
         className="absolute top-1/4 -left-32 w-[350px] h-[350px] rounded-full"
         style={{
-          background: "radial-gradient(circle, hsl(190 100% 50% / 0.08) 0%, transparent 70%)",
+          background: "radial-gradient(circle, hsl(170 100% 47% / 0.08) 0%, transparent 70%)",
         }}
         animate={{
           y: [0, 30, 0],
@@ -81,11 +81,10 @@ export const HeroBackground = () => {
         }}
       />
 
-      {/* Slow-moving purple blob - right */}
       <motion.div
         className="absolute top-1/2 -right-32 w-[300px] h-[300px] rounded-full"
         style={{
-          background: "radial-gradient(circle, hsl(258 100% 68% / 0.07) 0%, transparent 70%)",
+          background: "radial-gradient(circle, hsl(165 100% 42% / 0.07) 0%, transparent 70%)",
         }}
         animate={{
           y: [0, -30, 0],
@@ -94,23 +93,6 @@ export const HeroBackground = () => {
         transition={{
           y: { duration: 14, repeat: Infinity, ease: "easeInOut", delay: 3 },
           x: { type: "spring", stiffness: 30, damping: 30 },
-        }}
-      />
-
-      {/* Subtle cyan accent blob - bottom center */}
-      <motion.div
-        className="absolute bottom-0 left-1/3 w-[400px] h-[200px] rounded-full"
-        style={{
-          background: "radial-gradient(ellipse, hsl(162 100% 50% / 0.05) 0%, transparent 70%)",
-          filter: "blur(30px)",
-        }}
-        animate={{
-          opacity: [0.3, 0.6, 0.3],
-        }}
-        transition={{
-          duration: 8,
-          repeat: Infinity,
-          ease: "easeInOut",
         }}
       />
 

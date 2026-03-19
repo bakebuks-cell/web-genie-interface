@@ -231,16 +231,16 @@ const UnifiedInput = ({
         className={`
           relative flex flex-col p-4
           rounded-2xl
-          backdrop-blur-xl
+          backdrop-blur-lg
           transition-all duration-300 ease-out
           ${isFocused 
-            ? "shadow-[0_0_50px_hsl(190_100%_50%/0.3),0_0_80px_hsl(258_100%_68%/0.1),inset_0_0_30px_hsl(190_100%_50%/0.05)]" 
-            : "shadow-[0_0_40px_hsl(190_100%_50%/0.15),0_0_60px_hsl(258_100%_68%/0.06)]"
+            ? "shadow-[0_0_50px_rgba(0,255,200,0.35),0_0_80px_rgba(0,255,200,0.15),inset_0_0_30px_rgba(0,255,200,0.05)]" 
+            : "shadow-[0_0_40px_rgba(0,255,200,0.2),0_0_60px_rgba(0,255,200,0.08)]"
           }
         `}
         style={{
-          background: "hsl(222, 40%, 10%, 0.6)",
-          border: "1px solid hsl(190, 100%, 50%, 0.2)",
+          background: "rgba(30, 30, 30, 0.6)",
+          border: "1px solid rgba(0, 230, 210, 0.25)",
         }}
       >
         <input
@@ -281,10 +281,10 @@ const UnifiedInput = ({
                 rounded-lg border transition-all duration-200
                 text-sm max-w-[280px]
                 ${hasSelection
-              ? "bg-primary/10 border-primary/30 text-foreground"
+                  ? "bg-primary/10 border-primary/30 text-foreground"
                   : "bg-secondary/30 border-border/50 text-muted-foreground hover:border-primary/40 hover:bg-secondary/50"
                 }
-                ${attentionPulse ? "animate-[pulse_0.5s_ease-in-out_2] border-primary shadow-[0_0_16px_hsl(190_100%_50%/0.5)]" : ""}
+                ${attentionPulse ? "animate-[pulse_0.5s_ease-in-out_2] border-primary shadow-[0_0_16px_rgba(0,230,210,0.5)]" : ""}
               `}
             >
               <span className="font-medium truncate">{getProgramLabel()}</span>
@@ -302,9 +302,9 @@ const UnifiedInput = ({
                   transition={{ duration: 0.15 }}
                   className="absolute left-0 bottom-full mb-2 z-[100] min-w-[240px] rounded-xl overflow-hidden"
                   style={{
-                    background: "hsl(222, 40%, 8%, 0.95)",
-                    border: "1px solid hsl(190, 100%, 50%, 0.2)",
-                    boxShadow: "0 0 30px hsl(190, 100%, 50%, 0.1), 0 8px 32px rgba(0,0,0,0.4)",
+                    background: "rgba(20, 24, 30, 0.95)",
+                    border: "1px solid rgba(0, 230, 210, 0.25)",
+                    boxShadow: "0 0 30px rgba(0, 230, 210, 0.12), 0 8px 32px rgba(0,0,0,0.4)",
                     backdropFilter: "blur(16px)",
                   }}
                 >
@@ -438,7 +438,7 @@ const UnifiedInput = ({
                 flex items-center justify-center p-2.5 rounded-xl 
                 transition-all duration-300 active:scale-95
                 ${isGenerateEnabled
-                  ? "text-primary-foreground hover:opacity-90 shadow-[0_0_20px_hsl(190_100%_50%/0.3)]"
+                  ? "text-primary-foreground hover:opacity-90 shadow-[0_0_20px_rgba(0,255,200,0.3)]"
                   : "bg-muted text-muted-foreground cursor-not-allowed opacity-50"
                 }
               `}

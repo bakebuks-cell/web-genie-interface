@@ -120,7 +120,7 @@ const PricingCard = ({
         whileHover={{ y: -4, transition: { duration: 0.2 } }}
         className={`relative flex flex-col h-full p-8 rounded-2xl backdrop-blur-sm transition-all duration-300 ${
           plan.popular
-            ? "bg-card/60 border-2 border-primary/40 shadow-[0_0_60px_hsl(var(--primary)/0.1)]"
+            ? "bg-card/60 border-2 border-primary/40 shadow-[0_0_60px_hsl(170_100%_47%/0.1)]"
             : isCurrentPlan
             ? "bg-card/50 border-2 border-primary/30 ring-1 ring-primary/10"
             : "bg-card/30 border border-border/30 hover:border-primary/20"
@@ -179,7 +179,7 @@ const PricingCard = ({
             isCurrentPlan
               ? "bg-secondary text-muted-foreground cursor-not-allowed"
               : plan.popular
-              ? "bg-primary text-primary-foreground hover:shadow-[0_0_30px_hsl(var(--primary)/0.3)] hover:bg-primary/90"
+              ? "bg-primary text-primary-foreground hover:shadow-[0_0_30px_hsl(170_100%_47%/0.3)] hover:bg-primary/90"
               : isDowngrade
               ? "bg-secondary text-foreground hover:bg-secondary/80 border border-border/50"
               : "bg-secondary text-foreground hover:bg-secondary/80 border border-border/50 hover:border-primary/30"
@@ -234,7 +234,7 @@ const Pricing = () => {
         <div className="fixed inset-0 pointer-events-none">
           <motion.div
             className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[400px]"
-            style={{ background: "radial-gradient(ellipse, hsl(var(--primary) / 0.06) 0%, transparent 70%)" }}
+            style={{ background: "radial-gradient(ellipse, hsl(170 100% 47% / 0.06) 0%, transparent 70%)" }}
             animate={{ opacity: [0.4, 0.7, 0.4] }}
             transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }}
           />

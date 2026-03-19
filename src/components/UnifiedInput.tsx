@@ -231,17 +231,14 @@ const UnifiedInput = ({
         className={`
           relative flex flex-col p-4
           rounded-2xl
-          backdrop-blur-lg
+          bg-card/80
+          border border-border
           transition-all duration-300 ease-out
           ${isFocused 
-            ? "shadow-[0_0_50px_rgba(0,255,200,0.35),0_0_80px_rgba(0,255,200,0.15),inset_0_0_30px_rgba(0,255,200,0.05)]" 
-            : "shadow-[0_0_40px_rgba(0,255,200,0.2),0_0_60px_rgba(0,255,200,0.08)]"
+            ? "shadow-[0_0_30px_hsl(217_91%_60%/0.12)] border-primary/30" 
+            : "shadow-medium"
           }
         `}
-        style={{
-          background: "rgba(30, 30, 30, 0.6)",
-          border: "1px solid rgba(0, 230, 210, 0.25)",
-        }}
       >
         <input
           ref={fileInputRef}
@@ -284,7 +281,7 @@ const UnifiedInput = ({
                   ? "bg-primary/10 border-primary/30 text-foreground"
                   : "bg-secondary/30 border-border/50 text-muted-foreground hover:border-primary/40 hover:bg-secondary/50"
                 }
-                ${attentionPulse ? "animate-[pulse_0.5s_ease-in-out_2] border-primary shadow-[0_0_16px_rgba(0,230,210,0.5)]" : ""}
+                ${attentionPulse ? "animate-[pulse_0.5s_ease-in-out_2] border-primary shadow-[0_0_12px_hsl(217_91%_60%/0.3)]" : ""}
               `}
             >
               <span className="font-medium truncate">{getProgramLabel()}</span>
@@ -300,13 +297,7 @@ const UnifiedInput = ({
                   animate={{ opacity: 1, y: 0, scale: 1 }}
                   exit={{ opacity: 0, y: -4, scale: 0.96 }}
                   transition={{ duration: 0.15 }}
-                  className="absolute left-0 bottom-full mb-2 z-[100] min-w-[240px] rounded-xl overflow-hidden"
-                  style={{
-                    background: "rgba(20, 24, 30, 0.95)",
-                    border: "1px solid rgba(0, 230, 210, 0.25)",
-                    boxShadow: "0 0 30px rgba(0, 230, 210, 0.12), 0 8px 32px rgba(0,0,0,0.4)",
-                    backdropFilter: "blur(16px)",
-                  }}
+                  className="absolute left-0 bottom-full mb-2 z-[100] min-w-[240px] rounded-xl overflow-hidden bg-card border border-border shadow-large backdrop-blur-md"
                 >
                   {!showLangSubmenu ? (
                     <div className="py-1.5">
@@ -438,7 +429,7 @@ const UnifiedInput = ({
                 flex items-center justify-center p-2.5 rounded-xl 
                 transition-all duration-300 active:scale-95
                 ${isGenerateEnabled
-                  ? "text-primary-foreground hover:opacity-90 shadow-[0_0_20px_rgba(0,255,200,0.3)]"
+                  ? "text-primary-foreground hover:opacity-90 shadow-glow"
                   : "bg-muted text-muted-foreground cursor-not-allowed opacity-50"
                 }
               `}

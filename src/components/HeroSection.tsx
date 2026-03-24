@@ -175,24 +175,13 @@ export const HeroSection = () => {
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative z-10 max-w-4xl">
         {/* Centered Quote with animations */}
         <div className="text-center mb-7 md:mb-8 lg:mb-7">
-          {/* Main headline - split styled */}
+          {/* Main headline - stacked with animation */}
           <motion.h1
-            className="text-3xl md:text-4xl lg:text-5xl font-bold tracking-tight leading-[1.15] group/headline cursor-default"
+            className="text-3xl md:text-4xl lg:text-5xl font-bold tracking-tight leading-[1.15] text-foreground"
             initial={{ opacity: 0, y: 14 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, ease: "easeOut" }}
-          >
-            <span className="text-foreground font-bold transition-all duration-300 group-hover/headline:brightness-110">
-              Intelligence
-            </span>{" "}
-            <span className="text-muted-foreground font-medium opacity-70 transition-all duration-300">
-              meets
-            </span>{" "}
-            <span
-              className="font-bold bg-gradient-to-r from-[hsl(170,100%,47%)] to-[hsl(185,100%,55%)] bg-clip-text text-transparent drop-shadow-[0_0_18px_hsl(170,100%,47%,0.35)] transition-all duration-300 group-hover/headline:drop-shadow-[0_0_24px_hsl(170,100%,47%,0.5)]"
-            >
-              creation.
-            </span>
+            transition={{ duration: 0.5, ease: "easeOut" }}>
+            Intelligence meets creation.
           </motion.h1>
 
           {/* Animated decorative line */}

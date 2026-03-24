@@ -1,10 +1,10 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useLocation } from "react-router-dom";
 import ChatPanel from "@/components/ChatPanel";
 import type { HealthCheckStatus } from "@/components/ChatPanel";
 import PreviewPanel from "@/components/PreviewPanel";
-
 import { useAuth } from "@/contexts/AuthContext";
+import { useGenerationStore } from "@/stores/useGenerationStore";
 
 const languageNames: Record<string, string> = {
   html: "Plain HTML/CSS/JS",
@@ -18,31 +18,56 @@ const languageNames: Record<string, string> = {
 const GenerationPage = () => {
   const location = useLocation();
   const { user, profile } = useAuth();
-  const { language, idea } = location.state || { language: "react", idea: "" };
+  const genStore = useGenerationStore();
+
+  // Hydrate from persistent store on mount
+  useEffect(() => {
+    genStore.hydrate();
+  }, []);
+
+  // Prefer store values, fall back to route state
+  const language = genStore.stack || location.state?.language || "react";
+  const idea = genStore.prompt || location.state?.idea || "";
   const languageDisplay = languageNames[language] || language;
 
   // State for toolbar controls
   const [currentPath, setCurrentPath] = useState("/");
   const [selectedDevice, setSelectedDevice] = useState<"desktop" | "tablet" | "mobile">("desktop");
   
-  // State for generated URL from backend
-  const [generatedUrl, setGeneratedUrl] = useState<string | undefined>(undefined);
+  // Pre-populate generated URL from store if available
+  const [generatedUrl, setGeneratedUrl] = useState<string | undefined>(
+    genStore.generatedUrl || undefined
+  );
   
-  // State for health check status
-  const [healthCheckStatus, setHealthCheckStatus] = useState<HealthCheckStatus | undefined>(undefined);
+  const [healthCheckStatus, setHealthCheckStatus] = useState<HealthCheckStatus | undefined>(
+    genStore.status === "ready" 
+      ? { isChecking: false, isReady: true, elapsedSeconds: 0 } 
+      : undefined
+  );
   
-  // State for Visual Edit Mode
   const [visualEditMode, setVisualEditMode] = useState(false);
   const [selectedElementId, setSelectedElementId] = useState<string | null>(null);
   
-  // State for project ID (received from initial build)
-  const [projectId, setProjectId] = useState<string | null>(null);
+  // Pre-populate projectId from store
+  const [projectId, setProjectId] = useState<string | null>(
+    genStore.backendProjectId || null
+  );
 
-  // Get user initial from profile or email
+  // Sync store changes to local state
+  useEffect(() => {
+    if (genStore.generatedUrl && !generatedUrl) {
+      console.log("[GenerationPage] Syncing generatedUrl from store:", genStore.generatedUrl);
+      setGeneratedUrl(genStore.generatedUrl);
+      setHealthCheckStatus({ isChecking: false, isReady: true, elapsedSeconds: 0 });
+    }
+    if (genStore.backendProjectId && !projectId) {
+      setProjectId(genStore.backendProjectId);
+    }
+  }, [genStore.generatedUrl, genStore.backendProjectId]);
+
   const userInitial = profile?.display_name?.charAt(0) || user?.email?.charAt(0) || "b";
 
   const handleRefresh = () => {
-    // Refresh the iframe by resetting and setting the URL again
     if (generatedUrl) {
       const currentUrl = generatedUrl;
       setGeneratedUrl(undefined);
@@ -51,7 +76,6 @@ const GenerationPage = () => {
   };
 
   const handleOpenExternal = () => {
-    // Open generated URL or fallback
     const urlToOpen = generatedUrl || `https://preview.example.com${currentPath}`;
     window.open(urlToOpen, "_blank");
   };
@@ -62,6 +86,11 @@ const GenerationPage = () => {
     if (newProjectId) {
       setProjectId(newProjectId);
     }
+    // Also update the persistent store
+    genStore.setResult({
+      backendProjectId: newProjectId || "",
+      generatedUrl: url,
+    });
   };
 
   const handleHealthCheckStatus = (status: HealthCheckStatus) => {
@@ -76,16 +105,17 @@ const GenerationPage = () => {
     setSelectedElementId(null);
   };
 
+  // Determine if ChatPanel should skip auto-triggering
+  // (build already completed during /generating phase)
+  const skipAutoTrigger = genStore.status === "ready" && !!genStore.generatedUrl;
+
   return (
     <div className="h-screen flex flex-col bg-background">
-
-      {/* Main Content - Split View */}
       <div className="flex-1 flex overflow-hidden">
-        {/* Left Panel - Chat */}
         <div className="w-[400px] flex-shrink-0 border-r border-border">
           <ChatPanel 
             selectedStack={language} 
-            initialPrompt={idea}
+            initialPrompt={skipAutoTrigger ? "" : idea}
             onGeneratedUrl={handleGeneratedUrl}
             onHealthCheckStatus={handleHealthCheckStatus}
             projectId={projectId}
@@ -94,7 +124,6 @@ const GenerationPage = () => {
           />
         </div>
         
-        {/* Right Panel - Preview */}
         <div className="flex-1 bg-muted/20">
           <PreviewPanel 
             language={languageDisplay} 

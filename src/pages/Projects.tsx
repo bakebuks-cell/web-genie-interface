@@ -9,6 +9,7 @@ import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useQueryClient } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
+import { useGenerationStore } from "@/stores/useGenerationStore";
 
 const languageNames: Record<string, string> = {
   html: "HTML/CSS/JS",

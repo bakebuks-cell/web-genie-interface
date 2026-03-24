@@ -7,6 +7,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
 import { useCreateProject } from "@/hooks/useProjects";
 import { savePreAuthDraft, getPreAuthDraft, clearPreAuthDraft } from "@/lib/preAuthDraft";
+import { useGenerationStore } from "@/stores/useGenerationStore";
 
 // Language mapping for display names
 const languageNames: Record<string, string> = {
@@ -51,15 +52,20 @@ export const HeroSection = () => {
       multiStack: draft.multiStack
     };
 
+    // Save intent to persistent store
+    const genStore = useGenerationStore.getState();
+    genStore.setIntent({
+      prompt: draft.prompt,
+      stack: draft.singleLanguage || draft.multiStack[0] || "react",
+      mode: draft.mode,
+      singleLanguage: draft.singleLanguage || null,
+      multiStack: draft.multiStack,
+      dbProjectId: null,
+    });
+
     // Small delay to let state settle
     setTimeout(() => {
-      navigate("/generating", {
-        state: {
-          language: draft.singleLanguage || draft.multiStack[0] || "react",
-          idea: draft.prompt,
-          generationMode
-        }
-      });
+      navigate("/generating");
     }, 100);
   }, [user]);
 
@@ -117,15 +123,20 @@ export const HeroSection = () => {
       }
     }
 
-
-    navigate("/generating", {
-      state: {
-        language: generationMode.singleLanguage || generationMode.multiStack[0] || "react",
-        idea,
-        generationMode,
-        dbProjectId
-      }
+    // Save generation intent to persistent store BEFORE navigating
+    const genStore = useGenerationStore.getState();
+    genStore.setIntent({
+      prompt: idea,
+      stack: generationMode.singleLanguage || generationMode.multiStack[0] || "react",
+      mode: generationMode.mode,
+      singleLanguage: generationMode.singleLanguage || null,
+      multiStack: generationMode.multiStack || [],
+      dbProjectId: dbProjectId || null,
     });
+
+    console.log("[HeroSection] Generation intent saved, navigating to /generating");
+
+    navigate("/generating");
   };
 
   return (

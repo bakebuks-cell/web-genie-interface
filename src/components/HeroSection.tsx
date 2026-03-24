@@ -52,15 +52,20 @@ export const HeroSection = () => {
       multiStack: draft.multiStack
     };
 
+    // Save intent to persistent store
+    const genStore = useGenerationStore.getState();
+    genStore.setIntent({
+      prompt: draft.prompt,
+      stack: draft.singleLanguage || draft.multiStack[0] || "react",
+      mode: draft.mode,
+      singleLanguage: draft.singleLanguage || null,
+      multiStack: draft.multiStack,
+      dbProjectId: null,
+    });
+
     // Small delay to let state settle
     setTimeout(() => {
-      navigate("/generating", {
-        state: {
-          language: draft.singleLanguage || draft.multiStack[0] || "react",
-          idea: draft.prompt,
-          generationMode
-        }
-      });
+      navigate("/generating");
     }, 100);
   }, [user]);
 

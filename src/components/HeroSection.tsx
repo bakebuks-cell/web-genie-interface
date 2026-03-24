@@ -177,7 +177,7 @@ export const HeroSection = () => {
         <div className="text-center mb-7 md:mb-8 lg:mb-7">
           {/* Main headline - stacked with animation */}
           <motion.h1
-            className="text-3xl md:text-4xl lg:text-5xl font-bold tracking-tight leading-[1.15] text-foreground"
+            className="font-display text-3xl md:text-4xl lg:text-5xl font-bold tracking-tight leading-[1.15] text-foreground"
             initial={{ opacity: 0, y: 14 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, ease: "easeOut" }}>

@@ -4,6 +4,7 @@ import { HeroBackground } from "@/components/HeroBackground";
 import GenerationDashboard from "@/components/GenerationDashboard";
 import { useGenerationStore } from "@/stores/useGenerationStore";
 import { saveRecentProject } from "@/components/RecentProjectCard";
+import { supabase } from "@/integrations/supabase/client";
 
 const GeneratingPage = () => {
   const navigate = useNavigate();

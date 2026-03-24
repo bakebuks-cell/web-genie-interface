@@ -27,7 +27,11 @@ export function useProjects() {
         .from("projects")
         .select("*")
         .order("updated_at", { ascending: false });
-      if (error) throw error;
+      if (error) {
+        console.error("[useProjects] Failed to load projects:", error);
+        throw error;
+      }
+      console.log("[useProjects] Projects loaded:", data?.length ?? 0);
       return (data ?? []) as unknown as Project[];
     },
     enabled: !!user,

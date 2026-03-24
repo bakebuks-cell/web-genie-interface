@@ -62,10 +62,14 @@ export function useCreateProject() {
           single_language: input.single_language ?? null,
           multi_stack: input.multi_stack ?? { frontend: [], backend: [], database: [] },
           status: input.status ?? "generating",
-        } as any)
+        })
         .select()
         .single();
-      if (error) throw error;
+      if (error) {
+        console.error("[useCreateProject] Insert failed:", error);
+        throw error;
+      }
+      console.log("[useCreateProject] Project created:", data?.id);
       return data as unknown as Project;
     },
     onSuccess: () => {

@@ -6,10 +6,11 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useProjects } from "@/hooks/useProjects";
 import { formatDistanceToNow } from "date-fns";
 import { useState, useEffect } from "react";
-import { supabase } from "@/integrations/supabase/client";
+import { supabase } from "@/lib/supabase";
 import { useQueryClient } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
 import { useGenerationStore } from "@/stores/useGenerationStore";
+import { removeLocalProject, upsertLocalProject } from "@/lib/projectPersistence";
 
 const languageNames: Record<string, string> = {
   html: "HTML/CSS/JS",
@@ -75,7 +76,14 @@ const Projects = () => {
         generatedUrl: project.preview_url,
       });
     }
-    console.log("[Projects] Opening project:", project.id);
+    if (user?.id) {
+      upsertLocalProject(user.id, {
+        ...project,
+        last_opened_at: new Date().toISOString(),
+        updated_at: project.updated_at || new Date().toISOString(),
+      });
+    }
+    console.log("Opening project", project.id);
     navigate("/generate", {
       state: {
         language: project.single_language || "react",
@@ -88,8 +96,18 @@ const Projects = () => {
   const handleDelete = async (id: string) => {
     const { error } = await supabase.from("projects").delete().eq("id", id);
     if (error) {
+      console.error("[Projects] Failed to delete project:", error);
+      if (user?.id) {
+        removeLocalProject(user.id, id);
+        queryClient.invalidateQueries({ queryKey: ["projects", user.id] });
+        toast({ title: "Deleted", description: "Project removed" });
+        return;
+      }
       toast({ title: "Error", description: "Failed to delete project", variant: "destructive" });
     } else {
+      if (user?.id) {
+        removeLocalProject(user.id, id);
+      }
       queryClient.invalidateQueries({ queryKey: ["projects", user.id] });
       toast({ title: "Deleted", description: "Project removed" });
     }
@@ -99,8 +117,28 @@ const Projects = () => {
     if (!renameValue.trim()) return;
     const { error } = await supabase.from("projects").update({ name: renameValue.trim() }).eq("id", id);
     if (error) {
+      console.error("[Projects] Failed to rename project:", error);
+      const project = projects.find((item) => item.id === id);
+      if (user?.id && project) {
+        upsertLocalProject(user.id, {
+          ...project,
+          name: renameValue.trim(),
+          updated_at: new Date().toISOString(),
+        });
+        queryClient.invalidateQueries({ queryKey: ["projects", user.id] });
+        setRenamingId(null);
+        return;
+      }
       toast({ title: "Error", description: "Failed to rename project", variant: "destructive" });
     } else {
+      const project = projects.find((item) => item.id === id);
+      if (user?.id && project) {
+        upsertLocalProject(user.id, {
+          ...project,
+          name: renameValue.trim(),
+          updated_at: new Date().toISOString(),
+        });
+      }
       queryClient.invalidateQueries({ queryKey: ["projects", user.id] });
       setRenamingId(null);
     }

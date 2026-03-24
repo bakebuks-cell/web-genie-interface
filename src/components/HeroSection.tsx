@@ -118,15 +118,20 @@ export const HeroSection = () => {
       }
     }
 
-
-    navigate("/generating", {
-      state: {
-        language: generationMode.singleLanguage || generationMode.multiStack[0] || "react",
-        idea,
-        generationMode,
-        dbProjectId
-      }
+    // Save generation intent to persistent store BEFORE navigating
+    const genStore = useGenerationStore.getState();
+    genStore.setIntent({
+      prompt: idea,
+      stack: generationMode.singleLanguage || generationMode.multiStack[0] || "react",
+      mode: generationMode.mode,
+      singleLanguage: generationMode.singleLanguage || null,
+      multiStack: generationMode.multiStack || [],
+      dbProjectId: dbProjectId || null,
     });
+
+    console.log("[HeroSection] Generation intent saved, navigating to /generating");
+
+    navigate("/generating");
   };
 
   return (

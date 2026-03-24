@@ -56,6 +56,26 @@ const Projects = () => {
   if (!user) return null;
 
   const handleOpen = (project: any) => {
+    // Restore generation store so builder has full context
+    const genStore = useGenerationStore.getState();
+    genStore.setIntent({
+      prompt: project.prompt || "",
+      stack: project.single_language || "react",
+      mode: project.mode || "single",
+      singleLanguage: project.single_language || null,
+      multiStack: project.multi_stack
+        ? [...(project.multi_stack.frontend || []), ...(project.multi_stack.backend || [])]
+        : [],
+      dbProjectId: project.id,
+    });
+    // If project already has a preview, set it as ready
+    if (project.preview_url) {
+      genStore.setResult({
+        backendProjectId: project.id,
+        generatedUrl: project.preview_url,
+      });
+    }
+    console.log("[Projects] Opening project:", project.id);
     navigate("/generate", {
       state: {
         language: project.single_language || "react",

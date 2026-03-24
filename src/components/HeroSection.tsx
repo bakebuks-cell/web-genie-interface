@@ -181,14 +181,7 @@ export const HeroSection = () => {
             initial={{ opacity: 0, y: 14 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, ease: "easeOut" }}>
-            Build fast.
-          </motion.h1>
-          <motion.h1
-            className="text-3xl md:text-4xl lg:text-5xl font-bold tracking-tight leading-[1.15] text-muted-foreground"
-            initial={{ opacity: 0, y: 14 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.12, ease: "easeOut" }}>
-            Ship lean.
+            Intelligence meets creation.
           </motion.h1>
 
           {/* Animated decorative line */}

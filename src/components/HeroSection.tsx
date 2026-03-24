@@ -25,7 +25,7 @@ export const HeroSection = () => {
   const [idea, setIdea] = useState("");
   const navigate = useNavigate();
   const { toast } = useToast();
-  const { user } = useAuth();
+  const { user, isLoading } = useAuth();
   const createProject = useCreateProject();
   const hasResumed = useRef(false);
 
@@ -89,6 +89,14 @@ export const HeroSection = () => {
       return;
     }
 
+    if (isLoading) {
+      toast({
+        title: "Please wait",
+        description: "Checking your account before creating the project.",
+      });
+      return;
+    }
+
     // Auth gate: redirect unauthenticated users
     if (!user) {
       savePreAuthDraft({
@@ -101,10 +109,21 @@ export const HeroSection = () => {
       return;
     }
 
+    if (!user.id) {
+      console.error("Project save failed: userId is missing");
+      toast({
+        title: "User not authenticated",
+        description: "Please log in and try again.",
+        variant: "destructive",
+      });
+      return;
+    }
+
     // Create project in DB — must succeed before navigating
     let dbProjectId: string | undefined;
     try {
       const name = idea.trim().slice(0, 60) || "Untitled Project";
+      console.log("User ID:", user.id);
       const project = await createProject.mutateAsync({
         name,
         prompt: idea,
@@ -119,15 +138,17 @@ export const HeroSection = () => {
           : { frontend: [], backend: [], database: [] },
         status: "generating",
       });
+
       dbProjectId = project.id;
-      console.log("[HeroSection] Project created in DB:", dbProjectId);
+      console.log("Project created", dbProjectId);
     } catch (e) {
-      console.error("[HeroSection] Failed to save project to DB:", e);
+      console.error("Project save failed:", e);
       toast({
-        title: "Warning",
-        description: "Project could not be saved, but generation will continue.",
+        title: "Project could not be saved",
+        description: "Please try again.",
         variant: "destructive",
       });
+      return;
     }
 
     // Save generation intent to persistent store BEFORE navigating

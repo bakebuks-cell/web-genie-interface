@@ -4,11 +4,14 @@ import { HeroBackground } from "@/components/HeroBackground";
 import GenerationDashboard from "@/components/GenerationDashboard";
 import { useGenerationStore } from "@/stores/useGenerationStore";
 import { saveRecentProject } from "@/components/RecentProjectCard";
-import { supabase } from "@/integrations/supabase/client";
+import { supabase } from "@/lib/supabase";
+import { useAuth } from "@/contexts/AuthContext";
+import { upsertLocalProject } from "@/lib/projectPersistence";
 
 const GeneratingPage = () => {
   const navigate = useNavigate();
   const store = useGenerationStore();
+  const { user } = useAuth();
   const buildStarted = useRef(false);
   const [buildDone, setBuildDone] = useState(false);
 
@@ -66,6 +69,33 @@ const GeneratingPage = () => {
           // Update the Supabase project record with status + preview URL
           const dbId = useGenerationStore.getState().dbProjectId;
           if (dbId) {
+            if (user?.id) {
+              upsertLocalProject(user.id, {
+                id: dbId,
+                user_id: user.id,
+                name: state.prompt.slice(0, 60) || "Untitled Project",
+                prompt: state.prompt,
+                mode: state.mode,
+                single_language: state.singleLanguage || null,
+                multi_stack: state.mode === "multi"
+                  ? {
+                      frontend: state.multiStack.filter((s) => ["react", "html", "csharp"].includes(s)),
+                      backend: state.multiStack.filter((s) => ["nodejs", "python", "golang", "php", "java"].includes(s)),
+                      database: [],
+                    }
+                  : { frontend: [], backend: [], database: [] },
+                status: "ready",
+                preview_url: data.url,
+                created_at: new Date().toISOString(),
+                updated_at: new Date().toISOString(),
+                last_opened_at: new Date().toISOString(),
+                repo_url: null,
+                share_url: null,
+                builder_state: null,
+              });
+              console.log("Project updated", dbId);
+            }
+
             console.log("[GeneratingPage] Updating project in DB:", dbId);
             const { error: updateError } = await supabase
               .from("projects")

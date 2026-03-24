@@ -45,6 +45,7 @@ const App = () => (
             <Route path="/auth-gate" element={<AuthGate />} />
             <Route path="/auth/callback" element={<AuthCallback />} />
             <Route path="/projects" element={<Layout><Projects /></Layout>} />
+            <Route path="/community" element={<Layout><Community /></Layout>} />
             <Route path="/profile" element={<Profile />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<Layout><NotFound /></Layout>} />

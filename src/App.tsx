@@ -17,6 +17,7 @@ import SignUp from "./pages/SignUp";
 import AuthCallback from "./pages/AuthCallback";
 import Profile from "./pages/Profile";
 import NotFound from "./pages/NotFound";
+import Community from "./pages/Community";
 import AuthGate from "./pages/AuthGate";
 import Projects from "./pages/Projects";
 
@@ -44,6 +45,7 @@ const App = () => (
             <Route path="/auth-gate" element={<AuthGate />} />
             <Route path="/auth/callback" element={<AuthCallback />} />
             <Route path="/projects" element={<Layout><Projects /></Layout>} />
+            <Route path="/community" element={<Layout><Community /></Layout>} />
             <Route path="/profile" element={<Profile />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<Layout><NotFound /></Layout>} />

@@ -17,6 +17,7 @@ const navItems = [
   { label: "Pricing", href: "/pricing" },
   { label: "Technology", href: "/technologies" },
   { label: "About", href: "/about" },
+  { label: "Community", href: "/community" },
 ];
 
 export const Navbar = () => {

@@ -17,6 +17,7 @@ import SignUp from "./pages/SignUp";
 import AuthCallback from "./pages/AuthCallback";
 import Profile from "./pages/Profile";
 import NotFound from "./pages/NotFound";
+import Community from "./pages/Community";
 import AuthGate from "./pages/AuthGate";
 import Projects from "./pages/Projects";
 

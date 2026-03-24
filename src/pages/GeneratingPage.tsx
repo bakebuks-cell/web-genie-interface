@@ -66,18 +66,21 @@ const GeneratingPage = () => {
           // Update the Supabase project record with status + preview URL
           const dbId = useGenerationStore.getState().dbProjectId;
           if (dbId) {
-            console.log("[GeneratingPage] Updating Supabase project:", dbId);
-            supabase
+            console.log("[GeneratingPage] Updating project in DB:", dbId);
+            const { error: updateError } = await supabase
               .from("projects")
               .update({
                 status: "ready",
                 preview_url: data.url,
-              } as any)
-              .eq("id", dbId)
-              .then(({ error }) => {
-                if (error) console.error("[GeneratingPage] Failed to update project:", error);
-                else console.log("[GeneratingPage] Project updated to ready");
-              });
+              })
+              .eq("id", dbId);
+            if (updateError) {
+              console.error("[GeneratingPage] Failed to update project:", updateError);
+            } else {
+              console.log("[GeneratingPage] Project updated to ready in DB");
+            }
+          } else {
+            console.warn("[GeneratingPage] No dbProjectId — project status not saved to DB");
           }
 
           // Save to recent projects (localStorage backup)

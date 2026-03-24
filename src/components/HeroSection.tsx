@@ -101,26 +101,33 @@ export const HeroSection = () => {
       return;
     }
 
-    // If logged in, create project in DB
+    // Create project in DB — must succeed before navigating
     let dbProjectId: string | undefined;
-    if (user) {
-      try {
-        // Derive a project name from prompt
-        const name = idea.trim().slice(0, 60) || "Untitled Project";
-        const project = await createProject.mutateAsync({
-          name,
-          prompt: idea,
-          mode: generationMode.mode,
-          single_language: generationMode.singleLanguage,
-          multi_stack: generationMode.mode === "multi" ?
-          { frontend: generationMode.multiStack.filter((s) => ["react", "html", "csharp"].includes(s)), backend: generationMode.multiStack.filter((s) => ["nodejs", "python", "golang", "php", "java"].includes(s)), database: [] } :
-          { frontend: [], backend: [], database: [] },
-          status: "generating"
-        });
-        dbProjectId = project.id;
-      } catch (e) {
-        console.error("Failed to save project:", e);
-      }
+    try {
+      const name = idea.trim().slice(0, 60) || "Untitled Project";
+      const project = await createProject.mutateAsync({
+        name,
+        prompt: idea,
+        mode: generationMode.mode,
+        single_language: generationMode.singleLanguage || null,
+        multi_stack: generationMode.mode === "multi"
+          ? {
+              frontend: generationMode.multiStack.filter((s) => ["react", "html", "csharp"].includes(s)),
+              backend: generationMode.multiStack.filter((s) => ["nodejs", "python", "golang", "php", "java"].includes(s)),
+              database: [],
+            }
+          : { frontend: [], backend: [], database: [] },
+        status: "generating",
+      });
+      dbProjectId = project.id;
+      console.log("[HeroSection] Project created in DB:", dbProjectId);
+    } catch (e) {
+      console.error("[HeroSection] Failed to save project to DB:", e);
+      toast({
+        title: "Warning",
+        description: "Project could not be saved, but generation will continue.",
+        variant: "destructive",
+      });
     }
 
     // Save generation intent to persistent store BEFORE navigating

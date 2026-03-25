@@ -119,7 +119,7 @@ export const Navbar = () => {
                   Login
                 </Button>
                 <button onClick={handleSignUp} className="rounded-full px-4 h-8 text-sm font-medium text-primary-foreground shadow-[0_0_15px_rgba(0,255,200,0.25)] transition-all duration-300 hover:shadow-[0_0_25px_rgba(0,255,200,0.4)] hover:opacity-90" style={{ background: "linear-gradient(90deg, #00f0ff, #00c8a0)" }}>
-                  Sign Up
+                  Get Started
                 </button>
               </>
             )}

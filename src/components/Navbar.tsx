@@ -33,7 +33,7 @@ export const Navbar = () => {
 
   return (
     <nav className="relative px-4 sm:px-6 lg:px-8 pt-4">
-      <div className="flex items-center justify-between">
+      <div className="relative flex items-center justify-between">
         {/* LEFT: Logo */}
         <Link to="/" className="group relative shrink-0">
           <span className="font-bold text-lg sm:text-xl text-foreground transition-all duration-300 group-hover:drop-shadow-[0_0_8px_rgba(0,230,210,0.5)]">

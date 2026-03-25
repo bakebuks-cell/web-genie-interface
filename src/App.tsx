@@ -9,7 +9,7 @@ import Index from "./pages/Index";
 import GenerationPage from "./pages/GenerationPage";
 import GeneratingPage from "./pages/GeneratingPage";
 import Preview from "./pages/Preview";
-import About from "./pages/About";
+
 import Technologies from "./pages/Technologies";
 import Pricing from "./pages/Pricing";
 import Login from "./pages/Login";

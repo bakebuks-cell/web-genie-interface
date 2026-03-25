@@ -37,7 +37,7 @@ const App = () => (
             
             {/* All other pages with Layout */}
             <Route path="/" element={<Layout><Index /></Layout>} />
-            <Route path="/about" element={<Layout><About /></Layout>} />
+            
             <Route path="/technologies" element={<Layout><Technologies /></Layout>} />
             <Route path="/pricing" element={<Layout><Pricing /></Layout>} />
             <Route path="/login" element={<Layout><Login /></Layout>} />

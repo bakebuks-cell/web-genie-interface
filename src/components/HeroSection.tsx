@@ -177,13 +177,20 @@ export const HeroSection = () => {
         <div className="text-center mb-7 md:mb-8 lg:mb-7">
           {/* Main headline - stacked with animation */}
           <motion.h1
-            className="text-3xl md:text-4xl lg:text-5xl tracking-[0.01em] leading-[1.2] text-foreground drop-shadow-[0_0_18px_rgba(45,212,191,0.12)]"
-            style={{ fontFamily: "'Playfair Display', serif" }}
+            className="flex flex-col items-center gap-1 md:gap-2"
             initial={{ opacity: 0, y: 14 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, ease: "easeOut" }}>
-            <span className="font-bold">Intelligence</span>{" "}
-            <span className="italic font-medium">meets creation.</span>
+            <span
+              className="text-4xl md:text-5xl lg:text-6xl font-bold tracking-[0.01em] leading-[1.1] text-[hsl(var(--foreground))]"
+              style={{ fontFamily: "'Playfair Display', serif" }}>
+              Intelligence
+            </span>
+            <span
+              className="text-3xl md:text-4xl lg:text-5xl font-medium italic tracking-[0.02em] leading-[1.2] text-[hsl(210_20%_92%)] drop-shadow-[0_0_24px_rgba(45,212,191,0.18)]"
+              style={{ fontFamily: "'Playfair Display', serif" }}>
+              meets creation.
+            </span>
           </motion.h1>
 
           {/* Animated decorative line */}

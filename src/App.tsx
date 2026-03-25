@@ -9,7 +9,7 @@ import Index from "./pages/Index";
 import GenerationPage from "./pages/GenerationPage";
 import GeneratingPage from "./pages/GeneratingPage";
 import Preview from "./pages/Preview";
-import About from "./pages/About";
+
 import Technologies from "./pages/Technologies";
 import Pricing from "./pages/Pricing";
 import Login from "./pages/Login";
@@ -37,7 +37,7 @@ const App = () => (
             
             {/* All other pages with Layout */}
             <Route path="/" element={<Layout><Index /></Layout>} />
-            <Route path="/about" element={<Layout><About /></Layout>} />
+            
             <Route path="/technologies" element={<Layout><Technologies /></Layout>} />
             <Route path="/pricing" element={<Layout><Pricing /></Layout>} />
             <Route path="/login" element={<Layout><Login /></Layout>} />

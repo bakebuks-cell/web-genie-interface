@@ -34,39 +34,34 @@ export const Navbar = () => {
   return (
     <nav className="relative px-4 sm:px-6 lg:px-8 pt-4">
       <div className="flex items-center justify-between">
-        {/* LEFT: Logo */}
-        <Link to="/" className="group relative shrink-0">
+        <Link to="/" className="group relative">
           <span className="font-bold text-lg sm:text-xl text-foreground transition-all duration-300 group-hover:drop-shadow-[0_0_8px_rgba(0,230,210,0.5)]">
             MyCodex
           </span>
           <span className="absolute -bottom-0.5 left-0 w-full h-px bg-primary/50" />
         </Link>
 
-        {/* CENTER: Nav Links (desktop) */}
         <motion.div
-          className="hidden md:flex absolute left-1/2 -translate-x-1/2 items-center gap-1 px-5 py-2.5 bg-background/40 backdrop-blur-2xl border border-primary/15 rounded-full shadow-[0_8px_32px_rgba(0,0,0,0.4),inset_0_1px_0_rgba(0,230,210,0.05)]"
-          initial={{ opacity: 0, y: -10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.1, ease: "easeOut" }}
-        >
-          {navItems.map((item) => (
-            <Link
-              key={item.label}
-              to={item.href}
-              className="px-3 py-1.5 rounded-full text-muted-foreground hover:text-primary hover:bg-primary/5 transition-all duration-200 text-sm font-medium"
-            >
-              {item.label}
-            </Link>
-          ))}
-        </motion.div>
-
-        {/* RIGHT: Auth + Mobile toggle */}
-        <motion.div
-          className="flex items-center gap-2"
+          className="flex items-center gap-1 sm:gap-2 px-3 sm:px-5 py-2.5 bg-background/40 backdrop-blur-2xl border border-primary/15 rounded-full shadow-[0_8px_32px_rgba(0,0,0,0.4),inset_0_1px_0_rgba(0,230,210,0.05)]"
           initial={{ opacity: 0, x: 20 }}
           animate={{ opacity: 1, x: 0 }}
           transition={{ duration: 0.5, delay: 0.1, ease: "easeOut" }}
         >
+          {/* Desktop Navigation */}
+          <div className="hidden md:flex items-center gap-1">
+            {navItems.map((item) => (
+              <Link
+                key={item.label}
+                to={item.href}
+                className="px-3 py-1.5 rounded-full text-muted-foreground hover:text-primary hover:bg-primary/5 transition-all duration-200 text-sm font-medium"
+              >
+                {item.label}
+              </Link>
+            ))}
+          </div>
+
+          <div className="hidden md:block w-px h-5 bg-primary/15 mx-2" />
+
           <div className="hidden md:flex items-center gap-2">
             {user ? (
               <>
@@ -81,7 +76,9 @@ export const Navbar = () => {
                 </Button>
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
-                    <button className="flex items-center justify-center w-8 h-8 rounded-full bg-primary/10 border border-primary/20 text-primary hover:bg-primary/20 transition-colors">
+                    <button
+                      className="flex items-center justify-center w-8 h-8 rounded-full bg-primary/10 border border-primary/20 text-primary hover:bg-primary/20 transition-colors"
+                    >
                       <User className="w-4 h-4" />
                     </button>
                   </DropdownMenuTrigger>

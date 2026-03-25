@@ -177,12 +177,13 @@ export const HeroSection = () => {
         <div className="text-center mb-7 md:mb-8 lg:mb-7">
           {/* Main headline - stacked with animation */}
           <motion.h1
-            className="text-3xl md:text-4xl lg:text-5xl font-normal tracking-wide leading-[1.3] text-foreground drop-shadow-[0_0_20px_rgba(45,212,191,0.15)]"
-            style={{ fontFamily: "'Great Vibes', cursive" }}
+            className="text-3xl md:text-4xl lg:text-5xl font-semibold tracking-[0.01em] leading-[1.2] text-foreground drop-shadow-[0_0_18px_rgba(45,212,191,0.12)]"
+            style={{ fontFamily: "'Playfair Display', serif" }}
             initial={{ opacity: 0, y: 14 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, ease: "easeOut" }}>
-            Intelligence meets creation.
+            Intelligence{" "}
+            <span className="italic">meets creation.</span>
           </motion.h1>
 
           {/* Animated decorative line */}

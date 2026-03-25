@@ -33,7 +33,7 @@ export const Navbar = () => {
 
   return (
     <nav className="relative px-4 sm:px-6 lg:px-8 pt-4">
-      <div className="flex items-center justify-between">
+      <div className="relative flex items-center justify-between">
         {/* LEFT: Logo */}
         <Link to="/" className="group relative shrink-0">
           <span className="font-bold text-lg sm:text-xl text-foreground transition-all duration-300 group-hover:drop-shadow-[0_0_8px_rgba(0,230,210,0.5)]">
@@ -44,7 +44,7 @@ export const Navbar = () => {
 
         {/* CENTER: Nav Links (desktop) */}
         <motion.div
-          className="hidden md:flex items-center gap-1 px-5 py-2.5 bg-background/40 backdrop-blur-2xl border border-primary/15 rounded-full shadow-[0_8px_32px_rgba(0,0,0,0.4),inset_0_1px_0_rgba(0,230,210,0.05)]"
+          className="hidden md:flex items-center gap-1 px-5 py-2.5 bg-background/40 backdrop-blur-2xl border border-primary/15 rounded-full shadow-[0_8px_32px_rgba(0,0,0,0.4),inset_0_1px_0_rgba(0,230,210,0.05)] absolute left-1/2 -translate-x-1/2"
           initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.1, ease: "easeOut" }}
@@ -119,7 +119,7 @@ export const Navbar = () => {
                   Login
                 </Button>
                 <button onClick={handleSignUp} className="rounded-full px-4 h-8 text-sm font-medium text-primary-foreground shadow-[0_0_15px_rgba(0,255,200,0.25)] transition-all duration-300 hover:shadow-[0_0_25px_rgba(0,255,200,0.4)] hover:opacity-90" style={{ background: "linear-gradient(90deg, #00f0ff, #00c8a0)" }}>
-                  Sign Up
+                  Get Started
                 </button>
               </>
             )}
@@ -166,7 +166,7 @@ export const Navbar = () => {
                 ) : (
                   <>
                     <Button variant="ghost" size="sm" onClick={handleLogin} className="justify-start text-muted-foreground hover:bg-primary/5 rounded-lg">Login</Button>
-                    <button onClick={handleSignUp} className="rounded-lg px-4 h-9 text-sm font-medium text-primary-foreground" style={{ background: "linear-gradient(90deg, #00f0ff, #00c8a0)" }}>Sign Up</button>
+                    <button onClick={handleSignUp} className="rounded-lg px-4 h-9 text-sm font-medium text-primary-foreground" style={{ background: "linear-gradient(90deg, #00f0ff, #00c8a0)" }}>Get Started</button>
                   </>
                 )}
               </div>

@@ -166,7 +166,7 @@ export const Navbar = () => {
                 ) : (
                   <>
                     <Button variant="ghost" size="sm" onClick={handleLogin} className="justify-start text-muted-foreground hover:bg-primary/5 rounded-lg">Login</Button>
-                    <button onClick={handleSignUp} className="rounded-lg px-4 h-9 text-sm font-medium text-primary-foreground" style={{ background: "linear-gradient(90deg, #00f0ff, #00c8a0)" }}>Sign Up</button>
+                    <button onClick={handleSignUp} className="rounded-lg px-4 h-9 text-sm font-medium text-primary-foreground" style={{ background: "linear-gradient(90deg, #00f0ff, #00c8a0)" }}>Get Started</button>
                   </>
                 )}
               </div>

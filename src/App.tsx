@@ -7,7 +7,7 @@ import { AuthProvider } from "@/contexts/AuthContext";
 import { Layout } from "./components/Layout";
 import Index from "./pages/Index";
 import GenerationPage from "./pages/GenerationPage";
-import GeneratingPage from "./pages/GeneratingPage";
+
 import Preview from "./pages/Preview";
 
 import Technologies from "./pages/Technologies";
@@ -31,7 +31,7 @@ const App = () => (
       <BrowserRouter>
         <AuthProvider>
           <Routes>
-            <Route path="/generating" element={<GeneratingPage />} />
+            
             <Route path="/generate" element={<GenerationPage />} />
             <Route path="/preview" element={<Preview />} />
             

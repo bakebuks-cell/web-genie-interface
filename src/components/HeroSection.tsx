@@ -65,7 +65,7 @@ export const HeroSection = () => {
 
     // Small delay to let state settle
     setTimeout(() => {
-      navigate("/generating");
+      navigate("/generate");
     }, 100);
   }, [user]);
 
@@ -164,7 +164,7 @@ export const HeroSection = () => {
 
     console.log("[HeroSection] Generation intent saved, navigating to /generating");
 
-    navigate("/generating");
+    navigate("/generate");
   };
 
   return (

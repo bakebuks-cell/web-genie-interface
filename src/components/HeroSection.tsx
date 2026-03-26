@@ -65,7 +65,7 @@ export const HeroSection = () => {
 
     // Small delay to let state settle
     setTimeout(() => {
-      navigate("/generating");
+      navigate("/generate");
     }, 100);
   }, [user]);
 

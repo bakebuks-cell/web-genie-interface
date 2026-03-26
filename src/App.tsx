@@ -31,7 +31,7 @@ const App = () => (
       <BrowserRouter>
         <AuthProvider>
           <Routes>
-            <Route path="/generating" element={<GeneratingPage />} />
+            
             <Route path="/generate" element={<GenerationPage />} />
             <Route path="/preview" element={<Preview />} />
             

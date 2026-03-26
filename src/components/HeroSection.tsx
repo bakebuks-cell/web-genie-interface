@@ -164,7 +164,7 @@ export const HeroSection = () => {
 
     console.log("[HeroSection] Generation intent saved, navigating to /generating");
 
-    navigate("/generating");
+    navigate("/generate");
   };
 
   return (

@@ -216,13 +216,11 @@ export const HeroSection = () => {
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.8, duration: 0.8 }}>
-            
             <motion.span
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ delay: 1, duration: 1.5 }}>
-              
-              "Bringing clarity, speed, and precision to prompt-driven development"
+              Build production-ready apps from a single prompt
             </motion.span>
           </motion.p>
 

@@ -516,14 +516,14 @@ const PreviewPanel = ({
       )}
 
       {/* Preview / Code Toggle + Center Controls + Actions */}
-      <div className="px-3 pt-3 pb-1 flex items-center justify-between sticky top-0 z-10 bg-muted/30">
+      <div className="px-2 sm:px-3 pt-2 sm:pt-3 pb-1 flex flex-wrap sm:flex-nowrap items-center justify-between gap-1 sm:gap-0 sticky top-0 z-10 bg-muted/30">
         {/* Left: Preview/Code toggle */}
         <div className="flex items-center gap-1 flex-shrink-0">
           {(["preview", "code"] as const).map((tab) => (
             <button
               key={tab}
               onClick={() => setActiveTab(tab)}
-              className={`px-3 py-1.5 text-sm font-medium rounded-lg transition-all duration-200 flex items-center gap-1.5 ${
+              className={`px-2 sm:px-3 py-1.5 text-xs sm:text-sm font-medium rounded-lg transition-all duration-200 flex items-center gap-1.5 ${
                 activeTab === tab
                   ? "bg-primary/15 text-primary border border-primary/30 shadow-[0_0_12px_rgba(0,230,210,0.2)]"
                   : "text-muted-foreground hover:text-foreground hover:bg-secondary/40 border border-transparent"
@@ -537,7 +537,7 @@ const PreviewPanel = ({
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <button
-                className={`ml-1 h-8 px-2.5 flex items-center gap-1.5 text-xs font-medium rounded-lg border transition-all duration-200 ${
+                className={`ml-1 h-7 sm:h-8 px-2 sm:px-2.5 flex items-center gap-1 sm:gap-1.5 text-xs font-medium rounded-lg border transition-all duration-200 ${
                   db.supabaseConnected
                     ? "border-primary/40 bg-primary/10 text-primary shadow-[0_0_10px_rgba(0,230,210,0.12)]"
                     : "border-border bg-secondary/50 text-muted-foreground hover:text-foreground hover:border-primary/30"
@@ -575,8 +575,8 @@ const PreviewPanel = ({
           </DropdownMenu>
         </div>
 
-        {/* Center: Unified control pill */}
-        <div className="flex items-center h-9 rounded-full border border-primary/20 bg-secondary/60 backdrop-blur-sm shadow-[0_0_12px_rgba(0,230,210,0.08)] overflow-visible">
+        {/* Center: Unified control pill — hidden on small screens, shown in right actions row instead */}
+        <div className="hidden sm:flex items-center h-9 rounded-full border border-primary/20 bg-secondary/60 backdrop-blur-sm shadow-[0_0_12px_rgba(0,230,210,0.08)] overflow-visible">
           {/* Device Switcher */}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
@@ -651,8 +651,26 @@ const PreviewPanel = ({
           </button>
         </div>
 
-        {/* Right: GitHub + Publish + Share */}
-        <div className="flex items-center gap-2 flex-shrink-0">
+        {/* Right: actions — on mobile show compact inline controls + Publish */}
+        <div className="flex items-center gap-1 sm:gap-2 flex-shrink-0">
+          {/* Mobile-only inline controls */}
+          <div className="flex sm:hidden items-center gap-0.5">
+            <button
+              onClick={handleOpenInNewTab}
+              className="w-7 h-7 flex items-center justify-center rounded-lg text-muted-foreground hover:text-primary transition-colors"
+              title="Open in new tab"
+            >
+              <ExternalLink className="w-3.5 h-3.5" />
+            </button>
+            <button
+              onClick={handleRefreshPreview}
+              className="w-7 h-7 flex items-center justify-center rounded-lg text-muted-foreground hover:text-primary transition-colors"
+              title="Refresh"
+            >
+              <RefreshCw className="w-3.5 h-3.5" />
+            </button>
+          </div>
+
           <button
             onClick={async () => {
               try {
@@ -662,7 +680,7 @@ const PreviewPanel = ({
                 toast.error("Unable to open GitHub repository");
               }
             }}
-            className="w-8 h-8 flex items-center justify-center rounded-lg border border-border bg-secondary/50 text-muted-foreground hover:text-primary hover:border-primary/40 hover:shadow-[0_0_12px_rgba(0,230,210,0.15)] transition-all duration-200"
+            className="w-7 h-7 sm:w-8 sm:h-8 flex items-center justify-center rounded-lg border border-border bg-secondary/50 text-muted-foreground hover:text-primary hover:border-primary/40 hover:shadow-[0_0_12px_rgba(0,230,210,0.15)] transition-all duration-200"
             title="Export to GitHub"
           >
             <Github className="w-3.5 h-3.5" />

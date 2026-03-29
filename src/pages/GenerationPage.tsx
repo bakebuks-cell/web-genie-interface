@@ -42,7 +42,9 @@ const GenerationPage = () => {
   const [healthCheckStatus, setHealthCheckStatus] = useState<HealthCheckStatus | undefined>(
     genStore.status === "ready" 
       ? { isChecking: false, isReady: true, elapsedSeconds: 0 } 
-      : undefined
+      : genStore.status === "queued" || genStore.status === "building"
+        ? { isChecking: true, isReady: false, elapsedSeconds: 0 }
+        : undefined
   );
   
   const [visualEditMode, setVisualEditMode] = useState(false);
@@ -55,15 +57,24 @@ const GenerationPage = () => {
 
   // Sync store changes to local state
   useEffect(() => {
-    if (genStore.generatedUrl && !generatedUrl) {
+    if (genStore.generatedUrl && genStore.generatedUrl !== generatedUrl) {
       console.log("[GenerationPage] Syncing generatedUrl from store:", genStore.generatedUrl);
       setGeneratedUrl(genStore.generatedUrl);
       setHealthCheckStatus({ isChecking: false, isReady: true, elapsedSeconds: 0 });
     }
-    if (genStore.backendProjectId && !projectId) {
+    if (genStore.backendProjectId && genStore.backendProjectId !== projectId) {
       setProjectId(genStore.backendProjectId);
     }
   }, [genStore.generatedUrl, genStore.backendProjectId]);
+
+  // Track elapsed seconds during build for preview progress
+  useEffect(() => {
+    if (!healthCheckStatus?.isChecking) return;
+    const interval = setInterval(() => {
+      setHealthCheckStatus(prev => prev ? { ...prev, elapsedSeconds: (prev.elapsedSeconds || 0) + 1 } : prev);
+    }, 1000);
+    return () => clearInterval(interval);
+  }, [healthCheckStatus?.isChecking]);
 
   const userInitial = profile?.display_name?.charAt(0) || user?.email?.charAt(0) || "b";
 

@@ -259,7 +259,9 @@ const ChatPanel = ({
     {
       id: "1",
       role: "assistant",
-      content: "I'm ready to generate your application. Describe what you want to build!",
+      content: initialPrompt?.trim()
+        ? `🚀 Building your application based on your prompt...\n\n"${initialPrompt.trim().slice(0, 120)}${initialPrompt.trim().length > 120 ? '...' : ''}"`
+        : "I'm ready to help you build. Describe what you want to create!",
     },
   ]);
   const [value, setValue] = useState("");
@@ -1182,7 +1184,7 @@ const ChatPanel = ({
                 adjustHeight();
               }}
               onKeyDown={handleKeyDown}
-              placeholder="Type your instructions..."
+              placeholder={projectId ? "Describe changes to your app..." : "Type your instructions..."}
               className={cn(
                 "w-full pt-3 pl-3 pr-3 pb-2 resize-none bg-transparent",
                 "text-foreground text-sm focus:outline-none",

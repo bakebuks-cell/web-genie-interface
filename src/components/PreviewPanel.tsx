@@ -687,15 +687,42 @@ const PreviewPanel = ({
               <IdePanel projectId={resolvedProjectId} />
             </div>
           ) : !generatedUrl ? (
-            /* Placeholder preview when no URL yet */
+            /* Building / Placeholder preview when no URL yet */
             <div className="h-full bg-card rounded-2xl border border-border overflow-hidden flex flex-col items-center justify-center p-8">
-              <div className="w-16 h-16 rounded-2xl bg-primary/10 border border-primary/20 flex items-center justify-center mb-4">
-                <ExternalLink className="w-8 h-8 text-primary/60" />
-              </div>
-              <h3 className="text-lg font-semibold text-foreground mb-2">App Preview</h3>
-              <p className="text-sm text-muted-foreground text-center max-w-sm">
-                Your generated application will appear here. Start a conversation to build or modify your app.
-              </p>
+              {healthCheckStatus?.isChecking ? (
+                <>
+                  <motion.div
+                    className="w-16 h-16 rounded-2xl bg-primary/10 border border-primary/20 flex items-center justify-center mb-6"
+                    animate={{ rotate: 360 }}
+                    transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
+                  >
+                    <div className="w-8 h-8 border-[3px] border-primary border-t-transparent rounded-full" />
+                  </motion.div>
+                  <h3 className="text-lg font-semibold text-foreground mb-2">Building Your Application</h3>
+                  <p className="text-sm text-muted-foreground text-center max-w-sm mb-4">
+                    Your app is being generated. This may take a minute or two...
+                  </p>
+                  <div className="w-full max-w-xs">
+                    <div className="h-2 bg-muted rounded-full overflow-hidden">
+                      <motion.div
+                        className="h-full bg-gradient-to-r from-primary to-primary/60"
+                        animate={{ width: ["0%", "60%", "80%", "90%"] }}
+                        transition={{ duration: 60, ease: "easeOut" }}
+                      />
+                    </div>
+                  </div>
+                </>
+              ) : (
+                <>
+                  <div className="w-16 h-16 rounded-2xl bg-primary/10 border border-primary/20 flex items-center justify-center mb-4">
+                    <ExternalLink className="w-8 h-8 text-primary/60" />
+                  </div>
+                  <h3 className="text-lg font-semibold text-foreground mb-2">App Preview</h3>
+                  <p className="text-sm text-muted-foreground text-center max-w-sm">
+                    Your generated application will appear here. Start a conversation to build or modify your app.
+                  </p>
+                </>
+              )}
             </div>
           ) : (
             // Always display iframe immediately; overlay health-check UI on top while polling.

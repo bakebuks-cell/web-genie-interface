@@ -42,7 +42,9 @@ const GenerationPage = () => {
   const [healthCheckStatus, setHealthCheckStatus] = useState<HealthCheckStatus | undefined>(
     genStore.status === "ready" 
       ? { isChecking: false, isReady: true, elapsedSeconds: 0 } 
-      : undefined
+      : genStore.status === "queued" || genStore.status === "building"
+        ? { isChecking: true, isReady: false, elapsedSeconds: 0 }
+        : undefined
   );
   
   const [visualEditMode, setVisualEditMode] = useState(false);

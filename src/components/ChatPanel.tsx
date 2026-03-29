@@ -259,7 +259,9 @@ const ChatPanel = ({
     {
       id: "1",
       role: "assistant",
-      content: "I'm ready to generate your application. Describe what you want to build!",
+      content: initialPrompt?.trim()
+        ? `🚀 Building your application based on your prompt...\n\n"${initialPrompt.trim().slice(0, 120)}${initialPrompt.trim().length > 120 ? '...' : ''}"`
+        : "I'm ready to help you build. Describe what you want to create!",
     },
   ]);
   const [value, setValue] = useState("");

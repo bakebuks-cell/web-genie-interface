@@ -396,8 +396,7 @@ const ChatPanel = ({
   useEffect(() => {
     if (initialPrompt && initialPrompt.trim() && !hasAutoTriggered) {
       setHasAutoTriggered(true);
-      // Set the value and trigger send after a short delay to ensure component is ready
-      setValue(initialPrompt);
+      // Trigger build but keep the input box empty — the prompt is only for initial generation
       const timer = setTimeout(() => {
         triggerBuild(initialPrompt);
       }, 500);

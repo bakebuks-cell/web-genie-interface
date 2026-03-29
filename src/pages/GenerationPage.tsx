@@ -5,6 +5,8 @@ import type { HealthCheckStatus } from "@/components/ChatPanel";
 import PreviewPanel from "@/components/PreviewPanel";
 import { useAuth } from "@/contexts/AuthContext";
 import { useGenerationStore } from "@/stores/useGenerationStore";
+import { useIsMobile } from "@/hooks/use-mobile";
+import { Code, Eye } from "lucide-react";
 
 const languageNames: Record<string, string> = {
   html: "Plain HTML/CSS/JS",
@@ -19,6 +21,8 @@ const GenerationPage = () => {
   const location = useLocation();
   const { user, profile } = useAuth();
   const genStore = useGenerationStore();
+  const isMobile = useIsMobile();
+  const [mobileTab, setMobileTab] = useState<"code" | "preview">("code");
 
   // Hydrate from persistent store on mount
   useEffect(() => {
@@ -97,7 +101,6 @@ const GenerationPage = () => {
     if (newProjectId) {
       setProjectId(newProjectId);
     }
-    // Also update the persistent store
     genStore.setResult({
       backendProjectId: newProjectId || "",
       generatedUrl: url,
@@ -116,41 +119,90 @@ const GenerationPage = () => {
     setSelectedElementId(null);
   };
 
-  // Determine if ChatPanel should skip auto-triggering
-  // (build already completed during /generating phase)
   const skipAutoTrigger = genStore.status === "ready" && !!genStore.generatedUrl;
 
+  const chatPanel = (
+    <ChatPanel 
+      selectedStack={language} 
+      initialPrompt={skipAutoTrigger ? "" : idea}
+      onGeneratedUrl={handleGeneratedUrl}
+      onHealthCheckStatus={handleHealthCheckStatus}
+      projectId={projectId}
+      selectedElementId={selectedElementId}
+      onClearElement={clearSelectedElement}
+    />
+  );
+
+  const previewPanel = (
+    <PreviewPanel 
+      language={languageDisplay} 
+      idea={idea} 
+      currentRoute={currentPath}
+      viewMode={selectedDevice}
+      generatedUrl={generatedUrl}
+      healthCheckStatus={healthCheckStatus}
+      onRefresh={handleRefresh}
+      visualEditMode={visualEditMode}
+      onVisualEditModeChange={setVisualEditMode}
+      onElementSelect={handleElementSelect}
+      selectedElementId={selectedElementId}
+      projectId={projectId}
+      prompt={idea}
+    />
+  );
+
+  // Mobile / tablet layout
+  if (isMobile) {
+    return (
+      <div className="h-screen flex flex-col bg-background">
+        {/* Active panel */}
+        <div className="flex-1 overflow-hidden pb-14">
+          {mobileTab === "code" ? (
+            <div className="h-full">{chatPanel}</div>
+          ) : (
+            <div className="h-full bg-muted/20">{previewPanel}</div>
+          )}
+        </div>
+
+        {/* Bottom toggle bar */}
+        <div className="fixed bottom-0 left-0 right-0 z-50 flex border-t border-border/50 bg-background/80 backdrop-blur-xl">
+          <button
+            onClick={() => setMobileTab("code")}
+            className={`flex-1 flex items-center justify-center gap-2 py-3 text-sm font-medium transition-all duration-200 ${
+              mobileTab === "code"
+                ? "text-primary bg-primary/10 shadow-[0_-2px_12px_hsl(var(--primary)/0.15)]"
+                : "text-muted-foreground hover:text-foreground"
+            }`}
+          >
+            <Code className="w-4 h-4" />
+            Code
+          </button>
+          <div className="w-px bg-border/50" />
+          <button
+            onClick={() => setMobileTab("preview")}
+            className={`flex-1 flex items-center justify-center gap-2 py-3 text-sm font-medium transition-all duration-200 ${
+              mobileTab === "preview"
+                ? "text-primary bg-primary/10 shadow-[0_-2px_12px_hsl(var(--primary)/0.15)]"
+                : "text-muted-foreground hover:text-foreground"
+            }`}
+          >
+            <Eye className="w-4 h-4" />
+            Preview
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  // Desktop layout (unchanged)
   return (
     <div className="h-screen flex flex-col bg-background">
       <div className="flex-1 flex overflow-hidden">
         <div className="w-[400px] flex-shrink-0 border-r border-border">
-          <ChatPanel 
-            selectedStack={language} 
-            initialPrompt={skipAutoTrigger ? "" : idea}
-            onGeneratedUrl={handleGeneratedUrl}
-            onHealthCheckStatus={handleHealthCheckStatus}
-            projectId={projectId}
-            selectedElementId={selectedElementId}
-            onClearElement={clearSelectedElement}
-          />
+          {chatPanel}
         </div>
-        
         <div className="flex-1 bg-muted/20">
-          <PreviewPanel 
-            language={languageDisplay} 
-            idea={idea} 
-            currentRoute={currentPath}
-            viewMode={selectedDevice}
-            generatedUrl={generatedUrl}
-            healthCheckStatus={healthCheckStatus}
-            onRefresh={handleRefresh}
-            visualEditMode={visualEditMode}
-            onVisualEditModeChange={setVisualEditMode}
-            onElementSelect={handleElementSelect}
-            selectedElementId={selectedElementId}
-            projectId={projectId}
-            prompt={idea}
-          />
+          {previewPanel}
         </div>
       </div>
     </div>

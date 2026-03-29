@@ -154,9 +154,9 @@ const GenerationPage = () => {
   // Mobile / tablet layout
   if (isMobile) {
     return (
-      <div className="h-screen flex flex-col bg-background">
+      <div className="flex flex-col bg-background" style={{ height: '100dvh' }}>
         {/* Active panel */}
-        <div className="flex-1 overflow-hidden pb-14">
+        <div className="flex-1 min-h-0 overflow-hidden">
           {mobileTab === "code" ? (
             <div className="h-full">{chatPanel}</div>
           ) : (
@@ -165,7 +165,7 @@ const GenerationPage = () => {
         </div>
 
         {/* Bottom toggle bar */}
-        <div className="fixed bottom-0 left-0 right-0 z-50 flex border-t border-border/50 bg-background/80 backdrop-blur-xl">
+        <div className="flex-shrink-0 flex border-t border-border/50 bg-background/80 backdrop-blur-xl">
           <button
             onClick={() => setMobileTab("code")}
             className={`flex-1 flex items-center justify-center gap-2 py-3 text-sm font-medium transition-all duration-200 ${

@@ -5,6 +5,8 @@ import type { HealthCheckStatus } from "@/components/ChatPanel";
 import PreviewPanel from "@/components/PreviewPanel";
 import { useAuth } from "@/contexts/AuthContext";
 import { useGenerationStore } from "@/stores/useGenerationStore";
+import { useIsMobile } from "@/hooks/use-mobile";
+import { Code, Eye } from "lucide-react";
 
 const languageNames: Record<string, string> = {
   html: "Plain HTML/CSS/JS",

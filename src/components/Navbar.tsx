@@ -33,11 +33,18 @@ export const Navbar = () => {
 
   return (
     <nav className="relative px-4 sm:px-6 lg:px-8 pt-4">
-      <div className="flex items-center justify-center">
+      <div className="flex items-center justify-between">
+        <Link to="/" className="group relative">
+          <span className="font-bold text-lg sm:text-xl text-foreground transition-all duration-300 group-hover:drop-shadow-[0_0_8px_rgba(0,230,210,0.5)]">
+            MyCodex
+          </span>
+          <span className="absolute -bottom-0.5 left-0 w-full h-px bg-primary/50" />
+        </Link>
+
         <motion.div
           className="flex items-center gap-1 sm:gap-2 px-3 sm:px-5 py-2.5 bg-background/40 backdrop-blur-2xl border border-primary/15 rounded-full shadow-[0_8px_32px_rgba(0,0,0,0.4),inset_0_1px_0_rgba(0,230,210,0.05)]"
-          initial={{ opacity: 0, y: -10 }}
-          animate={{ opacity: 1, y: 0 }}
+          initial={{ opacity: 0, x: 20 }}
+          animate={{ opacity: 1, x: 0 }}
           transition={{ duration: 0.5, delay: 0.1, ease: "easeOut" }}
         >
           {/* Desktop Navigation */}

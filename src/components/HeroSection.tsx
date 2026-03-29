@@ -177,17 +177,19 @@ export const HeroSection = () => {
         <div className="text-center mb-7 md:mb-8 lg:mb-7">
           {/* Main headline - stacked with animation */}
           <motion.h1
-            className="flex items-center justify-center"
+            className="flex flex-col items-center gap-1 md:gap-2"
             initial={{ opacity: 0, y: 14 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, ease: "easeOut" }}>
+            transition={{ duration: 0.5, ease: "easeOut" }}>
             <span
-              className="text-5xl md:text-6xl lg:text-7xl font-bold tracking-[-0.02em] leading-[1] text-foreground drop-shadow-[0_0_30px_rgba(0,230,210,0.15)]"
+              className="text-4xl md:text-5xl lg:text-6xl font-bold tracking-[0.01em] leading-[1.1] text-[hsl(var(--foreground))]"
               style={{ fontFamily: "'Playfair Display', serif" }}>
-              My
-              <span className="bg-gradient-to-r from-foreground via-foreground to-primary bg-clip-text text-transparent">
-                Codex
-              </span>
+              Intelligence
+            </span>
+            <span
+              className="text-3xl md:text-4xl lg:text-5xl font-medium italic tracking-[0.02em] leading-[1.2] text-[hsl(210_20%_92%)] drop-shadow-[0_0_24px_rgba(45,212,191,0.18)]"
+              style={{ fontFamily: "'Playfair Display', serif" }}>
+              meets creation.
             </span>
           </motion.h1>
 
@@ -216,11 +218,13 @@ export const HeroSection = () => {
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.8, duration: 0.8 }}>
+            
             <motion.span
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ delay: 1, duration: 1.5 }}>
-              Build production-ready apps from a single prompt
+              
+              "Bringing clarity, speed, and precision to prompt-driven development"
             </motion.span>
           </motion.p>
 

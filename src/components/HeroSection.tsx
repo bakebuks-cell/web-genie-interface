@@ -176,54 +176,64 @@ export const HeroSection = () => {
         {/* Centered Quote with animations */}
         <div className="text-center mb-7 md:mb-8 lg:mb-7">
           {/* Main headline - stacked with animation */}
-          <motion.h1
-            className="flex flex-col items-center gap-1 md:gap-2"
-            initial={{ opacity: 0, y: 14 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, ease: "easeOut" }}>
-            <span
-              className="text-4xl md:text-5xl lg:text-6xl font-bold tracking-[0.01em] leading-[1.1] text-[hsl(var(--foreground))]"
-              style={{ fontFamily: "'Playfair Display', serif" }}>
+          <h1 className="flex flex-col items-center gap-1 md:gap-2">
+            <motion.span
+              className="text-4xl md:text-5xl lg:text-6xl font-bold tracking-[0.04em] leading-[1.1]"
+              style={{
+                fontFamily: "'Playfair Display', serif",
+                background: "linear-gradient(180deg, #f5f5f5 40%, hsl(var(--primary) / 0.45) 100%)",
+                WebkitBackgroundClip: "text",
+                WebkitTextFillColor: "transparent",
+                filter: "drop-shadow(0 0 30px hsl(var(--primary) / 0.12))",
+              }}
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.7, ease: "easeOut" }}
+              whileHover={{ filter: "drop-shadow(0 0 36px hsl(var(--primary) / 0.22)) brightness(1.08)" }}
+            >
               Intelligence
-            </span>
-            <span
-              className="text-3xl md:text-4xl lg:text-5xl font-medium italic tracking-[0.02em] leading-[1.2] text-[hsl(210_20%_92%)] drop-shadow-[0_0_24px_rgba(45,212,191,0.18)]"
-              style={{ fontFamily: "'Playfair Display', serif" }}>
+            </motion.span>
+            <motion.span
+              className="text-3xl md:text-4xl lg:text-5xl font-medium italic tracking-[0.03em] leading-[1.2]"
+              style={{
+                fontFamily: "'Playfair Display', serif",
+                background: "linear-gradient(180deg, hsl(210 20% 92%) 30%, hsl(var(--primary) / 0.5) 100%)",
+                WebkitBackgroundClip: "text",
+                WebkitTextFillColor: "transparent",
+                filter: "drop-shadow(0 0 24px hsl(var(--primary) / 0.15))",
+              }}
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.7, delay: 0.25, ease: "easeOut" }}
+              whileHover={{ filter: "drop-shadow(0 0 30px hsl(var(--primary) / 0.25)) brightness(1.06)" }}
+            >
               meets creation.
-            </span>
-          </motion.h1>
+            </motion.span>
+          </h1>
 
           {/* Animated decorative line */}
           <motion.div
             className="flex justify-center mt-4 mb-3 md:mt-5 md:mb-4"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            transition={{ delay: 0.8 }}>
+            transition={{ delay: 1 }}>
             <motion.div
               className="h-px w-24 bg-gradient-to-r from-transparent via-primary to-transparent"
-              animate={{
-                scaleX: [0, 1, 1, 0],
-                opacity: [0, 1, 1, 0]
-              }}
-              transition={{
-                duration: 3,
-                repeat: Infinity,
-                ease: "easeInOut"
-              }} />
+              animate={{ scaleX: [0, 1, 1, 0], opacity: [0, 1, 1, 0] }}
+              transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
+            />
           </motion.div>
-          
+
           {/* Supporting Quote */}
           <motion.p
             className="text-muted-foreground text-sm md:text-base font-light tracking-wide max-w-lg mx-auto"
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.8, duration: 0.8 }}>
-            
+            transition={{ delay: 1.1, duration: 0.8 }}>
             <motion.span
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
-              transition={{ delay: 1, duration: 1.5 }}>
-              
+              transition={{ delay: 1.3, duration: 1.5 }}>
               "Bringing clarity, speed, and precision to prompt-driven development"
             </motion.span>
           </motion.p>

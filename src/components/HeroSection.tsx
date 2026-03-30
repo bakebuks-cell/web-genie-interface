@@ -176,21 +176,24 @@ export const HeroSection = () => {
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative z-10 max-w-4xl">
         {/* Centered Quote with animations */}
         <div className="text-center mb-7 md:mb-8 lg:mb-7">
-          {/* Main headline - stacked with animation */}
+          {/* Main headline with rotating text */}
           <motion.h1
-            className="flex flex-col items-center gap-1 md:gap-2"
+            className="flex flex-col items-center gap-2 md:gap-3"
             initial={{ opacity: 0, y: 14 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, ease: "easeOut" }}>
             <span
-              className="text-4xl md:text-5xl lg:text-6xl font-bold tracking-[0.01em] leading-[1.1] text-[hsl(var(--foreground))]"
+              className="text-3xl md:text-4xl lg:text-5xl font-bold tracking-[0.01em] leading-[1.1] text-foreground"
               style={{ fontFamily: "'Playfair Display', serif" }}>
-              Intelligence
+              Turn prompts into
             </span>
-            <span
-              className="text-3xl md:text-4xl lg:text-5xl font-medium italic tracking-[0.02em] leading-[1.2] text-[hsl(210_20%_92%)] drop-shadow-[0_0_24px_rgba(45,212,191,0.18)]"
-              style={{ fontFamily: "'Playfair Display', serif" }}>
-              meets creation.
+            <span className="h-[1.2em] text-4xl md:text-5xl lg:text-6xl font-bold flex items-center justify-center">
+              <TextRotate
+                words={["products", "websites", "interfaces", "startups", "launches", "reality"]}
+                interval={2000}
+                staggerDelay={0.035}
+                className="text-primary drop-shadow-[0_0_20px_hsl(var(--primary)/0.4)]"
+              />
             </span>
           </motion.h1>
 

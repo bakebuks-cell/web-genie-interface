@@ -123,7 +123,7 @@ const Login = () => {
             <h1 className="text-2xl font-bold text-foreground text-center lg:text-left mb-1">
               Sign In
             </h1>
-            <p className="text-muted-foreground text-sm text-center lg:text-left mb-8">
+            <p className="text-muted-foreground text-sm text-center lg:text-left mb-6">
               Enter your credentials to access your account
             </p>
 

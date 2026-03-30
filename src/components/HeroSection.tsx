@@ -178,21 +178,20 @@ export const HeroSection = () => {
         <div className="text-center mb-7 md:mb-8 lg:mb-7">
           {/* Main headline with rotating text */}
           <motion.h1
-            className="flex flex-col items-center gap-2 md:gap-3"
+            className="flex flex-wrap items-baseline justify-center gap-x-3 gap-y-1 md:gap-x-4"
             initial={{ opacity: 0, y: 14 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, ease: "easeOut" }}>
             <span
-              className="text-3xl md:text-4xl lg:text-5xl font-bold tracking-[0.01em] leading-[1.1] text-foreground"
-              style={{ fontFamily: "'Playfair Display', serif" }}>
-              Turn prompts into
+              className="text-3xl md:text-4xl lg:text-5xl font-bold tracking-tight leading-none text-[#f5f5f5]">
+              Build with
             </span>
-            <span className="h-[1.2em] text-4xl md:text-5xl lg:text-6xl font-bold flex items-center justify-center">
+            <span className="inline-flex h-[1.15em] items-center text-4xl md:text-5xl lg:text-6xl font-bold overflow-hidden">
               <TextRotate
-                words={["products", "websites", "interfaces", "startups", "launches", "reality"]}
+                words={["speed", "precision", "style", "intelligence", "flow", "confidence"]}
                 interval={2000}
                 staggerDelay={0.035}
-                className="text-primary drop-shadow-[0_0_20px_hsl(var(--primary)/0.4)]"
+                className="text-primary drop-shadow-[0_0_18px_hsl(var(--primary)/0.35)]"
               />
             </span>
           </motion.h1>

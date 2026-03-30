@@ -404,7 +404,7 @@ const UnifiedInput = ({
               className="p-2.5 rounded-xl text-muted-foreground hover:text-foreground hover:bg-secondary/60 active:scale-95 transition-all duration-200"
               title="Attach file"
             >
-              <Paperclip className="w-5 h-5" />
+              <Plus className="w-5 h-5" />
             </button>
 
             <div className="relative">

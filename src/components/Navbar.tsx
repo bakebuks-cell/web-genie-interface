@@ -50,7 +50,7 @@ export const Navbar = () => {
         {/* Center nav pill - only on public pages (desktop) */}
         {isPublicPage && (
           <motion.div
-            className="hidden md:flex items-center gap-1 px-5 py-2.5 bg-background/40 backdrop-blur-2xl border border-primary/15 rounded-full shadow-[0_8px_32px_rgba(0,0,0,0.4),inset_0_1px_0_rgba(0,230,210,0.05)] absolute left-1/2 -translate-x-1/2"
+            className="hidden md:flex items-center gap-1 px-5 py-2.5 bg-background/40 backdrop-blur-2xl border border-primary/15 rounded-full shadow-[0_8px_32px_rgba(0,0,0,0.4),inset_0_1px_0_rgba(0,230,210,0.05)]"
             initial={{ opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.1, ease: "easeOut" }}

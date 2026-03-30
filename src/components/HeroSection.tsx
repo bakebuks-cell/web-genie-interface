@@ -176,30 +176,85 @@ export const HeroSection = () => {
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative z-10 max-w-4xl">
         {/* Centered Quote with animations */}
         <div className="text-center mb-7 md:mb-8 lg:mb-7">
+          {/* Main headline with rotating text */}
           <motion.h1
-            className="relative text-3xl md:text-4xl lg:text-5xl font-bold tracking-tight leading-tight text-foreground"
+            className="flex flex-wrap items-baseline justify-center gap-x-3 gap-y-1 md:gap-x-4"
             initial={{ opacity: 0, y: 14 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, ease: "easeOut" }}>
-            <span className="absolute inset-0 blur-2xl bg-primary/[0.07] rounded-full animate-[pulse_4s_ease-in-out_infinite] pointer-events-none" />
-            <span className="relative">Describe it. We'll build it.</span>
+            transition={{ duration: 0.5, ease: "easeOut" }}>
+            <span
+              className="text-3xl md:text-4xl lg:text-5xl font-bold tracking-tight leading-none text-[#f5f5f5]">
+              Build with
+            </span>
+            <span className="inline-flex h-[1.15em] items-center text-4xl md:text-5xl lg:text-6xl font-bold overflow-hidden">
+              <TextRotate
+                words={["speed", "precision", "style", "intelligence", "flow", "confidence"]}
+                interval={2000}
+                staggerDelay={0.035}
+                className="text-primary drop-shadow-[0_0_18px_hsl(var(--primary)/0.35)]"
+              />
+            </span>
           </motion.h1>
 
+          {/* Animated decorative line */}
           <motion.div
-            className="flex justify-center mt-3 mb-2"
-            initial={{ opacity: 0, scaleX: 0 }}
-            animate={{ opacity: 1, scaleX: 1 }}
-            transition={{ delay: 0.5, duration: 0.6, ease: "easeOut" }}>
-            <div className="h-px w-20 bg-gradient-to-r from-transparent via-primary/50 to-transparent" />
+            className="flex justify-center mt-4 mb-3 md:mt-5 md:mb-4"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.8 }}>
+            <motion.div
+              className="h-px w-24 bg-gradient-to-r from-transparent via-primary to-transparent"
+              animate={{
+                scaleX: [0, 1, 1, 0],
+                opacity: [0, 1, 1, 0]
+              }}
+              transition={{
+                duration: 3,
+                repeat: Infinity,
+                ease: "easeInOut"
+              }} />
           </motion.div>
-
+          
+          {/* Supporting Quote */}
           <motion.p
             className="text-muted-foreground text-sm md:text-base font-light tracking-wide max-w-lg mx-auto"
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.4, duration: 0.6 }}>
-            Turn your ideas into real applications.
+            transition={{ delay: 0.8, duration: 0.8 }}>
+            
+            <motion.span
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 1, duration: 1.5 }}>
+              
+              "Bringing clarity, speed, and precision to prompt-driven development"
+            </motion.span>
           </motion.p>
+
+          {/* Floating accent badges */}
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+          
         </div>
 
         {/* Unified Input Container */}

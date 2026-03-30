@@ -69,10 +69,10 @@ const SignUp = () => {
   };
 
   return (
-    <div className="w-full flex flex-col">
-      <main className="flex items-center justify-center px-4 py-4">
+    <div className="w-full flex flex-col flex-1">
+      <main className="flex-1 flex items-center justify-center px-4 py-6">
         <div
-          className="w-full max-w-5xl flex flex-col lg:flex-row rounded-2xl overflow-hidden border border-border/50"
+          className="w-full max-w-5xl flex flex-col lg:flex-row rounded-2xl overflow-hidden border border-border/50 max-h-[calc(100vh-120px)]"
           style={{ background: "rgba(20, 24, 30, 0.7)", backdropFilter: "blur(20px)" }}
         >
           {/* Left side — visual + quote (desktop only) */}

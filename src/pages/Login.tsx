@@ -80,8 +80,8 @@ const Login = () => {
   };
 
   return (
-    <div className="min-h-screen w-full bg-background flex flex-col">
-      <main className="flex-1 flex items-center justify-center px-4 py-8">
+    <div className="w-full flex flex-col">
+      <main className="flex items-center justify-center px-4 py-4">
         <div className="w-full max-w-5xl flex flex-col lg:flex-row rounded-2xl overflow-hidden border border-border/50"
           style={{ background: "rgba(20, 24, 30, 0.7)", backdropFilter: "blur(20px)" }}>
           

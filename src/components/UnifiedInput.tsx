@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Paperclip, Mic, ChevronDown, ChevronRight, Check, ArrowUp } from "lucide-react";
+import { Plus, Mic, ChevronDown, ChevronRight, Check, ArrowUp } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import MultiProgramModal from "./MultiProgramModal";
 import { startTranscription, type TranscriptionConfig } from "@/services/speechTranscription";
@@ -404,7 +404,7 @@ const UnifiedInput = ({
               className="p-2.5 rounded-xl text-muted-foreground hover:text-foreground hover:bg-secondary/60 active:scale-95 transition-all duration-200"
               title="Attach file"
             >
-              <Paperclip className="w-5 h-5" />
+              <Plus className="w-5 h-5" />
             </button>
 
             <div className="relative">
@@ -435,7 +435,7 @@ const UnifiedInput = ({
             <button
               onClick={handleGenerate}
               className={`
-                flex items-center justify-center p-2.5 rounded-xl 
+                flex items-center justify-center w-10 h-10 rounded-full
                 transition-all duration-300 active:scale-95
                 ${isGenerateEnabled
                   ? "text-primary-foreground hover:opacity-90 shadow-[0_0_20px_rgba(0,255,200,0.3)]"
@@ -443,7 +443,7 @@ const UnifiedInput = ({
                 }
               `}
               style={isGenerateEnabled ? {
-                background: "linear-gradient(90deg, hsl(var(--primary)), hsl(var(--accent)))",
+                background: "linear-gradient(135deg, hsl(var(--primary)), hsl(var(--accent)))",
               } : undefined}
               title={isGenerateEnabled ? "Generate Application" : "Select program and describe your idea first"}
             >

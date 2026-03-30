@@ -435,7 +435,7 @@ const UnifiedInput = ({
             <button
               onClick={handleGenerate}
               className={`
-                flex items-center justify-center p-2.5 rounded-xl 
+                flex items-center justify-center w-10 h-10 rounded-full
                 transition-all duration-300 active:scale-95
                 ${isGenerateEnabled
                   ? "text-primary-foreground hover:opacity-90 shadow-[0_0_20px_rgba(0,255,200,0.3)]"
@@ -443,7 +443,7 @@ const UnifiedInput = ({
                 }
               `}
               style={isGenerateEnabled ? {
-                background: "linear-gradient(90deg, hsl(var(--primary)), hsl(var(--accent)))",
+                background: "linear-gradient(135deg, hsl(var(--primary)), hsl(var(--accent)))",
               } : undefined}
               title={isGenerateEnabled ? "Generate Application" : "Select program and describe your idea first"}
             >

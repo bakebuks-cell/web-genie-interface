@@ -80,13 +80,13 @@ const Login = () => {
   };
 
   return (
-    <div className="min-h-screen w-full bg-background flex flex-col">
-      <main className="flex-1 flex items-center justify-center px-4 py-8">
+    <div className="w-full flex flex-col">
+      <main className="flex items-center justify-center px-4 py-4">
         <div className="w-full max-w-5xl flex flex-col lg:flex-row rounded-2xl overflow-hidden border border-border/50"
           style={{ background: "rgba(20, 24, 30, 0.7)", backdropFilter: "blur(20px)" }}>
           
           {/* Left side — visual panel (hidden on mobile, shown on lg+) */}
-          <div className="hidden lg:flex lg:w-1/2 flex-col justify-center p-10 xl:p-14 relative overflow-hidden">
+          <div className="hidden lg:flex lg:w-1/2 flex-col justify-center p-8 xl:p-10 relative overflow-hidden">
             {/* Subtle glow background */}
             <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-accent/5" />
             
@@ -114,7 +114,7 @@ const Login = () => {
           </div>
 
           {/* Right side — login form */}
-          <div className="w-full lg:w-1/2 flex flex-col justify-center p-8 sm:p-10 xl:p-14">
+          <div className="w-full lg:w-1/2 flex flex-col justify-center p-6 sm:p-8 xl:p-10">
             {/* Mobile brand */}
             <div className="flex items-center justify-center mb-6 lg:hidden">
               <span className="font-bold text-2xl text-primary">MyCodex</span>
@@ -123,7 +123,7 @@ const Login = () => {
             <h1 className="text-2xl font-bold text-foreground text-center lg:text-left mb-1">
               Sign In
             </h1>
-            <p className="text-muted-foreground text-sm text-center lg:text-left mb-8">
+            <p className="text-muted-foreground text-sm text-center lg:text-left mb-6">
               Enter your credentials to access your account
             </p>
 
@@ -152,7 +152,7 @@ const Login = () => {
               </div>
             </div>
 
-            <form onSubmit={handleSubmit} className="space-y-5">
+            <form onSubmit={handleSubmit} className="space-y-4">
               <div className="space-y-2">
                 <Label htmlFor="email" className="text-foreground text-sm">Email</Label>
                 <Input
@@ -195,7 +195,7 @@ const Login = () => {
               </Button>
             </form>
 
-            <div className="mt-8 text-center">
+            <div className="mt-6 text-center">
               <p className="text-muted-foreground text-sm">
                 Don't have an account?{" "}
                 <Link to="/signup" className="text-primary hover:underline font-medium">

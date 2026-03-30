@@ -86,7 +86,7 @@ const Login = () => {
           style={{ background: "rgba(20, 24, 30, 0.7)", backdropFilter: "blur(20px)" }}>
           
           {/* Left side — visual panel (hidden on mobile, shown on lg+) */}
-          <div className="hidden lg:flex lg:w-1/2 flex-col justify-center p-10 xl:p-14 relative overflow-hidden">
+          <div className="hidden lg:flex lg:w-1/2 flex-col justify-center p-8 xl:p-10 relative overflow-hidden">
             {/* Subtle glow background */}
             <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-accent/5" />
             

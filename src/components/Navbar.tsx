@@ -38,33 +38,37 @@ export const Navbar = () => {
 
   return (
     <nav className="relative px-4 sm:px-6 lg:px-8 pt-4">
-      <div className={`flex items-center justify-between ${isPublicPage ? "max-w-4xl mx-auto" : ""}`}>
+      <div className="flex items-center justify-between">
         {/* Logo - always left */}
-        <Link to="/" className={`group relative ${isPublicPage ? "flex-shrink-0" : ""}`}>
+        <Link to="/" className="group relative flex-shrink-0">
           <span className="font-bold text-lg sm:text-xl text-foreground transition-all duration-300 group-hover:drop-shadow-[0_0_8px_rgba(0,230,210,0.5)]">
             MyCodex
           </span>
           <span className="absolute -bottom-0.5 left-0 w-full h-px bg-primary/50" />
         </Link>
 
-        {/* Center nav pill - only on public pages (desktop) */}
+        {/* Center nav pill - absolutely positioned to hero center on public pages */}
         {isPublicPage && (
-          <motion.div
-            className="hidden md:flex items-center gap-1 px-5 py-2.5 bg-background/40 backdrop-blur-2xl border border-primary/15 rounded-full shadow-[0_8px_32px_rgba(0,0,0,0.4),inset_0_1px_0_rgba(0,230,210,0.05)]"
-            initial={{ opacity: 0, y: -10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.1, ease: "easeOut" }}
-          >
-            {navItems.map((item) => (
-              <Link
-                key={item.label}
-                to={item.href}
-                className="px-3 py-1.5 rounded-full text-muted-foreground hover:text-primary hover:bg-primary/5 transition-all duration-200 text-sm font-medium"
+          <div className="hidden md:flex justify-center pointer-events-none absolute inset-x-0 top-4 px-4 sm:px-6 lg:px-8">
+            <div className="w-full max-w-4xl flex justify-center">
+              <motion.div
+                className="pointer-events-auto flex items-center gap-1 px-5 py-2.5 bg-background/40 backdrop-blur-2xl border border-primary/15 rounded-full shadow-[0_8px_32px_rgba(0,0,0,0.4),inset_0_1px_0_rgba(0,230,210,0.05)]"
+                initial={{ opacity: 0, y: -10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5, delay: 0.1, ease: "easeOut" }}
               >
-                {item.label}
-              </Link>
-            ))}
-          </motion.div>
+                {navItems.map((item) => (
+                  <Link
+                    key={item.label}
+                    to={item.href}
+                    className="px-3 py-1.5 rounded-full text-muted-foreground hover:text-primary hover:bg-primary/5 transition-all duration-200 text-sm font-medium"
+                  >
+                    {item.label}
+                  </Link>
+                ))}
+              </motion.div>
+            </div>
+          </div>
         )}
 
         {/* Right side: auth buttons or non-public pill */}

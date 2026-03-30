@@ -177,18 +177,27 @@ export const HeroSection = () => {
         {/* Centered Quote with animations */}
         <div className="text-center mb-7 md:mb-8 lg:mb-7">
           <motion.h1
-            className="text-3xl md:text-4xl lg:text-5xl font-bold tracking-tight leading-tight text-foreground"
+            className="relative text-3xl md:text-4xl lg:text-5xl font-bold tracking-tight leading-tight text-foreground"
             initial={{ opacity: 0, y: 14 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, ease: "easeOut" }}>
-            Describe it. We'll build it.
+            transition={{ duration: 0.6, ease: "easeOut" }}>
+            <span className="absolute inset-0 blur-2xl bg-primary/[0.07] rounded-full animate-[pulse_4s_ease-in-out_infinite] pointer-events-none" />
+            <span className="relative">Describe it. We'll build it.</span>
           </motion.h1>
 
+          <motion.div
+            className="flex justify-center mt-3 mb-2"
+            initial={{ opacity: 0, scaleX: 0 }}
+            animate={{ opacity: 1, scaleX: 1 }}
+            transition={{ delay: 0.5, duration: 0.6, ease: "easeOut" }}>
+            <div className="h-px w-20 bg-gradient-to-r from-transparent via-primary/50 to-transparent" />
+          </motion.div>
+
           <motion.p
-            className="text-muted-foreground text-sm md:text-base font-light tracking-wide max-w-lg mx-auto mt-3"
+            className="text-muted-foreground text-sm md:text-base font-light tracking-wide max-w-lg mx-auto"
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.3, duration: 0.6 }}>
+            transition={{ delay: 0.4, duration: 0.6 }}>
             Turn your ideas into real applications.
           </motion.p>
         </div>

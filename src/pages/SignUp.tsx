@@ -212,7 +212,7 @@ const SignUp = () => {
               </Button>
             </form>
 
-            <div className="mt-8 text-center">
+            <div className="mt-6 text-center">
               <p className="text-muted-foreground text-sm">
                 Already have an account?{" "}
                 <Link to="/login" className="text-primary hover:underline font-medium">

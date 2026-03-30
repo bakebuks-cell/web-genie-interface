@@ -69,10 +69,10 @@ const SignUp = () => {
   };
 
   return (
-    <div className="w-full flex flex-col flex-1">
-      <main className="flex-1 flex items-center justify-center px-4 py-6">
+    <div className="min-h-screen w-full bg-background flex flex-col">
+      <main className="flex-1 flex items-center justify-center px-4 py-8">
         <div
-          className="w-full max-w-5xl flex flex-col lg:flex-row rounded-2xl overflow-hidden border border-border/50 max-h-[calc(100vh-120px)]"
+          className="w-full max-w-5xl flex flex-col lg:flex-row rounded-2xl overflow-hidden border border-border/50"
           style={{ background: "rgba(20, 24, 30, 0.7)", backdropFilter: "blur(20px)" }}
         >
           {/* Left side — visual + quote (desktop only) */}
@@ -105,7 +105,7 @@ const SignUp = () => {
           </div>
 
           {/* Right side — sign up form */}
-          <div className="w-full lg:w-1/2 flex flex-col justify-center p-6 sm:p-8 xl:p-10">
+          <div className="w-full lg:w-1/2 flex flex-col justify-center p-8 sm:p-10 xl:p-14">
             {/* Mobile brand */}
             <div className="flex items-center justify-center mb-6 lg:hidden">
               <span className="font-bold text-2xl text-primary">MyCodex</span>
@@ -114,7 +114,7 @@ const SignUp = () => {
             <h1 className="text-2xl font-bold text-foreground text-center lg:text-left mb-1">
               Create Account
             </h1>
-            <p className="text-muted-foreground text-sm text-center lg:text-left mb-6">
+            <p className="text-muted-foreground text-sm text-center lg:text-left mb-8">
               Start building powerful web applications
             </p>
 
@@ -212,7 +212,7 @@ const SignUp = () => {
               </Button>
             </form>
 
-            <div className="mt-6 text-center">
+            <div className="mt-8 text-center">
               <p className="text-muted-foreground text-sm">
                 Already have an account?{" "}
                 <Link to="/login" className="text-primary hover:underline font-medium">

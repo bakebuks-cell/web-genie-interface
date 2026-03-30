@@ -19,7 +19,7 @@ const navItems = [
   { label: "Community", href: "/community" },
 ];
 
-const publicRoutes = ["/", "/pricing", "/technologies", "/community", "/login", "/signup"];
+const publicRoutes = ["/", "/pricing", "/technologies", "/community"];
 
 export const Navbar = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);

@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import UnifiedInput, { GenerationMode } from "./UnifiedInput";
 import { HeroBackground } from "./HeroBackground";
+import { TextRotate } from "./ui/text-rotate";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
 import { useCreateProject } from "@/hooks/useProjects";

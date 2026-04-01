@@ -72,7 +72,7 @@ const SignUp = () => {
     <div className="w-full flex-1 flex flex-col">
       <main className="flex-1 flex items-center justify-center px-4 py-12">
         <div
-          className="w-full max-w-5xl flex flex-col lg:flex-row rounded-2xl overflow-hidden border border-border/50"
+          className="w-full max-w-5xl flex flex-col md:flex-row rounded-2xl overflow-hidden border border-border/50"
           style={{ background: "rgba(20, 24, 30, 0.7)", backdropFilter: "blur(20px)" }}
         >
           {/* Left side — visual + quote (desktop only) */}

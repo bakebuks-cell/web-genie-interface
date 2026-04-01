@@ -123,7 +123,7 @@ export const HeroSection = () => {
     // Create project in DB — must succeed before navigating
     let dbProjectId: string | undefined;
     try {
-      const name = idea.trim().slice(0, 60) || "Untitled Project";
+      const name = extractProjectName(idea);
       console.log("User ID:", user.id);
       const project = await createProject.mutateAsync({
         name,

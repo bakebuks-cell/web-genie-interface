@@ -129,7 +129,7 @@ const SignUp = () => {
               {isGoogleLoading ? "Connecting…" : "Continue with Google"}
             </Button>
 
-            <div className="relative my-6">
+            <div className="relative my-4 md:my-6">
               <div className="absolute inset-0 flex items-center">
                 <div className="w-full border-t border-border/50" />
               </div>
@@ -140,7 +140,7 @@ const SignUp = () => {
               </div>
             </div>
 
-            <form onSubmit={handleSubmit} className="space-y-4">
+            <form onSubmit={handleSubmit} className="space-y-3 md:space-y-4">
               <div className="space-y-2">
                 <Label htmlFor="name" className="text-foreground text-sm">Full Name</Label>
                 <Input

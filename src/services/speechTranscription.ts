@@ -208,7 +208,10 @@ function tryWebSocketBackend(
         return;
       }
       if (!stopped) {
-        if (accumulatedFinal) config.onFinal?.(accumulatedFinal);
+        // Only emit final if there's new accumulated text not yet emitted
+        if (accumulatedFinal && accumulatedFinal !== lastEmittedFinal) {
+          config.onFinal?.(accumulatedFinal);
+        }
         cleanup();
       }
     };

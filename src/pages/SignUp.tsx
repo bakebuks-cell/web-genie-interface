@@ -75,8 +75,8 @@ const SignUp = () => {
           className="w-full max-w-5xl flex flex-col md:flex-row rounded-2xl overflow-hidden border border-border/50"
           style={{ background: "rgba(20, 24, 30, 0.7)", backdropFilter: "blur(20px)" }}
         >
-          {/* Left side — visual + quote (desktop only) */}
-          <div className="hidden lg:flex lg:w-1/2 flex-col justify-center relative overflow-hidden">
+          {/* Left side — visual + quote */}
+          <div className="hidden md:flex md:w-1/2 flex-col justify-center relative overflow-hidden">
             {/* Background image */}
             <img
               src={signupVisual}

@@ -363,12 +363,8 @@ function startBrowserSTT(
 
   recognition.onend = () => {
     if (!stopped && !manualStop) {
-      // Save session finals before restart
-      const sf = currentSessionFinal.trim();
-      if (sf) {
-        segments.push(sf);
-        currentSessionFinal = "";
-      }
+      // Reset processedUpTo since recognition restarts with fresh results
+      processedUpTo = 0;
       try {
         recognition.start();
         debug("Restarting recognition");

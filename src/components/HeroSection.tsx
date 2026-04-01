@@ -9,6 +9,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useCreateProject } from "@/hooks/useProjects";
 import { savePreAuthDraft, getPreAuthDraft, clearPreAuthDraft } from "@/lib/preAuthDraft";
 import { useGenerationStore } from "@/stores/useGenerationStore";
+import { extractProjectName } from "@/lib/projectName";
 
 // Language mapping for display names
 const languageNames: Record<string, string> = {

@@ -105,9 +105,9 @@ const SignUp = () => {
           </div>
 
           {/* Right side — sign up form */}
-          <div className="w-full lg:w-1/2 flex flex-col justify-center p-8 sm:p-10 xl:p-14">
+          <div className="w-full md:w-1/2 flex flex-col justify-center p-6 sm:p-10 xl:p-14">
             {/* Mobile brand */}
-            <div className="flex items-center justify-center mb-6 lg:hidden">
+            <div className="flex items-center justify-center mb-6 md:hidden">
               <span className="font-bold text-2xl text-primary">MyCodex</span>
             </div>
 

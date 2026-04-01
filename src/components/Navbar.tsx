@@ -37,7 +37,7 @@ export const Navbar = () => {
   };
 
   return (
-    <nav className="relative px-4 sm:px-6 lg:px-8 pt-4">
+    <nav className="relative px-4 sm:px-6 lg:px-8 pt-4 z-[9990]">
       <div className="flex items-center justify-between">
         {/* Logo - always left */}
         <Link to="/" className="group relative flex-shrink-0">

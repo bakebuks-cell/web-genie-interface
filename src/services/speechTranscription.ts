@@ -289,12 +289,11 @@ function startBrowserSTT(
 
     setTimeout(() => {
       const finalText = getAllFinal();
-      if (finalText) {
-        debug("Final transcript: " + finalText);
+      // Only emit if we have new text not yet emitted
+      if (finalText && finalText !== lastEmittedFinal) {
         config.onFinal?.(finalText);
       }
       config.onStatusChange?.("stopped");
-      debug("Session stopped");
     }, 300);
   };
 

@@ -316,14 +316,10 @@ function FinalCTA() {
             <Button size="lg" onClick={() => {
               const el = document.getElementById("hero-prompt-box");
               if (el) {
-                el.scrollIntoView({ behavior: "smooth", block: "center" });
+              el.scrollIntoView({ behavior: "smooth", block: "center" });
                 setTimeout(() => {
                   const textarea = el.querySelector("textarea");
-                  if (textarea) {
-                    textarea.focus();
-                    el.classList.add("ring-2", "ring-primary/40");
-                    setTimeout(() => el.classList.remove("ring-2", "ring-primary/40"), 2000);
-                  }
+                  if (textarea) textarea.focus();
                 }, 600);
               } else {
                 navigate("/");

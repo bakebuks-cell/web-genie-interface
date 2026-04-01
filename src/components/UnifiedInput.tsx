@@ -102,7 +102,7 @@ const UnifiedInput = ({
 
     startIdeaRef.current = idea;
     setIsRecording(true);
-    setDisplayText(idea);
+    setVoiceText(idea);
 
     try {
       const session = await startTranscription({

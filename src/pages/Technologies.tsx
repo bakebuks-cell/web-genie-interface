@@ -120,7 +120,7 @@ const Technologies = () => {
         />
       </div>
 
-      <main className="relative z-10 pt-28 pb-24 px-6">
+      <main className="relative z-10 pt-16 pb-24 px-6">
         <div className="max-w-6xl mx-auto">
           {/* ── Hero ── */}
           <FadeIn className="text-center mb-20">

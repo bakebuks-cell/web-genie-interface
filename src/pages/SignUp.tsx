@@ -111,10 +111,10 @@ const SignUp = () => {
               <span className="font-bold text-2xl text-primary">MyCodex</span>
             </div>
 
-            <h1 className="text-2xl font-bold text-foreground text-center lg:text-left mb-1">
+            <h1 className="text-2xl font-bold text-foreground text-center md:text-left mb-1">
               Create Account
             </h1>
-            <p className="text-muted-foreground text-sm text-center lg:text-left mb-8">
+            <p className="text-muted-foreground text-sm text-center md:text-left mb-8">
               Start building powerful web applications
             </p>
 

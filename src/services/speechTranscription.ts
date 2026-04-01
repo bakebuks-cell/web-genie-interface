@@ -103,6 +103,7 @@ function tryWebSocketBackend(
     let ws: WebSocket | null = null;
     let silenceTimer: ReturnType<typeof setTimeout> | null = null;
     let accumulatedFinal = "";
+    let lastEmittedFinal = "";
     let connected = false;
 
     // Timeout: if WS doesn't connect in time, reject to trigger fallback
@@ -175,6 +176,7 @@ function tryWebSocketBackend(
         } else if (msg.type === "final" && msg.text) {
           resetSilenceTimer();
           accumulatedFinal = accumulatedFinal ? accumulatedFinal + " " + msg.text : msg.text;
+          lastEmittedFinal = accumulatedFinal;
           config.onFinal?.(accumulatedFinal);
         } else if (msg.type === "error") {
           config.onError?.(msg.message || "Transcription error");
@@ -206,7 +208,10 @@ function tryWebSocketBackend(
         return;
       }
       if (!stopped) {
-        if (accumulatedFinal) config.onFinal?.(accumulatedFinal);
+        // Only emit final if there's new accumulated text not yet emitted
+        if (accumulatedFinal && accumulatedFinal !== lastEmittedFinal) {
+          config.onFinal?.(accumulatedFinal);
+        }
         cleanup();
       }
     };
@@ -252,7 +257,7 @@ function startBrowserSTT(
   let manualStop = false;
   let silenceTimer: ReturnType<typeof setTimeout> | null = null;
   let segments: string[] = [];
-  let currentSessionFinal = "";
+  let lastEmittedFinal = "";
   let retryCount = 0;
 
   const recognition = new SpeechRecognition();
@@ -261,12 +266,10 @@ function startBrowserSTT(
   recognition.interimResults = true;
   recognition.maxAlternatives = 1;
 
-  const getAllFinal = () => {
-    const seg = segments.join(" ").trim();
-    const cur = currentSessionFinal.trim();
-    if (seg && cur) return seg + " " + cur;
-    return seg || cur;
-  };
+  // Track the resultIndex to avoid re-processing old results
+  let processedUpTo = 0;
+
+  const getAllFinal = () => segments.join(" ").trim();
 
   const resetSilence = () => {
     if (silenceTimer) clearTimeout(silenceTimer);
@@ -286,12 +289,11 @@ function startBrowserSTT(
 
     setTimeout(() => {
       const finalText = getAllFinal();
-      if (finalText) {
-        debug("Final transcript: " + finalText);
+      // Only emit if we have new text not yet emitted
+      if (finalText && finalText !== lastEmittedFinal) {
         config.onFinal?.(finalText);
       }
       config.onStatusChange?.("stopped");
-      debug("Session stopped");
     }, 300);
   };
 
@@ -310,28 +312,28 @@ function startBrowserSTT(
     if (stopped) return;
     resetSilence();
 
-    let sessionFinal = "";
     let sessionInterim = "";
-    for (let i = 0; i < event.results.length; i++) {
+    // Only process new results starting from processedUpTo for finals
+    for (let i = processedUpTo; i < event.results.length; i++) {
       const r = event.results[i];
       if (r.isFinal) {
-        sessionFinal += r[0].transcript;
+        const text = r[0].transcript.trim();
+        if (text) segments.push(text);
+        processedUpTo = i + 1;
       } else {
         sessionInterim += r[0].transcript;
       }
     }
-    currentSessionFinal = sessionFinal;
 
-    // Build combined text for display
     const allFinal = getAllFinal();
-    const interimDisplay = [allFinal, sessionInterim].filter(Boolean).join(" ");
-    
+
     if (sessionInterim) {
-      debug("Interim: " + sessionInterim);
+      const interimDisplay = [allFinal, sessionInterim.trim()].filter(Boolean).join(" ");
       config.onInterim?.(interimDisplay);
     }
-    if (sessionFinal) {
-      debug("Final chunk: " + sessionFinal);
+    
+    if (allFinal && allFinal !== lastEmittedFinal) {
+      lastEmittedFinal = allFinal;
       config.onFinal?.(allFinal);
     }
   };
@@ -361,12 +363,8 @@ function startBrowserSTT(
 
   recognition.onend = () => {
     if (!stopped && !manualStop) {
-      // Save session finals before restart
-      const sf = currentSessionFinal.trim();
-      if (sf) {
-        segments.push(sf);
-        currentSessionFinal = "";
-      }
+      // Reset processedUpTo since recognition restarts with fresh results
+      processedUpTo = 0;
       try {
         recognition.start();
         debug("Restarting recognition");

@@ -176,6 +176,7 @@ function tryWebSocketBackend(
         } else if (msg.type === "final" && msg.text) {
           resetSilenceTimer();
           accumulatedFinal = accumulatedFinal ? accumulatedFinal + " " + msg.text : msg.text;
+          lastEmittedFinal = accumulatedFinal;
           config.onFinal?.(accumulatedFinal);
         } else if (msg.type === "error") {
           config.onError?.(msg.message || "Transcription error");

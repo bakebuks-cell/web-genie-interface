@@ -114,16 +114,11 @@ const Login = () => {
           </div>
 
           {/* Right side — login form */}
-          <div className="w-full md:w-1/2 flex flex-col justify-center p-6 sm:p-10 xl:p-14">
-            {/* Mobile brand */}
-            <div className="flex items-center justify-center mb-6 md:hidden">
-              <span className="font-bold text-2xl text-primary">MyCodex</span>
-            </div>
-
-            <h1 className="text-2xl font-bold text-foreground text-center md:text-left mb-1">
+          <div className="w-full md:w-1/2 flex flex-col justify-center px-5 py-6 sm:p-10 xl:p-14">
+            <h1 className="text-xl md:text-2xl font-bold text-foreground text-center md:text-left mb-1">
               Sign In
             </h1>
-            <p className="text-muted-foreground text-sm text-center md:text-left mb-8">
+            <p className="text-muted-foreground text-sm text-center md:text-left mb-6 md:mb-8">
               Enter your credentials to access your account
             </p>
 

@@ -144,8 +144,9 @@ const UnifiedInput = ({
     }
   };
 
+  // Sync voice text when idea changes externally while not recording
   useEffect(() => {
-    if (!isRecording) { setDisplayText(idea); }
+    if (!isRecording) { setVoiceText(idea); }
   }, [idea, isRecording]);
 
   // When multi-program stack is applied, clear single language

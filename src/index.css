@@ -54,6 +54,39 @@
   background: transparent;
 }
 
+/* Global scrollbar styling */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: hsl(170 100% 47% / 0.2) transparent;
+}
+
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: hsl(170 100% 47% / 0.2);
+  border-radius: 9999px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: hsl(170 100% 47% / 0.4);
+  box-shadow: 0 0 6px hsl(170 100% 47% / 0.25);
+}
+
+::-webkit-scrollbar-thumb:active {
+  background: hsl(170 100% 47% / 0.55);
+}
+
+::-webkit-scrollbar-corner {
+  background: transparent;
+}
+
 /* System font stack - no external imports needed */
 
 @layer base {

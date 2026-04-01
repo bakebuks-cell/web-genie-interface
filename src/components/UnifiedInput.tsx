@@ -265,7 +265,7 @@ const UnifiedInput = ({
             placeholder:text-muted-foreground/50
             focus:outline-none
             text-sm leading-relaxed resize-none
-            scrollbar-hide
+            edit-panel-scroll
           "
         />
 

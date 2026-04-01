@@ -135,7 +135,7 @@ const MultiProgramModal = ({ open, onClose, selectedStacks, onApply }: MultiProg
             </div>
 
             {/* Sections - scrollable */}
-            <div className="px-6 pb-4 overflow-y-auto scrollbar-hide space-y-5 flex-1 min-h-0">
+            <div className="px-6 pb-4 overflow-y-auto edit-panel-scroll space-y-5 flex-1 min-h-0">
               {filteredSections.map((section, idx) => (
                 <div key={section.label}>
                   {idx > 0 && <div className="border-t border-border/20 mb-4" />}

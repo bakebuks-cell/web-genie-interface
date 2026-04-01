@@ -85,8 +85,8 @@ const Login = () => {
         <div className="w-full max-w-5xl flex flex-col lg:flex-row rounded-2xl overflow-hidden border border-border/50"
           style={{ background: "rgba(20, 24, 30, 0.7)", backdropFilter: "blur(20px)" }}>
           
-          {/* Left side — visual panel (hidden on mobile, shown on lg+) */}
-          <div className="hidden lg:flex lg:w-1/2 flex-col justify-center p-10 xl:p-14 relative overflow-hidden">
+          {/* Left side — visual panel */}
+          <div className="hidden md:flex md:w-1/2 flex-col justify-center p-10 xl:p-14 relative overflow-hidden">
             {/* Subtle glow background */}
             <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-accent/5" />
             

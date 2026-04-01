@@ -257,7 +257,7 @@ function startBrowserSTT(
   let manualStop = false;
   let silenceTimer: ReturnType<typeof setTimeout> | null = null;
   let segments: string[] = [];
-  let currentSessionFinal = "";
+  let lastEmittedFinal = "";
   let retryCount = 0;
 
   const recognition = new SpeechRecognition();

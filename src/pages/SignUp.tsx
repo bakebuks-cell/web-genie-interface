@@ -72,11 +72,11 @@ const SignUp = () => {
     <div className="w-full flex-1 flex flex-col">
       <main className="flex-1 flex items-center justify-center px-4 py-12">
         <div
-          className="w-full max-w-5xl flex flex-col lg:flex-row rounded-2xl overflow-hidden border border-border/50"
+          className="w-full max-w-5xl flex flex-col md:flex-row rounded-2xl overflow-hidden border border-border/50"
           style={{ background: "rgba(20, 24, 30, 0.7)", backdropFilter: "blur(20px)" }}
         >
-          {/* Left side — visual + quote (desktop only) */}
-          <div className="hidden lg:flex lg:w-1/2 flex-col justify-center relative overflow-hidden">
+          {/* Left side — visual + quote */}
+          <div className="hidden md:flex md:w-1/2 flex-col justify-center relative overflow-hidden">
             {/* Background image */}
             <img
               src={signupVisual}
@@ -105,16 +105,16 @@ const SignUp = () => {
           </div>
 
           {/* Right side — sign up form */}
-          <div className="w-full lg:w-1/2 flex flex-col justify-center p-8 sm:p-10 xl:p-14">
+          <div className="w-full md:w-1/2 flex flex-col justify-center p-6 sm:p-10 xl:p-14">
             {/* Mobile brand */}
-            <div className="flex items-center justify-center mb-6 lg:hidden">
+            <div className="flex items-center justify-center mb-6 md:hidden">
               <span className="font-bold text-2xl text-primary">MyCodex</span>
             </div>
 
-            <h1 className="text-2xl font-bold text-foreground text-center lg:text-left mb-1">
+            <h1 className="text-2xl font-bold text-foreground text-center md:text-left mb-1">
               Create Account
             </h1>
-            <p className="text-muted-foreground text-sm text-center lg:text-left mb-8">
+            <p className="text-muted-foreground text-sm text-center md:text-left mb-8">
               Start building powerful web applications
             </p>
 

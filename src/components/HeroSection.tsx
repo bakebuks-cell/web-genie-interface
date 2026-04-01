@@ -9,6 +9,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useCreateProject } from "@/hooks/useProjects";
 import { savePreAuthDraft, getPreAuthDraft, clearPreAuthDraft } from "@/lib/preAuthDraft";
 import { useGenerationStore } from "@/stores/useGenerationStore";
+import { extractProjectName } from "@/lib/projectName";
 
 // Language mapping for display names
 const languageNames: Record<string, string> = {
@@ -123,7 +124,7 @@ export const HeroSection = () => {
     // Create project in DB — must succeed before navigating
     let dbProjectId: string | undefined;
     try {
-      const name = idea.trim().slice(0, 60) || "Untitled Project";
+      const name = extractProjectName(idea);
       console.log("User ID:", user.id);
       const project = await createProject.mutateAsync({
         name,
@@ -259,10 +260,11 @@ export const HeroSection = () => {
 
         {/* Unified Input Container */}
         <motion.div
+          id="hero-prompt-box"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.5, duration: 0.6, ease: "easeOut" }}>
-          
+          transition={{ delay: 0.5, duration: 0.6, ease: "easeOut" }}
+          className="transition-all duration-500">
           <UnifiedInput
             selectedLanguage={selectedLanguage}
             onLanguageSelect={handleLanguageSelect}

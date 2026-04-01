@@ -313,7 +313,22 @@ function FinalCTA() {
           <h2 className="text-2xl md:text-3xl font-semibold text-foreground mb-4">Ready to build?</h2>
           <p className="text-muted-foreground text-sm mb-8 max-w-sm mx-auto">Start free with 5 daily credits. No setup required.</p>
           <div className="flex items-center justify-center gap-3">
-            <Button size="lg" onClick={() => navigate("/signup")} className="gap-2">
+            <Button size="lg" onClick={() => {
+              const el = document.getElementById("hero-prompt-box");
+              if (el) {
+                el.scrollIntoView({ behavior: "smooth", block: "center" });
+                setTimeout(() => {
+                  const textarea = el.querySelector("textarea");
+                  if (textarea) {
+                    textarea.focus();
+                    el.classList.add("ring-2", "ring-primary/40");
+                    setTimeout(() => el.classList.remove("ring-2", "ring-primary/40"), 2000);
+                  }
+                }, 600);
+              } else {
+                navigate("/");
+              }
+            }} className="gap-2">
               Start building <ArrowRight className="w-4 h-4" />
             </Button>
             <Button size="lg" variant="outline" onClick={() => navigate("/pricing")}>

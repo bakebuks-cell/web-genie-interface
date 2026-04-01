@@ -70,7 +70,7 @@ const SignUp = () => {
 
   return (
     <div className="w-full flex-1 flex flex-col">
-      <main className="flex-1 flex items-center justify-center px-4 py-12">
+      <main className="flex-1 flex items-center justify-center px-4 py-6 md:py-12">
         <div
           className="w-full max-w-5xl flex flex-col md:flex-row rounded-2xl overflow-hidden border border-border/50"
           style={{ background: "rgba(20, 24, 30, 0.7)", backdropFilter: "blur(20px)" }}
@@ -105,16 +105,11 @@ const SignUp = () => {
           </div>
 
           {/* Right side — sign up form */}
-          <div className="w-full md:w-1/2 flex flex-col justify-center p-6 sm:p-10 xl:p-14">
-            {/* Mobile brand */}
-            <div className="flex items-center justify-center mb-6 md:hidden">
-              <span className="font-bold text-2xl text-primary">MyCodex</span>
-            </div>
-
-            <h1 className="text-2xl font-bold text-foreground text-center md:text-left mb-1">
+          <div className="w-full md:w-1/2 flex flex-col justify-center px-5 py-6 sm:p-10 xl:p-14">
+            <h1 className="text-xl md:text-2xl font-bold text-foreground text-center md:text-left mb-1">
               Create Account
             </h1>
-            <p className="text-muted-foreground text-sm text-center md:text-left mb-8">
+            <p className="text-muted-foreground text-sm text-center md:text-left mb-5 md:mb-8">
               Start building powerful web applications
             </p>
 
@@ -134,7 +129,7 @@ const SignUp = () => {
               {isGoogleLoading ? "Connecting…" : "Continue with Google"}
             </Button>
 
-            <div className="relative my-6">
+            <div className="relative my-4 md:my-6">
               <div className="absolute inset-0 flex items-center">
                 <div className="w-full border-t border-border/50" />
               </div>
@@ -145,7 +140,7 @@ const SignUp = () => {
               </div>
             </div>
 
-            <form onSubmit={handleSubmit} className="space-y-4">
+            <form onSubmit={handleSubmit} className="space-y-3 md:space-y-4">
               <div className="space-y-2">
                 <Label htmlFor="name" className="text-foreground text-sm">Full Name</Label>
                 <Input
@@ -212,7 +207,7 @@ const SignUp = () => {
               </Button>
             </form>
 
-            <div className="mt-8 text-center">
+            <div className="mt-5 md:mt-8 text-center">
               <p className="text-muted-foreground text-sm">
                 Already have an account?{" "}
                 <Link to="/login" className="text-primary hover:underline font-medium">

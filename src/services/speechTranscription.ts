@@ -312,28 +312,28 @@ function startBrowserSTT(
     if (stopped) return;
     resetSilence();
 
-    let sessionFinal = "";
     let sessionInterim = "";
-    for (let i = 0; i < event.results.length; i++) {
+    // Only process new results starting from processedUpTo for finals
+    for (let i = processedUpTo; i < event.results.length; i++) {
       const r = event.results[i];
       if (r.isFinal) {
-        sessionFinal += r[0].transcript;
+        const text = r[0].transcript.trim();
+        if (text) segments.push(text);
+        processedUpTo = i + 1;
       } else {
         sessionInterim += r[0].transcript;
       }
     }
-    currentSessionFinal = sessionFinal;
 
-    // Build combined text for display
     const allFinal = getAllFinal();
-    const interimDisplay = [allFinal, sessionInterim].filter(Boolean).join(" ");
-    
+
     if (sessionInterim) {
-      debug("Interim: " + sessionInterim);
+      const interimDisplay = [allFinal, sessionInterim.trim()].filter(Boolean).join(" ");
       config.onInterim?.(interimDisplay);
     }
-    if (sessionFinal) {
-      debug("Final chunk: " + sessionFinal);
+    
+    if (allFinal && allFinal !== lastEmittedFinal) {
+      lastEmittedFinal = allFinal;
       config.onFinal?.(allFinal);
     }
   };

@@ -46,7 +46,7 @@ const App = () => (
             <Route path="/auth/callback" element={<AuthCallback />} />
             <Route path="/projects" element={<Layout><Projects /></Layout>} />
             <Route path="/community" element={<Layout><Community /></Layout>} />
-            <Route path="/profile" element={<Profile />} />
+            <Route path="/profile" element={<Layout><Profile /></Layout>} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<Layout><NotFound /></Layout>} />
           </Routes>

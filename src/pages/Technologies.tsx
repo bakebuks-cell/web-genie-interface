@@ -97,7 +97,7 @@ const FlowStep = ({ step, index }: { step: typeof flowSteps[0]; index: number })
 /* ── page ── */
 const Technologies = () => {
   return (
-    <div className="min-h-screen bg-background relative overflow-hidden">
+    <div className="relative overflow-hidden">
       {/* dot grid bg */}
       <div
         className="fixed inset-0 pointer-events-none opacity-[0.025]"

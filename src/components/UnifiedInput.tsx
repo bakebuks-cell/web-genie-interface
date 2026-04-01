@@ -253,8 +253,10 @@ const UnifiedInput = ({
         />
 
         <textarea
-          value={displayText}
-          onChange={(e) => { if (!isRecording) { onIdeaChange(e.target.value); } }}
+          value={isRecording ? voiceText : idea}
+          onChange={(e) => { if (!isRecording && !isComposingRef.current) { onIdeaChange(e.target.value); } }}
+          onCompositionStart={() => { isComposingRef.current = true; }}
+          onCompositionEnd={(e) => { isComposingRef.current = false; onIdeaChange((e.target as HTMLTextAreaElement).value); }}
           onFocus={() => setIsFocused(true)}
           onBlur={() => setIsFocused(false)}
           placeholder="Describe your application idea..."

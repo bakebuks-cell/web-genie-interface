@@ -110,16 +110,14 @@ const UnifiedInput = ({
         chunkInterval: 250,
         onDebugStatus: (label) => setDebugStatus(label),
         onInterim: (text) => {
-          console.log("[STT] Interim:", text);
           const base = startIdeaRef.current.trim();
           const display = base ? base + " " + text : text;
-          setDisplayText(display);
+          setVoiceText(display);
         },
         onFinal: (text) => {
-          console.log("[STT] Final:", text);
           const base = startIdeaRef.current.trim();
           const result = base ? base + " " + text : text;
-          setDisplayText(result);
+          setVoiceText(result);
           onIdeaChange(result);
         },
         onError: (msg) => {

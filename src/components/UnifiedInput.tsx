@@ -45,7 +45,8 @@ const UnifiedInput = ({
   const [isRecording, setIsRecording] = useState(false);
   const [debugStatus, setDebugStatus] = useState("");
   const [multiProgramOpen, setMultiProgramOpen] = useState(false);
-  const [displayText, setDisplayText] = useState("");
+  const [voiceText, setVoiceText] = useState("");
+  const isComposingRef = useRef(false);
   const [validationError, setValidationError] = useState("");
   const [attentionPulse, setAttentionPulse] = useState(false);
   const [programMenuOpen, setProgramMenuOpen] = useState(false);
@@ -101,7 +102,7 @@ const UnifiedInput = ({
 
     startIdeaRef.current = idea;
     setIsRecording(true);
-    setDisplayText(idea);
+    setVoiceText(idea);
 
     try {
       const session = await startTranscription({
@@ -109,16 +110,14 @@ const UnifiedInput = ({
         chunkInterval: 250,
         onDebugStatus: (label) => setDebugStatus(label),
         onInterim: (text) => {
-          console.log("[STT] Interim:", text);
           const base = startIdeaRef.current.trim();
           const display = base ? base + " " + text : text;
-          setDisplayText(display);
+          setVoiceText(display);
         },
         onFinal: (text) => {
-          console.log("[STT] Final:", text);
           const base = startIdeaRef.current.trim();
           const result = base ? base + " " + text : text;
-          setDisplayText(result);
+          setVoiceText(result);
           onIdeaChange(result);
         },
         onError: (msg) => {
@@ -145,8 +144,9 @@ const UnifiedInput = ({
     }
   };
 
+  // Sync voice text when idea changes externally while not recording
   useEffect(() => {
-    if (!isRecording) { setDisplayText(idea); }
+    if (!isRecording) { setVoiceText(idea); }
   }, [idea, isRecording]);
 
   // When multi-program stack is applied, clear single language
@@ -253,8 +253,10 @@ const UnifiedInput = ({
         />
 
         <textarea
-          value={displayText}
-          onChange={(e) => { if (!isRecording) { onIdeaChange(e.target.value); } }}
+          value={isRecording ? voiceText : idea}
+          onChange={(e) => { if (!isRecording && !isComposingRef.current) { onIdeaChange(e.target.value); } }}
+          onCompositionStart={() => { isComposingRef.current = true; }}
+          onCompositionEnd={(e) => { isComposingRef.current = false; onIdeaChange((e.target as HTMLTextAreaElement).value); }}
           onFocus={() => setIsFocused(true)}
           onBlur={() => setIsFocused(false)}
           placeholder="Describe your application idea..."

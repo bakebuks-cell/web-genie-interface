@@ -103,6 +103,7 @@ function tryWebSocketBackend(
     let ws: WebSocket | null = null;
     let silenceTimer: ReturnType<typeof setTimeout> | null = null;
     let accumulatedFinal = "";
+    let lastEmittedFinal = "";
     let connected = false;
 
     // Timeout: if WS doesn't connect in time, reject to trigger fallback

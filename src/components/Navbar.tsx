@@ -37,7 +37,7 @@ export const Navbar = () => {
   };
 
   return (
-    <nav className="relative px-4 sm:px-6 lg:px-8 pt-4">
+    <nav className="relative px-4 sm:px-6 lg:px-8 pt-4 z-[9990]">
       <div className="flex items-center justify-between">
         {/* Logo - always left */}
         <Link to="/" className="group relative flex-shrink-0">
@@ -235,44 +235,52 @@ export const Navbar = () => {
         )}
       </div>
 
-      {/* Mobile Menu */}
+      {/* Mobile Menu Overlay */}
       {isMobileMenuOpen && (
-        <div className="md:hidden mt-2 flex justify-end">
-          <motion.div
-            className="bg-background/60 backdrop-blur-2xl border border-primary/15 rounded-2xl p-4 w-64 shadow-[0_8px_32px_rgba(0,0,0,0.4)]"
-            initial={{ opacity: 0, y: -10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.2 }}
-          >
-            <div className="flex flex-col gap-2">
-              {navItems.map((item) => (
-                <Link key={item.label} to={item.href} className="text-muted-foreground hover:text-primary transition-colors duration-200 text-sm font-medium px-3 py-2 rounded-lg hover:bg-primary/5" onClick={() => setIsMobileMenuOpen(false)}>
-                  {item.label}
-                </Link>
-              ))}
-              <div className="flex flex-col gap-2 pt-3 border-t border-primary/15 mt-2">
-                {user ? (
-                  <>
-                    <Button variant="ghost" size="sm" onClick={() => { navigate("/projects"); setIsMobileMenuOpen(false); }} className="justify-start text-muted-foreground hover:bg-primary/5 rounded-lg gap-2">
-                      Projects
-                    </Button>
-                    <Button variant="ghost" size="sm" onClick={() => { navigate("/profile"); setIsMobileMenuOpen(false); }} className="justify-start text-muted-foreground hover:bg-primary/5 rounded-lg gap-2">
-                      <User className="w-4 h-4" /> Profile
-                    </Button>
-                    <Button variant="ghost" size="sm" onClick={async () => { await signOut(); setIsMobileMenuOpen(false); navigate("/"); }} className="justify-start text-red-400 hover:bg-red-500/5 rounded-lg gap-2">
-                      <LogOut className="w-4 h-4" /> Logout
-                    </Button>
-                  </>
-                ) : (
-                  <>
-                    <Button variant="ghost" size="sm" onClick={() => { setIsMobileMenuOpen(false); navigate("/login"); }} className="justify-start text-muted-foreground hover:bg-primary/5 rounded-lg">Login</Button>
-                    <button onClick={() => { setIsMobileMenuOpen(false); navigate("/signup"); }} className="rounded-lg px-4 h-9 text-sm font-medium text-primary-foreground" style={{ background: "linear-gradient(90deg, #00f0ff, #00c8a0)" }}>Get Started</button>
-                  </>
-                )}
+        <>
+          {/* Backdrop */}
+          <div
+            className="md:hidden fixed inset-0 bg-background/60 backdrop-blur-sm z-[9990]"
+            onClick={() => setIsMobileMenuOpen(false)}
+          />
+          {/* Menu panel */}
+          <div className="md:hidden fixed top-14 right-4 z-[9991]">
+            <motion.div
+              className="bg-background/90 backdrop-blur-2xl border border-primary/15 rounded-2xl p-4 w-64 shadow-[0_8px_32px_rgba(0,0,0,0.6)]"
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.2 }}
+            >
+              <div className="flex flex-col gap-2">
+                {navItems.map((item) => (
+                  <Link key={item.label} to={item.href} className="text-muted-foreground hover:text-primary transition-colors duration-200 text-sm font-medium px-3 py-2 rounded-lg hover:bg-primary/5" onClick={() => setIsMobileMenuOpen(false)}>
+                    {item.label}
+                  </Link>
+                ))}
+                <div className="flex flex-col gap-2 pt-3 border-t border-primary/15 mt-2">
+                  {user ? (
+                    <>
+                      <Button variant="ghost" size="sm" onClick={() => { setIsMobileMenuOpen(false); navigate("/projects"); }} className="justify-start text-muted-foreground hover:bg-primary/5 rounded-lg gap-2">
+                        Projects
+                      </Button>
+                      <Button variant="ghost" size="sm" onClick={() => { setIsMobileMenuOpen(false); navigate("/profile"); }} className="justify-start text-muted-foreground hover:bg-primary/5 rounded-lg gap-2">
+                        <User className="w-4 h-4" /> Profile
+                      </Button>
+                      <Button variant="ghost" size="sm" onClick={async () => { setIsMobileMenuOpen(false); await signOut(); navigate("/"); }} className="justify-start text-red-400 hover:bg-red-500/5 rounded-lg gap-2">
+                        <LogOut className="w-4 h-4" /> Logout
+                      </Button>
+                    </>
+                  ) : (
+                    <>
+                      <Button variant="ghost" size="sm" onClick={() => { setIsMobileMenuOpen(false); navigate("/login"); }} className="justify-start text-muted-foreground hover:bg-primary/5 rounded-lg">Login</Button>
+                      <button onClick={() => { setIsMobileMenuOpen(false); navigate("/signup"); }} className="rounded-lg px-4 h-9 text-sm font-medium text-primary-foreground" style={{ background: "linear-gradient(90deg, #00f0ff, #00c8a0)" }}>Get Started</button>
+                    </>
+                  )}
+                </div>
               </div>
-            </div>
-          </motion.div>
-        </div>
+            </motion.div>
+          </div>
+        </>
       )}
     </nav>
   );

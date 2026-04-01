@@ -266,12 +266,10 @@ function startBrowserSTT(
   recognition.interimResults = true;
   recognition.maxAlternatives = 1;
 
-  const getAllFinal = () => {
-    const seg = segments.join(" ").trim();
-    const cur = currentSessionFinal.trim();
-    if (seg && cur) return seg + " " + cur;
-    return seg || cur;
-  };
+  // Track the resultIndex to avoid re-processing old results
+  let processedUpTo = 0;
+
+  const getAllFinal = () => segments.join(" ").trim();
 
   const resetSilence = () => {
     if (silenceTimer) clearTimeout(silenceTimer);

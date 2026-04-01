@@ -259,10 +259,11 @@ export const HeroSection = () => {
 
         {/* Unified Input Container */}
         <motion.div
+          id="hero-prompt-box"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.5, duration: 0.6, ease: "easeOut" }}>
-          
+          transition={{ delay: 0.5, duration: 0.6, ease: "easeOut" }}
+          className="transition-all duration-500">
           <UnifiedInput
             selectedLanguage={selectedLanguage}
             onLanguageSelect={handleLanguageSelect}
